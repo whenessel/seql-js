@@ -1,0 +1,61 @@
+{
+  "name": "seql-js",
+  "version": "0.1.0",
+  "description": "Semantic Element Query Language JS Implementation",
+  "scripts": {
+    "types:check": "tsc --noEmit",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whenessel/seql-js.git"
+  },
+  "keywords": [
+  ],
+  "main": "./dist/seql-js.umd.cjs",
+  "module": "./dist/seql-js.js",
+  "unpkg": "./dist/seql-js.umd.cjs",
+  "typings": "./dist/seql-js.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/seql-js.d.ts",
+        "default": "./dist/seql-js.js"
+      },
+      "require": {
+        "types": "./dist/seql-js.d.cts",
+        "default": "./dist/seql-js.umd.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "license": "MIT",
+  "public": true,
+  "sideEffects": false,
+  "bugs": {
+    "url": "https://github.com/whenessel/seql-js/issues"
+  },
+  "homepage": "https://github.com/whenessel/seql-js/issues#readme",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.15",
+    "vitest": "^4.0.15",
+    "jsdom": "^27.2.0",
+    "vite": "^7.2.2",
+    "vite-plugin-dts": "^4.5.4",
+    "typescript": "^5.9.3",
+    "tsup": "^8.3.5"
+  },
+  "dependencies": {},
+  "packageManager": "yarn@1.22.22",
+  "publishConfig": {
+    "access": "public"
+  }
+}

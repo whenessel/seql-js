@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-73cda641-e465-4a0e-b85f-478c36be08de"
+      ]
+    },
+    "chakra-ui": {
+      "command": "node",
+      "args": ["scripts/chakra-ui-mcp-wrapper.js"]
+    }
+  }
+}
