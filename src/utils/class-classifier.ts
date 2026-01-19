@@ -51,9 +51,8 @@ const DYNAMIC_CLASS_PATTERNS = [
  * These classes should be IGNORED in selectors
  */
 const UTILITY_CLASS_PATTERNS = [
-  // === FIX 4: Tailwind arbitrary values (highest priority) ===
-  /^\[&:/, // [&:has([aria-selected])]
-  /^\[.*\]$/, // Classes like [animation-delay:300ms] - not valid CSS classes
+  // === FIX 4: Tailwind arbitrary values and variants (highest priority) ===
+  /^\[/, // Any arbitrary value or variant starting with [ (e.g., [&_svg]:..., [mask-type:luminance])
 
   // === FIX 4: Pseudo-class variants (must be before specific patterns) ===
   /^(first|last|odd|even|only|first-of-type|last-of-type|only-of-type):/, // first:, last:, etc.

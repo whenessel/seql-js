@@ -1,6 +1,87 @@
 import type { ElementIdentity, AnchorNode, PathNode, TargetNode, ElementSemantics, GeneratorOptions, ResolverOptions } from '../types';
 import { generateEID as generateEIDInternal } from '../generator';
 import { resolve as resolveInternal } from '../resolver';
+import { filterStableClasses } from './class-classifier';
+import { ATTRIBUTE_PRIORITY, IGNORED_ATTRIBUTES } from './constants';
+import { cleanAttributeValue } from './attribute-cleaner';
+
+/**
+ * Options for EIQ stringification
+ */
+export interface StringifyOptions {
+  /** Maximum number of classes to include per node (default: 2) */
+  maxClasses?: number;
+  /** Maximum number of attributes to include per node (default: 5) */
+  maxAttributes?: number;
+  /** Include text content as pseudo-attribute (default: true) */
+  includeText?: boolean;
+  /** Maximum text length to include (default: 50) */
+  maxTextLength?: number;
+  /** Simplify target node by removing redundant info (default: true) */
+  simplifyTarget?: boolean;
+  /** Include resolution constraints in EIQ string (default: true) */
+  includeConstraints?: boolean;
+}
+
+/**
+ * Default stringify options
+ */
+const DEFAULT_STRINGIFY_OPTIONS: Required<StringifyOptions> = {
+  maxClasses: 2,
+  maxAttributes: 5,
+  includeText: true,
+  maxTextLength: 50,
+  simplifyTarget: true,
+  includeConstraints: true,
+};
+
+/**
+ * Gets attribute priority for sorting
+ */
+function getAttributePriority(attrName: string): number {
+  // ID is highest priority for EIQ
+  if (attrName === 'id') return 101;
+
+  // Exact match
+  if (ATTRIBUTE_PRIORITY[attrName] !== undefined) {
+    return ATTRIBUTE_PRIORITY[attrName];
+  }
+
+  // data-* wildcard
+  if (attrName.startsWith('data-')) {
+    return ATTRIBUTE_PRIORITY['data-*'];
+  }
+
+  // aria-* wildcard
+  if (attrName.startsWith('aria-')) {
+    return ATTRIBUTE_PRIORITY['aria-*'];
+  }
+
+  return 0;
+}
+
+/**
+ * Checks if attribute is considered unique identifier
+ */
+function isUniqueAttribute(attrName: string): boolean {
+  return ['id', 'data-testid', 'data-qa', 'data-cy', 'href', 'text', 'role'].includes(attrName);
+}
+
+/**
+ * Simple PII detection for text content
+ */
+function isTextPII(text: string): boolean {
+  // Email pattern
+  if (/@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(text)) return true;
+
+  // Phone pattern (basic)
+  if (/(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(text)) return true;
+
+  // Credit card pattern (basic)
+  if (/\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}/.test(text)) return true;
+
+  return false;
+}
 
 /**
  * Converts EID to canonical EIQ string representation
@@ -13,6 +94,7 @@ import { resolve as resolveInternal } from '../resolver';
  * - Sorted attributes and classes
  *
  * @param eid - Element Identity Descriptor
+ * @param options - Optional stringify options
  * @returns Element Identity Query (canonical string)
  *
  * @example
@@ -22,16 +104,18 @@ import { resolve as resolveInternal } from '../resolver';
  * // "v1: footer :: ul.menu > li#3 > a[href="/contact"]"
  * ```
  */
-export function stringifyEID(eid: ElementIdentity): string {
+export function stringifyEID(eid: ElementIdentity, options?: StringifyOptions): string {
+  const opts = { ...DEFAULT_STRINGIFY_OPTIONS, ...options };
+
   const version = `v${eid.version}`;
-  const anchor = stringifyNode(eid.anchor);
+  const anchor = stringifyNode(eid.anchor, false, opts);
   const path = eid.path.length > 0
-    ? eid.path.map(node => stringifyNode(node)).join(' > ') + ' > '
+    ? eid.path.map(node => stringifyNode(node, false, opts)).join(' > ') + ' > '
     : '';
-  const target = stringifyNode(eid.target);
+  const target = stringifyNode(eid.target, true, opts); // Pass isTarget=true
 
   // Constraints are optional
-  const constraints = stringifyConstraints(eid);
+  const constraints = opts.includeConstraints ? stringifyConstraints(eid) : '';
 
   return `${version}: ${anchor} :: ${path}${target}${constraints}`;
 }
@@ -132,31 +216,117 @@ export function parseEIQ(eiq: string): ElementIdentity {
 /**
  * Stringify a single node (anchor, path, or target)
  */
-function stringifyNode(node: AnchorNode | PathNode | TargetNode): string {
+function stringifyNode(
+  node: AnchorNode | PathNode | TargetNode,
+  isTarget: boolean = false,
+  options: Required<StringifyOptions> = DEFAULT_STRINGIFY_OPTIONS
+): string {
   const { tag, semantics } = node;
   let result = tag;
 
-  // Add classes (semantic only, sorted)
+  // 1. Prepare Attributes (including ID and Role)
+  const attrStrings: string[] = [];
+  const rawAttributes = { ...semantics.attributes };
+
+  // In EIQ, ID is just another attribute [id="..."]
+  if (semantics.id) {
+    rawAttributes.id = semantics.id;
+  }
+
+  // Include Role if present in semantics but not in attributes
+  if (semantics.role && !rawAttributes.role) {
+    rawAttributes.role = semantics.role;
+  }
+
+  const processedAttrs = Object.entries(rawAttributes)
+    .map(([name, value]) => {
+      const priority = getAttributePriority(name);
+      const cleanedValue = (name === 'href' || name === 'src')
+        ? cleanAttributeValue(name, value)
+        : value;
+      return { name, value: cleanedValue, priority };
+    })
+    .filter(attr => {
+      // Filter out truly ignored attributes (style, xmlns, etc)
+      const trulyIgnored = ['style', 'xmlns', 'tabindex', 'contenteditable'];
+      if (trulyIgnored.includes(attr.name)) return false;
+
+      // Keep if priority > 0 or it's a role or id
+      return attr.priority > 0 || attr.name === 'role' || attr.name === 'id';
+    });
+
+  // Sort by priority (desc) to pick the best ones
+  processedAttrs.sort((a, b) => b.priority - a.priority);
+
+  // Pick top N attributes
+  const topAttrs = processedAttrs.slice(0, options.maxAttributes);
+
+  // Sort selected attributes ALPHABETICALLY for EIQ canonical format
+  topAttrs.sort((a, b) => a.name.localeCompare(b.name));
+
+  for (const { name, value } of topAttrs) {
+    attrStrings.push(`${name}="${escapeAttributeValue(value)}"`);
+  }
+
+  // Add text as pseudo-attribute if enabled
+  if (options.includeText && semantics.text && !isTextPII(semantics.text.normalized)) {
+    const text = semantics.text.normalized;
+    if (text.length > 0 && text.length <= options.maxTextLength) {
+      attrStrings.push(`text="${escapeAttributeValue(text)}"`);
+    }
+  }
+
+  if (attrStrings.length > 0) {
+    let finalAttrs = attrStrings;
+
+    // Advanced simplification for target node
+    if (isTarget && options.simplifyTarget && semantics.id) {
+       // If we have ID, we can afford to be more selective,
+       // but we MUST keep important semantic info like href, text, data-testid
+       finalAttrs = attrStrings.filter(s => {
+         const name = s.split('=')[0];
+         const priority = getAttributePriority(name);
+         // Keep high priority attributes (id, data-testid, href, src, role, text)
+         return priority >= 60 || name === 'text' || name === 'id' || name === 'role';
+       });
+    }
+
+    if (finalAttrs.length > 0) {
+      // Final alphabetical sort for the attributes in the bracket
+      finalAttrs.sort((a, b) => a.localeCompare(b));
+      result += `[${finalAttrs.join(',')}]`;
+    }
+  }
+
+  // 2. Add stable classes
   if (semantics.classes && semantics.classes.length > 0) {
-    const sortedClasses = [...semantics.classes].sort();
-    result += sortedClasses.map(c => `.${c}`).join('');
+    const stableClasses = filterStableClasses(semantics.classes);
+
+    // If simplifying target and we have strong identifiers, we can skip classes
+    const hasStrongIdentifier = !!semantics.id ||
+      attrStrings.some(s => s.startsWith('href=') || s.startsWith('data-testid=') || s.startsWith('text=') || s.startsWith('role='));
+    const skipClasses = isTarget && options.simplifyTarget && hasStrongIdentifier;
+
+    if (!skipClasses && stableClasses.length > 0) {
+      const limitedClasses = stableClasses
+        .sort() // Alphabetical for determinism
+        .slice(0, options.maxClasses);
+
+      result += limitedClasses.map(c => `.${c}`).join('');
+    }
   }
 
-  // Add attributes (sorted alphabetically)
-  if (semantics.attributes && Object.keys(semantics.attributes).length > 0) {
-    const attrs = Object.entries(semantics.attributes)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => {
-        // Escape quotes in value
-        const escapedValue = escapeAttributeValue(value);
-        return `${key}="${escapedValue}"`;
-      });
-    result += `[${attrs.join(',')}]`;
-  }
-
-  // Add position (nth-child)
+  // 3. Add position (nth-child)
   if ('nthChild' in node && node.nthChild) {
-    result += `#${node.nthChild}`;
+    // EIQ position is #N
+    const hasStrongIdentifier = !!semantics.id ||
+      (semantics.attributes && Object.keys(semantics.attributes).some(isUniqueAttribute));
+
+    const skipPosition = isTarget && options.simplifyTarget && hasStrongIdentifier;
+
+    if (!skipPosition) {
+      result += `#${node.nthChild}`;
+    }
   }
 
   return result;
@@ -251,7 +421,28 @@ function parseNode(nodeStr: string, isAnchor: boolean): AnchorNode | PathNode {
     }
 
     if (Object.keys(attributes).length > 0) {
-      semantics.attributes = attributes;
+      // Special handling for pseudo-attributes in EIQ
+      if (attributes.text) {
+        semantics.text = {
+          raw: attributes.text,
+          normalized: attributes.text
+        };
+        delete attributes.text;
+      }
+
+      if (attributes.id) {
+        semantics.id = attributes.id;
+        delete attributes.id;
+      }
+
+      if (attributes.role) {
+        semantics.role = attributes.role;
+        delete attributes.role;
+      }
+
+      if (Object.keys(attributes).length > 0) {
+        semantics.attributes = attributes;
+      }
     }
 
     remaining = remaining.slice(attrMatch[0].length);
@@ -417,25 +608,30 @@ function unescapeAttributeValue(value: string): string {
  * This is a convenience function that combines generateEID() and stringifyEID().
  *
  * @param element - Target DOM element
- * @param options - Optional generation options
+ * @param generatorOptions - Optional generation options
+ * @param stringifyOptions - Optional stringify options
  * @returns Element Identity Query (canonical string)
  *
  * @example
  * ```typescript
  * const button = document.querySelector('.submit-button');
  * const eiq = generateEIQ(button);
- * // "v1: form[#checkout] :: div.actions > button.submit['Submit Order']"
+ * // "v1: form :: div.actions > button[type="submit",text="Submit Order"]"
  *
  * // Send to analytics
  * gtag('event', 'click', { element_identity: eiq });
  * ```
  */
-export function generateEIQ(element: Element, options?: GeneratorOptions): string | null {
-  const eid = generateEIDInternal(element, options);
+export function generateEIQ(
+  element: Element,
+  generatorOptions?: GeneratorOptions,
+  stringifyOptions?: StringifyOptions
+): string | null {
+  const eid = generateEIDInternal(element, generatorOptions);
   if (!eid) {
     return null;
   }
-  return stringifyEID(eid);
+  return stringifyEID(eid, stringifyOptions);
 }
 
 /**

@@ -10,6 +10,7 @@ export default defineConfig({
       reporter: ['text', 'html'],
       exclude: ['node_modules/', 'dist/', 'tests/']
     },
+    setupFiles: ['./vitest.setup.ts'],
     testTimeout: 10000
   }
 });

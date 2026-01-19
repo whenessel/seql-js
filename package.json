@@ -15,8 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/whenessel/seql-js.git"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "main": "./dist/seql-js.umd.cjs",
   "module": "./dist/seql-js.js",
   "unpkg": "./dist/seql-js.umd.cjs",
@@ -46,12 +45,13 @@
   "homepage": "https://github.com/whenessel/seql-js/issues#readme",
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.15",
-    "vitest": "^4.0.15",
+    "@whenessel/jsdom-extended": "^0.1.2",
     "jsdom": "^27.2.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vite-plugin-dts": "^4.5.4",
-    "typescript": "^5.9.3",
-    "tsup": "^8.3.5"
+    "vitest": "^4.0.15"
   },
   "dependencies": {},
   "packageManager": "yarn@1.22.22",

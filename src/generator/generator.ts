@@ -107,7 +107,7 @@ export function generateEID(
   };
 
   // 5. Build constraints
-  const constraints = buildDefaultConstraints();
+  const constraints: Constraint[] = [];
 
   // 6. Build fallback rules
   const fallback: FallbackRules = {
@@ -180,22 +180,4 @@ function getDegradationReason(
     return pathResult.degradationReason;
   }
   return undefined;
-}
-
-/**
- * Builds default constraints for resolution
- */
-function buildDefaultConstraints(): Constraint[] {
-  return [
-    {
-      type: 'uniqueness',
-      params: { mode: 'best-score' },
-      priority: 100,
-    },
-    {
-      type: 'visibility',
-      params: { required: true },
-      priority: 80,
-    },
-  ];
 }

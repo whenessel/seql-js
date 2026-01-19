@@ -227,6 +227,46 @@ describe('EIQ Parser', () => {
       expect(eiq).toBe('v1.0: form :: button {unique=true,visible=true}');
     });
 
+    it('should allow omitting constraints with includeConstraints: false', () => {
+      const eid: ElementIdentity = {
+        version: '1.0',
+        anchor: {
+          tag: 'form',
+          semantics: {},
+          score: 0.8,
+          degraded: false,
+        },
+        path: [],
+        target: {
+          tag: 'button',
+          semantics: {},
+          score: 0.7,
+        },
+        constraints: [
+          {
+            type: 'uniqueness',
+            params: { mode: 'best-score' },
+            priority: 100,
+          },
+        ],
+        fallback: {
+          onMultiple: 'best-score',
+          onMissing: 'anchor-only',
+          maxDepth: 10,
+        },
+        meta: {
+          confidence: 0.75,
+          generatedAt: '2024-01-01T00:00:00Z',
+          generator: 'test',
+          source: 'test',
+          degraded: false,
+        },
+      };
+
+      const eiq = stringifyEID(eid, { includeConstraints: false });
+      expect(eiq).toBe('v1.0: form :: button');
+    });
+
     it('should escape special characters in attribute values', () => {
       const eid: ElementIdentity = {
         version: '1.0',
@@ -289,7 +329,7 @@ describe('EIQ Parser', () => {
       const eiq = 'v1: form[id="checkout"] :: button[type="submit"]';
       const eid = parseEIQ(eiq);
 
-      expect(eid.anchor.semantics.attributes).toEqual({ id: 'checkout' });
+      expect(eid.anchor.semantics.id).toBe('checkout');
       expect(eid.target.semantics.attributes).toEqual({ type: 'submit' });
     });
 
@@ -366,7 +406,7 @@ describe('EIQ Parser', () => {
     });
 
     it('should maintain complex structure after round-trip', () => {
-      const original = 'v1: form[id="login"] :: div.field > input[name="email",type="email"]';
+      const original = 'v1: form[id="login"] :: div.field-container > input[name="email",type="email"]';
       const eid = parseEIQ(original);
       const stringified = stringifyEID(eid);
 

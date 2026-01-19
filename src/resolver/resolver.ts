@@ -1,5 +1,5 @@
 import type { ElementIdentity, ResolveResult, ResolverOptions } from '../types';
-import { CssGenerator, type BuildSelectorResult } from './css-generator';
+import { CssGenerator } from './css-generator';
 import { SemanticsMatcher } from './semantics-matcher';
 import { ConstraintsEvaluator } from './constraints-evaluator';
 import { FallbackHandler } from './fallback-handler';
@@ -27,14 +27,14 @@ export function resolve(
   const fallbackHandler = new FallbackHandler();
 
   // Phase 1: CSS Narrowing
-  // Use ensureUnique to generate more specific selectors
+  // Build a base selector. We don't use ensureUnique: true here because
+  // we want to gather all potential candidates and prioritize them in later phases
+  // (e.g., prioritization by visibility).
   const root = dom instanceof Document ? dom : (dom.ownerDocument ?? dom);
-  const selectorResult = cssGenerator.buildSelector(eid, {
-    ensureUnique: true,
+  const selector = cssGenerator.buildSelector(eid, {
+    ensureUnique: false,
     root,
   });
-  // When ensureUnique is true, buildSelector returns BuildSelectorResult
-  const selector = (selectorResult as unknown as BuildSelectorResult).selector;
 
   let candidates: Element[];
   try {
