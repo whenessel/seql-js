@@ -1,5 +1,5 @@
 {
-  "name": "seql-js",
+  "name": "@whenessel/seql-js",
   "version": "1.0.0",
   "description": "Semantic Element Query Language JS Implementation",
   "scripts": {

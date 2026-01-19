@@ -1,0 +1,31 @@
+name: Test PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Yarn
+        run: npm install -g yarn@1.22.22
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Type check
+        run: yarn types:check
+
+      - name: Run Tests
+        run: yarn test
