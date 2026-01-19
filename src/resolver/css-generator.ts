@@ -2,6 +2,7 @@ import type { ElementIdentity, ElementSemantics, PathNode } from '../types';
 import { ATTRIBUTE_PRIORITY, IGNORED_ATTRIBUTES, SVG_CHILD_ELEMENTS } from '../utils/constants';
 import { cleanAttributeValue } from '../utils/attribute-cleaner';
 import { filterStableClasses } from '../utils/class-classifier';
+import { isDynamicId, ID_REFERENCE_ATTRIBUTES, hasDynamicIdReference } from '../utils/id-validator';
 
 /**
  * Options for selector building with uniqueness control
@@ -879,7 +880,7 @@ export class CssGenerator {
     let selector = tag;
 
     // Add ID if stable
-    if (element.id && !this.isDynamicId(element.id)) {
+    if (element.id && !isDynamicId(element.id)) {
       return `${tag}#${this.escapeCSS(element.id)}`;
     }
 
@@ -897,20 +898,6 @@ export class CssGenerator {
     }
 
     return selector;
-  }
-
-  /**
-   * Checks if ID is dynamic (generated)
-   */
-  private isDynamicId(id: string): boolean {
-    // Pattern for dynamic IDs
-    const dynamicPatterns = [
-      /^[a-f0-9]{8,}$/i,     // hex hash
-      /^\d{5,}$/,             // numeric
-      /^(r|react|ember|vue)[\d_]/i,  // framework prefixes
-      /:r\d+:$/,              // React 18 ID pattern
-    ];
-    return dynamicPatterns.some(p => p.test(id));
   }
 
   /**
@@ -1184,6 +1171,8 @@ export class CssGenerator {
   ): Array<{ name: string; value: string; priority: number }> {
     return Object.entries(attributes)
       .filter(([name]) => !this.shouldIgnoreAttribute(name))
+      // Filter out ID-reference attributes with dynamic values
+      .filter(([name, value]) => !ID_REFERENCE_ATTRIBUTES.has(name) || !hasDynamicIdReference(value))
       .map(([name, value]) => ({
         name,
         value,

@@ -1,7 +1,7 @@
 import type { ElementSemantics, TextContent, GeneratorOptions } from '../types';
 import { normalizeText } from '../utils/text-normalizer';
 import { filterClasses } from '../utils/class-filter';
-import { isDynamicId } from '../utils/id-validator';
+import { isDynamicId, ID_REFERENCE_ATTRIBUTES, hasDynamicIdReference } from '../utils/id-validator';
 import { ATTRIBUTE_PRIORITY, IGNORED_ATTRIBUTES } from '../utils/constants';
 import { cleanAttributeValue } from '../utils/attribute-cleaner';
 import type { EIDCache } from '../utils/eid-cache';
@@ -177,6 +177,11 @@ export class SemanticExtractor {
 
       // Skip ignored attributes
       if (this.shouldIgnoreAttribute(name)) continue;
+
+      // Skip ID-reference attributes with dynamic IDs
+      if (ID_REFERENCE_ATTRIBUTES.has(name) && hasDynamicIdReference(attr.value)) {
+        continue;
+      }
 
       // Get priority
       const priority = this.getAttributePriority(name);

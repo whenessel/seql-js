@@ -4,6 +4,7 @@ import { resolve as resolveInternal } from '../resolver';
 import { filterStableClasses } from './class-classifier';
 import { ATTRIBUTE_PRIORITY, IGNORED_ATTRIBUTES } from './constants';
 import { cleanAttributeValue } from './attribute-cleaner';
+import { ID_REFERENCE_ATTRIBUTES, hasDynamicIdReference } from './id-validator';
 
 /**
  * Options for SEQL Selector stringification
@@ -250,6 +251,11 @@ function stringifyNode(
       // Filter out truly ignored attributes (style, xmlns, etc)
       const trulyIgnored = ['style', 'xmlns', 'tabindex', 'contenteditable'];
       if (trulyIgnored.includes(attr.name)) return false;
+
+      // Filter out ID-reference attributes with dynamic values
+      if (ID_REFERENCE_ATTRIBUTES.has(attr.name) && hasDynamicIdReference(attr.value)) {
+        return false;
+      }
 
       // Keep if priority > 0 or it's a role or id
       return attr.priority > 0 || attr.name === 'role' || attr.name === 'id';

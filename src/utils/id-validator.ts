@@ -9,6 +9,12 @@ export function isDynamicId(id: string): boolean {
   // Pattern: prefix-number (e.g., "input-123", "react-select-2")
   if (/^[a-z]+-\d+$/i.test(id)) return true;
 
+  // Pattern: multi-word-prefix-number (e.g., "react-day-picker-1", "mui-date-input-42")
+  if (/^[a-z]+(-[a-z]+)+-\d+$/i.test(id)) return true;
+
+  // Pattern: prefix_number (underscore variant, e.g., "radix_dialog_1")
+  if (/^[a-z]+(_[a-z]+)*_\d+$/i.test(id)) return true;
+
   // Pattern: just numbers (e.g., "123")
   if (/^\d+$/.test(id)) return true;
 
@@ -38,6 +44,37 @@ export function isDynamicId(id: string): boolean {
   if (/^mui-\d+$/.test(id)) return true;
 
   return false;
+}
+
+/**
+ * Attributes whose values are references to IDs of other elements.
+ * If the value contains a dynamic ID, the attribute should be ignored.
+ */
+export const ID_REFERENCE_ATTRIBUTES = new Set([
+  'aria-labelledby',
+  'aria-describedby',
+  'aria-controls',
+  'aria-owns',
+  'aria-activedescendant',
+  'for',
+  'form',
+  'list',
+  'headers',
+  'aria-details',
+  'aria-errormessage',
+  'aria-flowto',
+]);
+
+/**
+ * Checks if an attribute value contains a dynamic ID reference.
+ * Used for filtering attributes like aria-labelledby.
+ * @param value - Attribute value (may contain space-separated IDs)
+ * @returns True if value contains at least one dynamic ID
+ */
+export function hasDynamicIdReference(value: string): boolean {
+  // Value may contain a list of IDs separated by spaces
+  const ids = value.trim().split(/\s+/);
+  return ids.some(id => isDynamicId(id));
 }
 
 /**
