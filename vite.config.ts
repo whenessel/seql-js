@@ -11,7 +11,7 @@ export default defineConfig({
     },
     sourcemap: true,
     target: 'es2020',
-    minify: 'terser',
+    minify: 'esbuild',
     rollupOptions: {
       external: [],
       output: {

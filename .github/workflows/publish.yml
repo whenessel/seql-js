@@ -26,13 +26,15 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build package
         run: yarn build
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Setup npm authentication
+        run: |
+          cat > .npmrc << EOF
+          //registry.npmjs.org/:_authToken=\${NPM_TOKEN}
+          EOF
 
       - name: Publish to npm
         run: npm publish
