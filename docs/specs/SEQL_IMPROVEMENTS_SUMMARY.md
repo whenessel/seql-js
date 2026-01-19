@@ -193,8 +193,8 @@ function validateEIQ(eiq: string): ValidationResult {
 
 **Проверка:**
 ```typescript
-const eiq1 = stringifyEID(eid);
-const eiq2 = stringifyEID(eid);
+const eiq1 = stringifySEQL(eid);
+const eiq2 = stringifySEQL(eid);
 assert(eiq1 === eiq2); // Всегда true
 ```
 
@@ -221,10 +221,10 @@ assert(eiq1 === eiq2); // Всегда true
 **Добавлены детальные примеры:**
 ```typescript
 // EID → EIQ
-function stringifyEID(eid: EID): EIQ;
+function stringifySEQL(eid: EID): EIQ;
 
 // EIQ → EID
-function parseEIQ(eiq: EIQ): EID;
+function parseSEQL(eiq: EIQ): EID;
 
 // Validate
 function validateEIQ(eiq: string): ValidationResult;
@@ -409,12 +409,12 @@ analytics.track('Element Clicked', {
 ## 📋 Чек-лист реализации
 
 ### Phase 1: Core Parser
-- [ ] Реализовать parseEIQ() по BNF
+- [ ] Реализовать parseSEQL() по BNF
 - [ ] Добавить validateEIQ()
 - [ ] Написать unit tests для парсера
 
 ### Phase 2: Stringify
-- [ ] Реализовать stringifyEID()
+- [ ] Реализовать stringifySEQL()
 - [ ] Добавить canonical ordering
 - [ ] Тесты на детерминированность
 

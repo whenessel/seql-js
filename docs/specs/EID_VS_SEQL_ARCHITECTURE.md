@@ -20,7 +20,7 @@ interface ElementIdentityDescriptor {
 }
 ```
 
-### Element Identity Query (EIQ)
+### SEQL Selector (EIQ)
 
 **Тип**: Canonical string  
 **Назначение**: Transport format, human interface  
@@ -99,7 +99,7 @@ function serializeNodeWithEID(node: Node): SerializedNode {
   const serialized = {
     ...serializeNode(node),
     eid: eid, // ← Полный EID (JSON)
-    eiq: stringifyEID(eid) // ← Опционально для инспекции/дебага
+    eiq: stringifySEQL(eid) // ← Опционально для инспекции/дебага
   };
   
   return serialized;
@@ -144,7 +144,7 @@ function trackInteraction(element: Element, eventType: string) {
   const eid: ElementIdentityDescriptor = getEIDForElement(element);
   
   // 2. Stringify в EIQ (compact format для GA)
-  const eiq: ElementIdentityQuery = stringifyEID(eid);
+  const eiq: ElementIdentityQuery = stringifySEQL(eid);
   
   // 3. Отправляем в GA
   gtag('event', eventType, {
@@ -235,7 +235,7 @@ class HeatmapRenderer {
     for (const [eiq, stats] of Object.entries(analyticsData)) {
       
       // 1. Parse EIQ → EID
-      const eid: ElementIdentityDescriptor = parseEIQ(eiq);
+      const eid: ElementIdentityDescriptor = parseSEQL(eiq);
       
       // 2. Resolve EID в rrdom
       const elements = await resolve(eid, snapshot.dom);
@@ -282,7 +282,7 @@ class HeatmapRenderer {
 const eid1 = generateEID(element);
 const eid2 = generateEID(element);
 
-stringifyEID(eid1) === stringifyEID(eid2); // ✅ ВСЕГДА true
+stringifySEQL(eid1) === stringifySEQL(eid2); // ✅ ВСЕГДА true
 ```
 
 ### 2. Каноничным
@@ -347,7 +347,7 @@ const eiq_v2 = "v2:footer[role=contentinfo] > ul > li:nth(3)";
 const elements = document.querySelectorAll(eiq);
 
 // ✅ ПРАВИЛЬНО
-const eid = parseEIQ(eiq);
+const eid = parseSEQL(eiq);
 const elements = resolve(eid, document);
 ```
 
@@ -420,9 +420,9 @@ const eiq = "footer > ul > li#3"; // Всегда одинаковый
  * - PII-safe (no personal data)
  * 
  * @param eid - Element Identity Descriptor
- * @returns Element Identity Query (canonical string)
+ * @returns SEQL Selector (canonical string)
  */
-function stringifyEID(eid: ElementIdentityDescriptor): ElementIdentityQuery {
+function stringifySEQL(eid: ElementIdentityDescriptor): ElementIdentityQuery {
   // Implementation...
 }
 ```
@@ -433,11 +433,11 @@ function stringifyEID(eid: ElementIdentityDescriptor): ElementIdentityQuery {
 /**
  * Parses EIQ string back to EID structure
  * 
- * @param eiq - Element Identity Query (string)
+ * @param eiq - SEQL Selector (string)
  * @returns Element Identity Descriptor
  * @throws {ParseError} if EIQ is malformed or version unsupported
  */
-function parseEIQ(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
+function parseSEQL(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
   // Implementation...
 }
 ```
@@ -501,7 +501,7 @@ interface ElementIdentityDescriptor {
 }
 ```
 
-### 2.2 Element Identity Query (EIQ)
+### 2.2 SEQL Selector (EIQ)
 
 **Type**: Canonical string representation
 **Purpose**: Transport format, human interface
@@ -566,8 +566,8 @@ Pipeline: EIQ → parse() → EID → resolve() → Element[]
 ### Phase 1: Core API
 
 - [ ] Определить TypeScript типы EID и EIQ
-- [ ] Реализовать `stringifyEID(eid): EIQ`
-- [ ] Реализовать `parseEIQ(eiq): EID`
+- [ ] Реализовать `stringifySEQL(eid): EIQ`
+- [ ] Реализовать `parseSEQL(eiq): EID`
 - [ ] Добавить версионирование в EIQ
 - [ ] Написать тесты на детерминированность
 
@@ -585,7 +585,7 @@ Pipeline: EIQ → parse() → EID → resolve() → Element[]
 
 ### Phase 4: Player Integration
 
-- [ ] Реализовать `parseEIQ()` в player
+- [ ] Реализовать `parseSEQL()` в player
 - [ ] Resolve с EID из analytics
 - [ ] Рендеринг тепловой карты
 
@@ -603,12 +603,12 @@ Pipeline: EIQ → parse() → EID → resolve() → Element[]
 // ===== 1. rrweb Recording =====
 const eid = generateEID(element);
 snapshot.nodes[123].eid = eid; // Full EID
-snapshot.nodes[123].eiq = stringifyEID(eid); // Optional
+snapshot.nodes[123].eiq = stringifySEQL(eid); // Optional
 
 // ===== 2. Analytics =====
 element.addEventListener('click', () => {
   const eid = getEIDForElement(element);
-  const eiq = stringifyEID(eid);
+  const eiq = stringifySEQL(eid);
   
   gtag('event', 'click', {
     element_identity: eiq // "footer > ul > li#3 > svg > rect"
@@ -623,7 +623,7 @@ const grouped = groupBy(analytics, event => event.element_identity);
 
 // ===== 4. Player Replay =====
 for (const [eiq, stats] of Object.entries(grouped)) {
-  const eid = parseEIQ(eiq); // EIQ → EID
+  const eid = parseSEQL(eiq); // EIQ → EID
   const elements = resolve(eid, rrdom); // EID → Element[]
   
   highlightElement(elements[0], stats);

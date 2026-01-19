@@ -20,6 +20,7 @@ export type {
   TargetNode,
   EIDMeta,
   FallbackRules,
+  SeqlSelector,
 } from './types';
 
 // Semantic types
@@ -30,7 +31,6 @@ export type {
   ConstraintType,
   Constraint,
   UniquenessConstraint,
-  VisibilityConstraint,
   TextProximityConstraint,
   PositionConstraint,
 } from './types';
@@ -79,8 +79,8 @@ export {
 // Validation
 export { validateEID, isEID } from './utils';
 
-// EIQ Parser
-export { parseEIQ, stringifyEID, generateEIQ, resolveEIQ } from './utils';
+// SEQL Selector Parser
+export { parseSEQL, stringifySEQL, generateSEQL, resolveSEQL } from './utils';
 
 // Text processing
 export { normalizeText } from './utils';

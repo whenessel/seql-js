@@ -2,6 +2,13 @@ import type { ElementSemantics } from './semantics';
 import type { Constraint } from './constraints';
 
 /**
+ * SEQL Selector - canonical string representation of ElementIdentity
+ * Similar to CSS Selector or XPath, but based on semantic features
+ * @example "v1: footer > div.container > ul > li#3 > svg > rect"
+ */
+export type SeqlSelector = string;
+
+/**
  * EID version string
  */
 export type EIDVersion = '1.0';

@@ -6,7 +6,7 @@ import { ATTRIBUTE_PRIORITY, IGNORED_ATTRIBUTES } from './constants';
 import { cleanAttributeValue } from './attribute-cleaner';
 
 /**
- * Options for EIQ stringification
+ * Options for SEQL Selector stringification
  */
 export interface StringifyOptions {
   /** Maximum number of classes to include per node (default: 2) */
@@ -19,7 +19,7 @@ export interface StringifyOptions {
   maxTextLength?: number;
   /** Simplify target node by removing redundant info (default: true) */
   simplifyTarget?: boolean;
-  /** Include resolution constraints in EIQ string (default: true) */
+  /** Include resolution constraints in SEQL Selector (default: true) */
   includeConstraints?: boolean;
 }
 
@@ -39,7 +39,7 @@ const DEFAULT_STRINGIFY_OPTIONS: Required<StringifyOptions> = {
  * Gets attribute priority for sorting
  */
 function getAttributePriority(attrName: string): number {
-  // ID is highest priority for EIQ
+  // ID is highest priority for SEQL Selector
   if (attrName === 'id') return 101;
 
   // Exact match
@@ -84,27 +84,27 @@ function isTextPII(text: string): boolean {
 }
 
 /**
- * Converts EID to canonical EIQ string representation
+ * Converts EID to canonical SEQL Selector string representation
  *
- * Requirements (per EIQ_SPECIFICATION_v1.0.md):
- * - Deterministic (same EID → same EIQ)
- * - Canonical (one EID → one EIQ)
+ * Requirements (per SEQL_SPECIFICATION_v1.0.md):
+ * - Deterministic (same EID → same SEQL Selector)
+ * - Canonical (one EID → one SEQL Selector)
  * - Versioned (includes protocol version)
  * - PII-safe (no personal data)
  * - Sorted attributes and classes
  *
  * @param eid - Element Identity Descriptor
  * @param options - Optional stringify options
- * @returns Element Identity Query (canonical string)
+ * @returns SEQL Selector (canonical string)
  *
  * @example
  * ```typescript
  * const eid = generateEID(element);
- * const eiq = stringifyEID(eid);
+ * const selector = stringifySEQL(eid);
  * // "v1: footer :: ul.menu > li#3 > a[href="/contact"]"
  * ```
  */
-export function stringifyEID(eid: ElementIdentity, options?: StringifyOptions): string {
+export function stringifySEQL(eid: ElementIdentity, options?: StringifyOptions): string {
   const opts = { ...DEFAULT_STRINGIFY_OPTIONS, ...options };
 
   const version = `v${eid.version}`;
@@ -121,41 +121,41 @@ export function stringifyEID(eid: ElementIdentity, options?: StringifyOptions): 
 }
 
 /**
- * Parses EIQ string back to EID structure
+ * Parses SEQL Selector back to EID structure
  *
- * @param eiq - Element Identity Query (string)
+ * @param selector - SEQL Selector string (similar to CSS Selector)
  * @returns Element Identity Descriptor
- * @throws {Error} if EIQ is malformed or version unsupported
+ * @throws {Error} if SEQL Selector is malformed or version unsupported
  *
  * @example
  * ```typescript
- * const eiq = "v1: footer :: ul > li#3 > a[href='/contact']";
- * const eid = parseEIQ(eiq);
+ * const selector = "v1: footer :: ul > li#3 > a[href='/contact']";
+ * const eid = parseSEQL(selector);
  * const elements = resolve(eid, document);
  * ```
  */
-export function parseEIQ(eiq: string): ElementIdentity {
+export function parseSEQL(selector: string): ElementIdentity {
   // Trim whitespace
-  eiq = eiq.trim();
+  selector = selector.trim();
 
   // Parse version
-  const versionMatch = eiq.match(/^v(\d+(?:\.\d+)?)\s*:\s*/);
+  const versionMatch = selector.match(/^v(\d+(?:\.\d+)?)\s*:\s*/);
   if (!versionMatch) {
-    throw new Error('Invalid EIQ: missing version prefix (expected "v1:")');
+    throw new Error('Invalid SEQL Selector: missing version prefix (expected "v1:")');
   }
 
   const version = versionMatch[1];
   if (version !== '1.0' && version !== '1') {
-    throw new Error(`Unsupported EIQ version: v${version} (only v1.0 is supported)`);
+    throw new Error(`Unsupported SEQL Selector version: v${version} (only v1.0 is supported)`);
   }
 
   // Remove version prefix
-  let remaining = eiq.slice(versionMatch[0].length);
+  let remaining = selector.slice(versionMatch[0].length);
 
   // Parse anchor (up to ::)
   const anchorMatch = remaining.match(/^(.+?)\s*::\s*/);
   if (!anchorMatch) {
-    throw new Error('Invalid EIQ: missing anchor separator "::"');
+    throw new Error('Invalid SEQL Selector: missing anchor separator "::"');
   }
 
   const anchorStr = anchorMatch[1].trim();
@@ -171,10 +171,10 @@ export function parseEIQ(eiq: string): ElementIdentity {
   }
 
   // Split by > to get path nodes and target
-  const nodes = remaining.split(/\s*>\s*/).map(n => n.trim()).filter(n => n);
+  const nodes = remaining.split(/\s*>\s*/).map((n: string) => n.trim()).filter((n: string) => n);
 
   if (nodes.length === 0) {
-    throw new Error('Invalid EIQ: missing target node');
+    throw new Error('Invalid SEQL Selector: missing target node');
   }
 
   // Last node is target, rest are path
@@ -183,7 +183,7 @@ export function parseEIQ(eiq: string): ElementIdentity {
 
   // Parse nodes
   const anchor = parseNode(anchorStr, true) as AnchorNode;
-  const path = pathStrs.map(str => parseNode(str, false) as PathNode);
+  const path = pathStrs.map((str: string) => parseNode(str, false) as PathNode);
   const target = parseNode(targetStr, false) as TargetNode;
 
   // Parse constraints
@@ -204,8 +204,8 @@ export function parseEIQ(eiq: string): ElementIdentity {
     meta: {
       confidence: 0.7,
       generatedAt: new Date().toISOString(),
-      generator: `eiq-parser@1.0`,
-      source: 'eiq-string',
+      generator: `seql-parser@1.0`,
+      source: 'seql-string',
       degraded: false,
     },
   };
@@ -228,7 +228,7 @@ function stringifyNode(
   const attrStrings: string[] = [];
   const rawAttributes = { ...semantics.attributes };
 
-  // In EIQ, ID is just another attribute [id="..."]
+  // In SEQL Selector, ID is just another attribute [id="..."]
   if (semantics.id) {
     rawAttributes.id = semantics.id;
   }
@@ -261,7 +261,7 @@ function stringifyNode(
   // Pick top N attributes
   const topAttrs = processedAttrs.slice(0, options.maxAttributes);
 
-  // Sort selected attributes ALPHABETICALLY for EIQ canonical format
+  // Sort selected attributes ALPHABETICALLY for SEQL Selector canonical format
   topAttrs.sort((a, b) => a.name.localeCompare(b.name));
 
   for (const { name, value } of topAttrs) {
@@ -318,7 +318,7 @@ function stringifyNode(
 
   // 3. Add position (nth-child)
   if ('nthChild' in node && node.nthChild) {
-    // EIQ position is #N
+    // SEQL Selector position is #N
     const hasStrongIdentifier = !!semantics.id ||
       (semantics.attributes && Object.keys(semantics.attributes).some(isUniqueAttribute));
 
@@ -347,11 +347,6 @@ function stringifyConstraints(eid: ElementIdentity): string {
     switch (constraint.type) {
       case 'uniqueness':
         pairs.push('unique=true');
-        break;
-      case 'visibility':
-        if (constraint.params && constraint.params.required) {
-          pairs.push('visible=true');
-        }
         break;
       case 'position':
         if (constraint.params && constraint.params.strategy) {
@@ -421,7 +416,7 @@ function parseNode(nodeStr: string, isAnchor: boolean): AnchorNode | PathNode {
     }
 
     if (Object.keys(attributes).length > 0) {
-      // Special handling for pseudo-attributes in EIQ
+      // Special handling for pseudo-attributes in SEQL Selector
       if (attributes.text) {
         semantics.text = {
           raw: attributes.text,
@@ -505,17 +500,6 @@ function parseConstraints(constraintsStr: string): any[] {
           });
         }
         break;
-      case 'visible':
-        if (value === 'true') {
-          constraints.push({
-            type: 'visibility',
-            params: {
-              required: true,
-            },
-            priority: 80,
-          });
-        }
-        break;
       case 'pos':
         constraints.push({
           type: 'position',
@@ -575,7 +559,7 @@ function splitAttributes(attrsStr: string): string[] {
 }
 
 /**
- * Escape attribute value for EIQ string
+ * Escape attribute value for SEQL Selector
  */
 function escapeAttributeValue(value: string): string {
   return value
@@ -586,7 +570,7 @@ function escapeAttributeValue(value: string): string {
 }
 
 /**
- * Unescape attribute value from EIQ string
+ * Unescape attribute value from SEQL Selector
  * Must process in reverse order to avoid double-unescaping
  */
 function unescapeAttributeValue(value: string): string {
@@ -603,26 +587,26 @@ function unescapeAttributeValue(value: string): string {
 // ============================================================================
 
 /**
- * Generate EIQ string directly from DOM element
+ * Generate SEQL Selector directly from DOM element
  *
- * This is a convenience function that combines generateEID() and stringifyEID().
+ * This is a convenience function that combines generateEID() and stringifySEQL().
  *
  * @param element - Target DOM element
  * @param generatorOptions - Optional generation options
  * @param stringifyOptions - Optional stringify options
- * @returns Element Identity Query (canonical string)
+ * @returns SEQL Selector (canonical string)
  *
  * @example
  * ```typescript
  * const button = document.querySelector('.submit-button');
- * const eiq = generateEIQ(button);
+ * const selector = generateSEQL(button);
  * // "v1: form :: div.actions > button[type="submit",text="Submit Order"]"
  *
  * // Send to analytics
- * gtag('event', 'click', { element_identity: eiq });
+ * gtag('event', 'click', { element_selector: selector });
  * ```
  */
-export function generateEIQ(
+export function generateSEQL(
   element: Element,
   generatorOptions?: GeneratorOptions,
   stringifyOptions?: StringifyOptions
@@ -631,41 +615,41 @@ export function generateEIQ(
   if (!eid) {
     return null;
   }
-  return stringifyEID(eid, stringifyOptions);
+  return stringifySEQL(eid, stringifyOptions);
 }
 
 /**
- * Resolve EIQ string directly to DOM elements
+ * Resolve SEQL Selector directly to DOM elements
  *
- * This is a convenience function that combines parseEIQ() and resolve().
+ * This is a convenience function that combines parseSEQL() and resolve().
  *
- * @param eiq - Element Identity Query (string)
+ * @param selector - SEQL Selector string
  * @param root - Root element or document to search in
  * @param options - Optional resolver options
  * @returns Array of matched elements (empty if not found)
  *
  * @example
  * ```typescript
- * // Parse EIQ from analytics
- * const eiq = "v1: form :: button.submit";
- * const elements = resolveEIQ(eiq, document);
+ * // Parse SEQL Selector from analytics
+ * const selector = "v1: form :: button.submit";
+ * const elements = resolveSEQL(selector, document);
  *
  * if (elements.length > 0) {
  *   highlightElement(elements[0]);
  * }
  * ```
  */
-export function resolveEIQ(
-  eiq: string,
+export function resolveSEQL(
+  selector: string,
   root: Document | Element,
   options?: ResolverOptions
 ): Element[] {
   try {
-    const eid = parseEIQ(eiq);
+    const eid = parseSEQL(selector);
     const result = resolveInternal(eid, root, options);
     return result.elements || [];
   } catch (error) {
-    console.error('Failed to resolve EIQ:', error);
+    console.error('Failed to resolve SEQL Selector:', error);
     return [];
   }
 }

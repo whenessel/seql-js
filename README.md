@@ -10,7 +10,7 @@ Semantic Element Query Language (SEQL) - Stable DOM element identification for w
 - **Resilient**: Designed to be stable across UI updates and DOM changes.
 - **Dual Format**: 
   - **EID** (JSON): Structured descriptor for internal operations and high precision.
-  - **EIQ** (String): Canonical string format for easy transport (analytics) and storage.
+  - **SEQL Selector** (String): Canonical string format for easy transport (analytics) and storage.
 - **Deterministic**: Guaranteed same output for the same DOM state.
 - **Zero Dependencies**: Tree-shakeable and lightweight.
 - **TypeScript Native**: Written in TypeScript with full type definitions.
@@ -30,23 +30,23 @@ npm install seql-js
 
 ## Quick Start
 
-### 1. EIQ String Format (Recommended for Analytics)
+### 1. SEQL Selector Format (Recommended for Analytics)
 
-EIQ strings are compact, URL-safe, and perfect for sending to analytics platforms.
+SEQL Selectors are compact, URL-safe strings perfect for sending to analytics platforms.
 
 ```typescript
-import { generateEIQ, resolveEIQ } from 'seql-js';
+import { generateSEQL, resolveSEQL } from 'seql-js';
 
-// 1. Generate EIQ from a DOM element
+// 1. Generate SEQL Selector from a DOM element
 const button = document.querySelector('.submit-button');
-const eiq = generateEIQ(button);
+const selector = generateSEQL(button);
 // Result: "v1: form :: div.actions > button[type="submit",text="Order Now"]"
 
 // 2. Send to your analytics provider
-gtag('event', 'click', { element_identity: eiq });
+gtag('event', 'click', { element_selector: selector });
 
-// 3. Later: Resolve EIQ back to the original element
-const elements = resolveEIQ(eiq, document);
+// 3. Later: Resolve SEQL Selector back to the original element
+const elements = resolveSEQL(selector, document);
 // Returns an array: [<button>...]
 ```
 
@@ -72,15 +72,15 @@ if (result.status === 'success') {
 
 ## Concepts
 
-### EID vs EIQ
+### EID vs SEQL Selector
 
 - **EID** (Element Identity Descriptor): A detailed JSON structure describing the **Anchor**, **Path**, **Target**, and **Constraints**.
-- **EIQ** (Element Identity Query): A canonical string representation of an EID.
+- **SEQL Selector**: A canonical string representation of an EID, similar to CSS Selector or XPath.
 
 ```text
 Generation: Element → generateEID() → EID (JSON)
-Stringify:  EID → stringifyEID() → EIQ (string)
-Parse:      EIQ → parseEIQ() → EID (JSON)
+Stringify:  EID → stringifySEQL() → SEQL Selector (string)
+Parse:      SEQL Selector → parseSEQL() → EID (JSON)
 Resolution: EID → resolve() → ResolveResult
 ```
 
@@ -93,19 +93,19 @@ Resolution: EID → resolve() → ResolveResult
 
 ## API Reference
 
-### EIQ Functions
+### SEQL Selector Functions
 
-#### `generateEIQ(element, generatorOptions?, stringifyOptions?)`
-Convenience function: `generateEID` + `stringifyEID`. Returns a string or `null`.
+#### `generateSEQL(element, generatorOptions?, stringifyOptions?)`
+Convenience function: `generateEID` + `stringifySEQL`. Returns a string or `null`.
 
-#### `resolveEIQ(eiq, root, options?)`
-Convenience function: `parseEIQ` + `resolve`. Returns `Element[]`.
+#### `resolveSEQL(selector, root, options?)`
+Convenience function: `parseSEQL` + `resolve`. Returns `Element[]`.
 
-#### `parseEIQ(eiq)`
-Parses an EIQ string into an `ElementIdentity` object.
+#### `parseSEQL(selector)`
+Parses a SEQL Selector into an `ElementIdentity` object.
 
-#### `stringifyEID(eid, options?)`
-Converts an `ElementIdentity` object into a canonical EIQ string.
+#### `stringifySEQL(eid, options?)`
+Converts an `ElementIdentity` object into a canonical SEQL Selector.
 
 ### Core Functions
 

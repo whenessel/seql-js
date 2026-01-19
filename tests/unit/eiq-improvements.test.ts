@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
-  generateEIQ,
-  stringifyEID,
+  generateSEQL,
+  stringifySEQL,
   type ElementIdentity,
 } from '../../src';
 
@@ -32,7 +32,7 @@ describe('EIQ Improvements', () => {
       meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false }
     };
 
-    const eiq = stringifyEID(eid);
+    const eiq = stringifySEQL(eid);
     
     // CURRENT BEHAVIOR: v1.0: body :: a#booking-btn-123
     // DESIRED BEHAVIOR: should include href (cleaned) and text, because they are semantic
@@ -59,7 +59,7 @@ describe('EIQ Improvements', () => {
       meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false }
     };
 
-    const eiq = stringifyEID(eid);
+    const eiq = stringifySEQL(eid);
     
     // mt-4, flex, items-center are utility classes and should be filtered
     expect(eiq).toContain('.btn-primary');
@@ -92,7 +92,7 @@ describe('EIQ Improvements', () => {
 
     // If maxAttributes is 2, it should pick data-testid and aria-label (highest priority),
     // then sort them alphabetically: aria-label, data-testid
-    const eiq = stringifyEID(eid, { maxAttributes: 2 });
+    const eiq = stringifySEQL(eid, { maxAttributes: 2 });
     
     expect(eiq).toContain('aria-label="Email Address"');
     expect(eiq).toContain('data-testid="login-email"');

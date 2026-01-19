@@ -1,8 +1,8 @@
-# Element Identity Query (EIQ) Specification v1.0
+# SEQL Selector (EIQ) Specification v1.0
 
 ## 🎯 Назначение
 
-**EIQ (Element Identity Query)** — канонический строковый формат для передачи и хранения идентификаторов элементов между системами.
+**EIQ (SEQL Selector)** — канонический строковый формат для передачи и хранения идентификаторов элементов между системами.
 
 **Ключевой принцип**:
 ```
@@ -452,8 +452,8 @@ EIQ должен быть **строго детерминированным**. �
 ```typescript
 // Проверка детерминированности
 const eid = generateEID(element);
-const eiq1 = stringifyEID(eid);
-const eiq2 = stringifyEID(eid);
+const eiq1 = stringifySEQL(eid);
+const eiq2 = stringifySEQL(eid);
 
 assert(eiq1 === eiq2); // ✅ Всегда true
 ```
@@ -629,7 +629,7 @@ v1: form[id="login"] :: fieldset > input[name="password",type="password"]
 ### EID → EIQ (stringify)
 
 ```typescript
-function stringifyEID(eid: ElementIdentityDescriptor): ElementIdentityQuery {
+function stringifySEQL(eid: ElementIdentityDescriptor): ElementIdentityQuery {
   const version = `v${eid.version.split('.')[0]}`;
   
   // Anchor
@@ -691,7 +691,7 @@ function buildNode(node: NodeDescriptor): string {
 ### EIQ → EID (parse)
 
 ```typescript
-function parseEIQ(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
+function parseSEQL(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
   // 1. Extract version
   const [version, rest] = eiq.split(':', 2);
   if (!version.startsWith('v')) {
@@ -728,7 +728,7 @@ function parseEIQ(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
     fallback: extractFallback(constraints),
     meta: {
       generatedAt: new Date().toISOString(),
-      source: 'eiq-parser'
+      source: 'seql-parser'
     }
   };
 }

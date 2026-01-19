@@ -7,6 +7,7 @@ export type {
   TargetNode,
   EIDMeta,
   FallbackRules,
+  SeqlSelector,
 } from './eid';
 
 // Semantic types
@@ -21,7 +22,6 @@ export type {
   ConstraintType,
   Constraint,
   UniquenessConstraint,
-  VisibilityConstraint,
   TextProximityConstraint,
   PositionConstraint,
 } from './constraints';

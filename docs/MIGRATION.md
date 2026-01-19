@@ -1,11 +1,54 @@
-# Migration Guide: v0.x DSL → v1.0 EID/EIQ
+# Migration Guide: v0.x DSL → v1.0 EID → v1.1 SEQL Selector
 
-## Overview
+## Version 1.1 Changes (Latest)
 
-Version 1.0 introduces a major terminology change from "DSL" to "EID/EIQ" to better represent the library's purpose:
+### Terminology Update: EIQ → SEQL Selector
+
+Version 1.1 renames the string format from "EIQ" to "SEQL Selector" for better alignment with the library name and improved clarity.
+
+| v1.0 (Old) | v1.1 (New) | Description |
+|------------|------------|-------------|
+| `parseEIQ()` | `parseSEQL()` | Parse string to EID |
+| `stringifyEID()` | `stringifySEQL()` | Stringify EID to string |
+| `generateEIQ()` | `generateSEQL()` | Convenience: generate + stringify |
+| `resolveEIQ()` | `resolveSEQL()` | Convenience: parse + resolve |
+| `ElementIdentityQuery` type | `SeqlSelector` type | TypeScript type for selector string |
+
+**Migration:**
+
+```typescript
+// Old (v1.0)
+import { generateEIQ, resolveEIQ, parseEIQ, stringifyEID } from 'seql-js';
+const eiq = generateEIQ(element);
+const elements = resolveEIQ(eiq, document);
+
+// New (v1.1)
+import { generateSEQL, resolveSEQL, parseSEQL, stringifySEQL } from 'seql-js';
+const selector = generateSEQL(element);
+const elements = resolveSEQL(selector, document);
+```
+
+**Automated Replacement:**
+```bash
+# Find and replace in your codebase
+find src -type f -name "*.ts" -exec sed -i '' 's/parseEIQ/parseSEQL/g' {} \;
+find src -type f -name "*.ts" -exec sed -i '' 's/stringifyEID/stringifySEQL/g' {} \;
+find src -type f -name "*.ts" -exec sed -i '' 's/generateEIQ/generateSEQL/g' {} \;
+find src -type f -name "*.ts" -exec sed -i '' 's/resolveEIQ/resolveSEQL/g' {} \;
+find src -type f -name "*.ts" -exec sed -i '' 's/ElementIdentityQuery/SeqlSelector/g' {} \;
+find src -type f -name "*.ts" -exec sed -i '' 's/\beiq\b/selector/g' {} \;
+```
+
+---
+
+## Version 1.0 Changes
+
+### Overview
+
+Version 1.0 introduces a major terminology change from "DSL" to "EID/SEQL Selector" to better represent the library's purpose:
 
 - **EID** (Element Identity Descriptor): Internal structured JSON format
-- **EIQ** (Element Identity Query): External string format for transport _(coming in future release)_
+- **SEQL Selector**: External string format for transport (similar to CSS Selector or XPath)
 
 This migration guide helps you upgrade from v0.x to v1.0.
 

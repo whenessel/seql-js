@@ -49,13 +49,13 @@ export { calculateConfidence, calculateElementScore } from './scorer';
 // Validation
 export { validateEID, isEID } from './validator';
 
-// EIQ Parser
+// SEQL Selector Parser
 export {
-  parseEIQ,
-  stringifyEID,
-  generateEIQ,
-  resolveEIQ
-} from './eiq-parser';
+  parseSEQL,
+  stringifySEQL,
+  generateSEQL,
+  resolveSEQL
+} from './seql-parser';
 
 // Cache
 export {

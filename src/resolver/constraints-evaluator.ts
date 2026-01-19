@@ -13,12 +13,6 @@ export class ConstraintsEvaluator {
    */
   applyConstraint(candidates: Element[], constraint: Constraint): Element[] {
     switch (constraint.type) {
-      case 'visibility':
-        return this.applyVisibility(
-          candidates,
-          constraint.params as { required: boolean },
-        );
-
       case 'text-proximity':
         return this.applyTextProximity(
           candidates,
@@ -35,39 +29,6 @@ export class ConstraintsEvaluator {
       default:
         // Uniqueness doesn't filter, it's handled by the resolver
         return candidates;
-    }
-  }
-
-  /**
-   * Applies visibility constraint
-   */
-  private applyVisibility(
-    candidates: Element[],
-    params: { required: boolean },
-  ): Element[] {
-    if (!params.required) return candidates;
-
-    return candidates.filter((el) => this.isVisible(el));
-  }
-
-  /**
-   * Checks if element is visible
-   */
-  private isVisible(element: Element): boolean {
-    const doc = element.ownerDocument;
-    if (!doc?.defaultView) return true;
-
-    try {
-      const style = doc.defaultView.getComputedStyle(element);
-
-      return (
-        style.display !== 'none' &&
-        style.visibility !== 'hidden' &&
-        style.opacity !== '0'
-      );
-    } catch {
-      // getComputedStyle may fail in some contexts
-      return true;
     }
   }
 

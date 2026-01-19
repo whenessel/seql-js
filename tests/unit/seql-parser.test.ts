@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
-  parseEIQ,
-  stringifyEID,
-  generateEIQ,
-  resolveEIQ,
+  parseSEQL,
+  stringifySEQL,
+  generateSEQL,
+  resolveSEQL,
   generateEID,
   type ElementIdentity,
 } from '../../src';
 
 describe('EIQ Parser', () => {
-  describe('stringifyEID', () => {
+  describe('stringifySEQL', () => {
     it('should stringify simple EID to EIQ', () => {
       const eid: ElementIdentity = {
         version: '1.0',
@@ -41,7 +41,7 @@ describe('EIQ Parser', () => {
         },
       };
 
-      const eiq = stringifyEID(eid);
+      const eiq = stringifySEQL(eid);
       expect(eiq).toBe('v1.0: footer :: button');
     });
 
@@ -79,7 +79,7 @@ describe('EIQ Parser', () => {
         },
       };
 
-      const eiq = stringifyEID(eid);
+      const eiq = stringifySEQL(eid);
       expect(eiq).toBe('v1.0: footer.container.dark :: button.btn-primary');
     });
 
@@ -123,7 +123,7 @@ describe('EIQ Parser', () => {
         },
       };
 
-      const eiq = stringifyEID(eid);
+      const eiq = stringifySEQL(eid);
       // Attributes should be sorted alphabetically
       expect(eiq).toBe('v1.0: form[id="checkout",role="form"] :: button[aria-label="Submit",type="submit"]');
     });
@@ -174,7 +174,7 @@ describe('EIQ Parser', () => {
         },
       };
 
-      const eiq = stringifyEID(eid);
+      const eiq = stringifySEQL(eid);
       expect(eiq).toBe('v1.0: footer :: ul > li#3 > a[href="/contact"]');
     });
 
@@ -201,13 +201,6 @@ describe('EIQ Parser', () => {
             },
             priority: 100,
           },
-          {
-            type: 'visibility',
-            params: {
-              required: true,
-            },
-            priority: 80,
-          },
         ],
         fallback: {
           onMultiple: 'best-score',
@@ -223,8 +216,8 @@ describe('EIQ Parser', () => {
         },
       };
 
-      const eiq = stringifyEID(eid);
-      expect(eiq).toBe('v1.0: form :: button {unique=true,visible=true}');
+      const eiq = stringifySEQL(eid);
+      expect(eiq).toBe('v1.0: form :: button {unique=true}');
     });
 
     it('should allow omitting constraints with includeConstraints: false', () => {
@@ -263,7 +256,7 @@ describe('EIQ Parser', () => {
         },
       };
 
-      const eiq = stringifyEID(eid, { includeConstraints: false });
+      const eiq = stringifySEQL(eid, { includeConstraints: false });
       expect(eiq).toBe('v1.0: form :: button');
     });
 
@@ -301,15 +294,15 @@ describe('EIQ Parser', () => {
         },
       };
 
-      const eiq = stringifyEID(eid);
+      const eiq = stringifySEQL(eid);
       expect(eiq).toContain('\\"Hello\\"');
     });
   });
 
-  describe('parseEIQ', () => {
+  describe('parseSEQL', () => {
     it('should parse simple EIQ', () => {
       const eiq = 'v1: footer :: button';
-      const eid = parseEIQ(eiq);
+      const eid = parseSEQL(eiq);
 
       expect(eid.version).toBe('1.0');
       expect(eid.anchor.tag).toBe('footer');
@@ -319,7 +312,7 @@ describe('EIQ Parser', () => {
 
     it('should parse EIQ with classes', () => {
       const eiq = 'v1: footer.container :: button.btn-primary';
-      const eid = parseEIQ(eiq);
+      const eid = parseSEQL(eiq);
 
       expect(eid.anchor.semantics.classes).toEqual(['container']);
       expect(eid.target.semantics.classes).toEqual(['btn-primary']);
@@ -327,7 +320,7 @@ describe('EIQ Parser', () => {
 
     it('should parse EIQ with attributes', () => {
       const eiq = 'v1: form[id="checkout"] :: button[type="submit"]';
-      const eid = parseEIQ(eiq);
+      const eid = parseSEQL(eiq);
 
       expect(eid.anchor.semantics.id).toBe('checkout');
       expect(eid.target.semantics.attributes).toEqual({ type: 'submit' });
@@ -335,7 +328,7 @@ describe('EIQ Parser', () => {
 
     it('should parse EIQ with path', () => {
       const eiq = 'v1: footer :: ul > li#3 > a[href="/contact"]';
-      const eid = parseEIQ(eiq);
+      const eid = parseSEQL(eiq);
 
       expect(eid.path).toHaveLength(2);
       expect(eid.path[0].tag).toBe('ul');
@@ -346,17 +339,16 @@ describe('EIQ Parser', () => {
     });
 
     it('should parse EIQ with constraints', () => {
-      const eiq = 'v1: form :: button {unique=true,visible=true}';
-      const eid = parseEIQ(eiq);
+      const eiq = 'v1: form :: button {unique=true}';
+      const eid = parseSEQL(eiq);
 
-      expect(eid.constraints).toHaveLength(2);
+      expect(eid.constraints).toHaveLength(1);
       expect(eid.constraints[0].type).toBe('uniqueness');
-      expect(eid.constraints[1].type).toBe('visibility');
     });
 
     it('should parse EIQ with multiple attributes', () => {
       const eiq = 'v1: form :: input[name="email",type="email"]';
-      const eid = parseEIQ(eiq);
+      const eid = parseSEQL(eiq);
 
       expect(eid.target.semantics.attributes).toEqual({
         name: 'email',
@@ -366,22 +358,22 @@ describe('EIQ Parser', () => {
 
     it('should throw on missing version', () => {
       const eiq = 'footer :: button';
-      expect(() => parseEIQ(eiq)).toThrow('missing version prefix');
+      expect(() => parseSEQL(eiq)).toThrow('missing version prefix');
     });
 
     it('should throw on missing anchor separator', () => {
       const eiq = 'v1: footer > button';
-      expect(() => parseEIQ(eiq)).toThrow('missing anchor separator');
+      expect(() => parseSEQL(eiq)).toThrow('missing anchor separator');
     });
 
     it('should throw on unsupported version', () => {
       const eiq = 'v2: footer :: button';
-      expect(() => parseEIQ(eiq)).toThrow('Unsupported EIQ version');
+      expect(() => parseSEQL(eiq)).toThrow('Unsupported SEQL Selector version');
     });
 
     it('should handle escaped characters', () => {
       const eiq = 'v1: div :: a[title="Say \\"Hello\\""]';
-      const eid = parseEIQ(eiq);
+      const eid = parseSEQL(eiq);
 
       expect(eid.target.semantics.attributes?.title).toBe('Say "Hello"');
     });
@@ -390,8 +382,8 @@ describe('EIQ Parser', () => {
   describe('Round-trip (stringify → parse → stringify)', () => {
     it('should maintain same EIQ after round-trip', () => {
       const original = 'v1: footer :: ul > li#3 > a[href="/contact"]';
-      const eid = parseEIQ(original);
-      const stringified = stringifyEID(eid);
+      const eid = parseSEQL(original);
+      const stringified = stringifySEQL(eid);
 
       // Version format might differ (v1 vs v1.0)
       expect(stringified.replace('v1.0', 'v1')).toBe(original);
@@ -399,22 +391,22 @@ describe('EIQ Parser', () => {
 
     it('should maintain classes after round-trip', () => {
       const original = 'v1: footer.container :: button.btn-primary';
-      const eid = parseEIQ(original);
-      const stringified = stringifyEID(eid);
+      const eid = parseSEQL(original);
+      const stringified = stringifySEQL(eid);
 
       expect(stringified.replace('v1.0', 'v1')).toBe(original);
     });
 
     it('should maintain complex structure after round-trip', () => {
       const original = 'v1: form[id="login"] :: div.field-container > input[name="email",type="email"]';
-      const eid = parseEIQ(original);
-      const stringified = stringifyEID(eid);
+      const eid = parseSEQL(original);
+      const stringified = stringifySEQL(eid);
 
       expect(stringified.replace('v1.0', 'v1')).toBe(original);
     });
   });
 
-  describe('generateEIQ (facade)', () => {
+  describe('generateSEQL (facade)', () => {
     it('should generate EIQ from DOM element', () => {
       const dom = new JSDOM(`
         <!DOCTYPE html>
@@ -428,7 +420,7 @@ describe('EIQ Parser', () => {
       `);
 
       const button = dom.window.document.querySelector('button')!;
-      const eiq = generateEIQ(button);
+      const eiq = generateSEQL(button);
 
       expect(eiq).toBeTruthy();
       expect(eiq).toContain('v1');
@@ -441,13 +433,13 @@ describe('EIQ Parser', () => {
       const body = dom.window.document.body;
 
       // Body itself might not generate a valid EID depending on options
-      const eiq = generateEIQ(body);
+      const eiq = generateSEQL(body);
       // Either returns string or null is acceptable
       expect(eiq === null || typeof eiq === 'string').toBe(true);
     });
   });
 
-  describe('resolveEIQ (facade)', () => {
+  describe('resolveSEQL (facade)', () => {
     it('should resolve EIQ to DOM elements', () => {
       const dom = new JSDOM(`
         <!DOCTYPE html>
@@ -461,7 +453,7 @@ describe('EIQ Parser', () => {
       `);
 
       const eiq = 'v1: footer :: button';
-      const elements = resolveEIQ(eiq, dom.window.document);
+      const elements = resolveSEQL(eiq, dom.window.document);
 
       expect(elements.length).toBeGreaterThan(0);
       expect(elements[0].tagName.toLowerCase()).toBe('button');
@@ -471,7 +463,7 @@ describe('EIQ Parser', () => {
       const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
 
       const eiq = 'invalid-eiq-string';
-      const elements = resolveEIQ(eiq, dom.window.document);
+      const elements = resolveSEQL(eiq, dom.window.document);
 
       expect(elements).toEqual([]);
     });
@@ -480,13 +472,13 @@ describe('EIQ Parser', () => {
       const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
 
       const eiq = 'v1: footer :: button.nonexistent';
-      const elements = resolveEIQ(eiq, dom.window.document);
+      const elements = resolveSEQL(eiq, dom.window.document);
 
       expect(elements).toEqual([]);
     });
   });
 
-  describe('Integration: generateEIQ → resolveEIQ', () => {
+  describe('Integration: generateSEQL → resolveSEQL', () => {
     it('should round-trip element through EIQ', () => {
       const dom = new JSDOM(`
         <!DOCTYPE html>
@@ -504,11 +496,11 @@ describe('EIQ Parser', () => {
       `);
 
       const link = dom.window.document.querySelector('a[href="/contact"]')!;
-      const eiq = generateEIQ(link);
+      const eiq = generateSEQL(link);
 
       expect(eiq).toBeTruthy();
 
-      const resolved = resolveEIQ(eiq!, dom.window.document);
+      const resolved = resolveSEQL(eiq!, dom.window.document);
       expect(resolved.length).toBeGreaterThan(0);
       expect(resolved[0].getAttribute('href')).toBe('/contact');
     });

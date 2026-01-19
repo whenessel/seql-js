@@ -583,7 +583,7 @@ v1: iframe[id="embed"] :: button
 ```javascript
 // Use EIQ for stable selectors
 const eiq = 'v1: form :: button[type="submit"]';
-const eid = parseEIQ(eiq);
+const eid = parseSEQL(eiq);
 const selector = generateCSSSelector(eid);
 
 cy.get(selector).click();
@@ -595,12 +595,12 @@ cy.get(selector).click();
 // Generate EIQ during recording
 const eiq = await page.evaluate((el) => {
   const eid = generateEID(el);
-  return stringifyEID(eid);
+  return stringifySEQL(eid);
 }, element);
 
 // Store in test
 test('submit form', async ({ page }) => {
-  const eid = parseEIQ('v1: form :: button[type="submit"]');
+  const eid = parseSEQL('v1: form :: button[type="submit"]');
   await page.click(await resolveSelector(eid));
 });
 ```

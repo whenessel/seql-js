@@ -167,12 +167,6 @@ export class FallbackHandler {
     let score = 0;
     let maxScore = 0;
 
-    // Visibility boost (highest priority but non-exclusive)
-    maxScore += 0.4;
-    if (this.isVisible(element)) {
-      score += 0.4;
-    }
-
     // ID match (highest value)
     if (targetSemantics.id) {
       maxScore += 0.3;
@@ -227,35 +221,5 @@ export class FallbackHandler {
 
     // Normalize score if maxScore > 0
     return maxScore > 0 ? score / maxScore : 0;
-  }
-
-  /**
-   * Checks if element is visible
-   */
-  private isVisible(element: Element): boolean {
-    const htmlEl = element as HTMLElement;
-
-    // Check inline styles first (more reliable in JSDOM)
-    if (htmlEl.style) {
-      if (htmlEl.style.display === 'none') return false;
-      if (htmlEl.style.visibility === 'hidden') return false;
-      if (htmlEl.style.opacity === '0') return false;
-    }
-
-    const doc = element.ownerDocument;
-    if (!doc?.defaultView) return true;
-
-    try {
-      const style = doc.defaultView.getComputedStyle(element);
-
-      return (
-        style.display !== 'none' &&
-        style.visibility !== 'hidden' &&
-        style.opacity !== '0'
-      );
-    } catch {
-      // getComputedStyle may fail in some contexts
-      return true;
-    }
   }
 }

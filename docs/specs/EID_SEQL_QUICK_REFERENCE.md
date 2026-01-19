@@ -11,7 +11,7 @@
 └─────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────┐
-│  EIQ = Element Identity Query                       │
+│  EIQ = SEQL Selector                       │
 │  Type: Canonical string                             │
 │  Role: Transport Format, Human Interface            │
 │  Usage: Between systems (GA, storage, aggregation)  │
@@ -82,10 +82,10 @@ eiq2 = "footer > ul"; // ← для одного EID
 
 ```typescript
 // Stringify
-function stringifyEID(eid: EID): EIQ;
+function stringifySEQL(eid: EID): EIQ;
 
 // Parse
-function parseEIQ(eiq: EIQ): EID;
+function parseSEQL(eiq: EIQ): EID;
 
 // Resolve (только EID!)
 function resolve(eid: EID, root: Document): Element[];
@@ -97,12 +97,12 @@ function resolve(eid: EID, root: Document): Element[];
 ```typescript
 const eid = generateEID(element);
 node.eid = eid; // Full
-node.eiq = stringifyEID(eid); // Optional
+node.eiq = stringifySEQL(eid); // Optional
 ```
 
 ### Analytics
 ```typescript
-const eiq = stringifyEID(eid);
+const eiq = stringifySEQL(eid);
 gtag('event', 'click', { element_identity: eiq });
 ```
 
@@ -114,7 +114,7 @@ const grouped = groupBy(events, e => e.element_identity);
 
 ### Player
 ```typescript
-const eid = parseEIQ(eiq);
+const eid = parseSEQL(eiq);
 const elements = resolve(eid, rrdom);
 highlight(elements[0]);
 ```

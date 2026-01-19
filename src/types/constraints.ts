@@ -4,7 +4,6 @@
  */
 export type ConstraintType =
   | 'uniqueness'
-  | 'visibility'
   | 'text-proximity'
   | 'position';
 
@@ -30,15 +29,6 @@ export interface UniquenessConstraint extends Constraint {
   };
 }
 
-/**
- * Visibility constraint
- */
-export interface VisibilityConstraint extends Constraint {
-  type: 'visibility';
-  params: {
-    required: boolean;
-  };
-}
 
 /**
  * Text proximity constraint (Levenshtein distance)
