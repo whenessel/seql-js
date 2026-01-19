@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { CssGenerator } from '../src/resolver/css-generator';
-import type { DslIdentity, DslSemantics } from '../src/types';
+import { CssGenerator } from '../../src/resolver/css-generator';
+import type { DslIdentity, DslSemantics } from '../../src/types';
 
 describe('CssGenerator Selector Generation', () => {
   const generator = new CssGenerator();

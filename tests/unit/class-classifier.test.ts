@@ -8,7 +8,7 @@ import {
   filterStableClasses,
   filterSemanticClasses,
   scoreClass,
-} from '../src/utils/class-classifier';
+} from '../../src/utils/class-classifier';
 
 describe('ClassClassifier', () => {
   describe('isDynamicClass', () => {

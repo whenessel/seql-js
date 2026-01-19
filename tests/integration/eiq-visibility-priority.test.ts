@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
-import { generateEIQ, parseEIQ, resolveEIQ } from '../src';
+import { generateEIQ, parseEIQ, resolveEIQ } from '../../src';
 
 describe('EIQ Shortening and Visibility Priority', () => {
   it('should not include default constraints in generated EIQ', () => {

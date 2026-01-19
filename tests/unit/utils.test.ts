@@ -4,8 +4,8 @@ import {
   filterClasses,
   isUtilityClass,
   validateEID,
-} from '../src/utils';
-import type { ElementIdentity } from '../src/types';
+} from '../../src/utils';
+import type { ElementIdentity } from '../../src/types';
 
 describe('utils', () => {
   describe('normalizeText', () => {

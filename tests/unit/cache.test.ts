@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { EIDCache, createEIDCache, getGlobalCache, resetGlobalCache } from '../src/utils/eid-cache';
-import type { ElementIdentity } from '../src/types';
-import type { AnchorResult } from '../src/generator/anchor-finder';
-import type { ElementSemantics } from '../src/types';
+import { EIDCache, createEIDCache, getGlobalCache, resetGlobalCache } from '../../src/utils/eid-cache';
+import type { ElementIdentity } from '../../src/types';
+import type { AnchorResult } from '../../src/generator/anchor-finder';
+import type { ElementSemantics } from '../../src/types';
 
 describe('EIDCache', () => {
   let doc: Document;

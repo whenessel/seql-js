@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { generateEID } from '../src/generator';
-import { resolve } from '../src/resolver';
-import { CssGenerator } from '../src/resolver/css-generator';
-import type { ElementIdentity } from '../src/types';
+import { generateEID } from '../../src/generator';
+import { resolve } from '../../src/resolver';
+import { CssGenerator } from '../../src/resolver/css-generator';
+import type { ElementIdentity } from '../../src/types';
 
 describe('resolver', () => {
   let doc: Document;
@@ -36,7 +36,7 @@ describe('resolver', () => {
     });
 
     it('should handle not found with fallback', () => {
-      const dsl: DslIdentity = {
+      const dsl: ElementIdentity = {
         version: '1.0',
         anchor: {
           tag: 'form',

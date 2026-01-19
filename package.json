@@ -44,6 +44,7 @@
   },
   "homepage": "https://github.com/whenessel/seql-js/issues#readme",
   "devDependencies": {
+    "@types/jsdom": "^27.0.0",
     "@vitest/coverage-v8": "^4.0.15",
     "@whenessel/jsdom-extended": "^0.1.2",
     "jsdom": "^27.2.0",

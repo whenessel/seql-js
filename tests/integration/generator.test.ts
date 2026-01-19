@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { generateEID } from '../src/generator';
-import { AnchorFinder } from '../src/generator/anchor-finder';
+import { generateEID } from '../../src/generator';
+import { AnchorFinder } from '../../src/generator/anchor-finder';
 
 describe('generator', () => {
   let doc: Document;

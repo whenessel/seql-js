@@ -1,232 +1,167 @@
 # seql-js
 
-Semantic Element Query Language - Stable DOM element identification for web analytics and session replay.
+Semantic Element Query Language (SEQL) - Stable DOM element identification for web analytics, session replay, and automation.
+
+`seql-js` provides a robust way to identify DOM elements using semantic features rather than brittle CSS paths or XPath. It's designed to survive DOM restructuring, CSS changes, and framework updates.
 
 ## Features
 
-- **Semantic-first**: Uses ARIA, roles, semantic HTML instead of brittle selectors
-- **Stable across changes**: Survives DOM restructuring and CSS changes
-- **Dual format**: Structured EID (internal) + String EIQ (transport) ✅
-- **Zero dependencies**: Tree-shakeable, works in browser and Node.js
-- **TypeScript native**: Full type definitions included
+- **Semantic-first**: Uses ARIA roles, labels, semantic HTML tags, and stable attributes.
+- **Resilient**: Designed to be stable across UI updates and DOM changes.
+- **Dual Format**: 
+  - **EID** (JSON): Structured descriptor for internal operations and high precision.
+  - **EIQ** (String): Canonical string format for easy transport (analytics) and storage.
+- **Deterministic**: Guaranteed same output for the same DOM state.
+- **Zero Dependencies**: Tree-shakeable and lightweight.
+- **TypeScript Native**: Written in TypeScript with full type definitions.
+
+## Requirements
+
+- **Node.js**: v18 or higher.
+- **Package Manager**: Yarn (recommended) or npm.
 
 ## Installation
 
 ```bash
-npm install seql-js
-# or
 yarn add seql-js
+# or
+npm install seql-js
 ```
 
 ## Quick Start
 
-### Option 1: EIQ String Format (Recommended for Analytics)
+### 1. EIQ String Format (Recommended for Analytics)
+
+EIQ strings are compact, URL-safe, and perfect for sending to analytics platforms.
 
 ```typescript
 import { generateEIQ, resolveEIQ } from 'seql-js';
 
-// Generate EIQ string from DOM element
+// 1. Generate EIQ from a DOM element
 const button = document.querySelector('.submit-button');
 const eiq = generateEIQ(button);
-// "v1: form[#checkout] :: div.actions > button.submit"
+// Result: "v1: form :: div.actions > button[type="submit",text="Order Now"]"
 
-// Send to analytics
+// 2. Send to your analytics provider
 gtag('event', 'click', { element_identity: eiq });
 
-// Later: resolve EIQ string back to element
+// 3. Later: Resolve EIQ back to the original element
 const elements = resolveEIQ(eiq, document);
-// [<button class="submit-button">Complete Order</button>]
+// Returns an array: [<button>...]
 ```
 
-### Option 2: EID Structured Format (For Internal Operations)
+### 2. EID Structured Format (Internal Operations)
+
+EID is a rich JSON object containing full semantic metadata and resolution constraints.
 
 ```typescript
 import { generateEID, resolve } from 'seql-js';
 
-// Generate Element Identity Descriptor (JSON)
+// 1. Generate EID (JSON)
 const button = document.querySelector('.submit-button');
 const eid = generateEID(button);
 
-// Resolve EID back to element
-const elements = resolve(eid, document);
-// [<button class="submit-button">Complete Order</button>]
+// 2. Resolve EID
+const result = resolve(eid, document);
+
+if (result.status === 'success') {
+  console.log('Found element:', result.elements[0]);
+  console.log('Confidence score:', result.confidence);
+}
 ```
 
 ## Concepts
 
 ### EID vs EIQ
 
-- **EID** (Element Identity Descriptor): Structured JSON format for internal operations
-- **EIQ** (Element Identity Query): Canonical string format for transport and storage
+- **EID** (Element Identity Descriptor): A detailed JSON structure describing the **Anchor**, **Path**, **Target**, and **Constraints**.
+- **EIQ** (Element Identity Query): A canonical string representation of an EID.
 
-```
-String Format (EIQ):
-  Element → generateEIQ() → "v1: form :: button.submit"
-  "v1: form :: button.submit" → resolveEIQ() → Element[]
-
-Structured Format (EID):
-  Element → generateEID() → EID (JSON)
-  EID (JSON) → resolve() → Element[]
-
-Conversion:
-  EID → stringifyEID() → EIQ string
-  EIQ string → parseEIQ() → EID
+```text
+Generation: Element → generateEID() → EID (JSON)
+Stringify:  EID → stringifyEID() → EIQ (string)
+Parse:      EIQ → parseEIQ() → EID (JSON)
+Resolution: EID → resolve() → ResolveResult
 ```
 
-### Architecture
+### Core Architecture
 
-EID describes **what** an element is semantically:
-- **Anchor**: Semantic root (e.g., `<form>`, `<main>`, ARIA landmarks)
-- **Path**: Semantic traversal from anchor to target
-- **Target**: The element being identified
-- **Constraints**: Disambiguation rules (uniqueness, visibility, etc.)
+1. **Anchor**: A semantic root (e.g., `<form>`, `<main>`, or ARIA landmarks).
+2. **Path**: Semantic traversal from the anchor to the target.
+3. **Target**: The specific element being identified.
+4. **Constraints**: Disambiguation rules (uniqueness, visibility, text proximity).
 
-## API
+## API Reference
 
-### EIQ String Functions (Recommended for Analytics)
+### EIQ Functions
 
-#### `generateEIQ(element, options?)`
+#### `generateEIQ(element, generatorOptions?, stringifyOptions?)`
+Convenience function: `generateEID` + `stringifyEID`. Returns a string or `null`.
 
-Generate EIQ string directly from DOM element. Combines `generateEID()` + `stringifyEID()`.
-
-```typescript
-import { generateEIQ } from 'seql-js';
-
-const button = document.querySelector('.submit');
-const eiq = generateEIQ(button);
-// "v1: form :: div > button.submit"
-
-// Use in analytics
-gtag('event', 'click', { element_identity: eiq });
-```
-
-#### `resolveEIQ(eiq, dom, options?)`
-
-Resolve EIQ string directly to DOM elements. Combines `parseEIQ()` + `resolve()`.
-
-```typescript
-import { resolveEIQ } from 'seql-js';
-
-const eiq = "v1: form :: button.submit";
-const elements = resolveEIQ(eiq, document);
-```
+#### `resolveEIQ(eiq, root, options?)`
+Convenience function: `parseEIQ` + `resolve`. Returns `Element[]`.
 
 #### `parseEIQ(eiq)`
+Parses an EIQ string into an `ElementIdentity` object.
 
-Parse EIQ string to EID structure.
+#### `stringifyEID(eid, options?)`
+Converts an `ElementIdentity` object into a canonical EIQ string.
 
-```typescript
-import { parseEIQ } from 'seql-js';
-
-const eiq = "v1: form :: button.submit";
-const eid = parseEIQ(eiq);
-// Returns ElementIdentity (JSON structure)
-```
-
-#### `stringifyEID(eid)`
-
-Convert EID structure to canonical EIQ string.
-
-```typescript
-import { stringifyEID, generateEID } from 'seql-js';
-
-const eid = generateEID(element);
-const eiq = stringifyEID(eid);
-// "v1: form :: button.submit"
-```
-
-### Core EID Functions
+### Core Functions
 
 #### `generateEID(element, options?)`
+Generates an `ElementIdentity` (EID) from a DOM element.
+- `maxPathDepth`: Default 10.
+- `enableSvgFingerprint`: Default true.
+- `confidenceThreshold`: Default 0.1.
 
-Generate Element Identity Descriptor from a DOM element.
+#### `resolve(eid, root, options?)`
+Resolves an EID back to DOM element(s). Returns a `ResolveResult` object.
+- `status`: `'success' | 'ambiguous' | 'error' | 'degraded-fallback'`.
+- `elements`: `Element[]` of matches.
+- `confidence`: Match confidence score (0-1).
 
-```typescript
-import { generateEID } from 'seql-js';
+### Utilities & Advanced
 
-const button = document.querySelector('.submit');
-const eid = generateEID(button);
-```
+#### `generateEIDBatch(elements, options?)`
+Optimized generation for multiple elements at once.
 
-**Options:**
-- `maxPathDepth`: Maximum path depth (default: 10)
-- `enableSvgFingerprint`: Enable SVG fingerprinting (default: true)
-- `confidenceThreshold`: Minimum confidence threshold (default: 0.1)
-- `fallbackToBody`: Use body as fallback anchor (default: true)
-- `cache`: Optional EIDCache instance
+#### `createEIDCache(options?)` / `getGlobalCache()`
+Manage the LRU cache to improve performance for frequent generations/resolutions.
 
-#### `resolve(eid, dom, options?)`
+## Project Structure
 
-Resolve EID to DOM elements.
+- `src/generator/`: Logic for converting DOM elements into EID JSON.
+- `src/resolver/`: Logic for resolving EID JSON back to DOM elements.
+- `src/types/`: Core type definitions for EIDs, Semantics, and Constraints.
+- `src/utils/`: Shared utilities, constants, and scoring algorithms.
 
-```typescript
-import { resolve } from 'seql-js';
+## Scripts
 
-const elements = resolve(eid, document);
-```
-
-**Options:**
-- `strictMode`: Strict matching mode (default: false)
-- `enableFallback`: Enable fallback resolution (default: true)
-- `maxCandidates`: Maximum candidates to evaluate (default: 20)
-
-### Cache
-
-```typescript
-import { createEIDCache, getGlobalCache } from 'seql-js';
-
-// Create custom cache
-const cache = createEIDCache({ maxSelectorCacheSize: 500 });
-
-// Use global cache
-const globalCache = getGlobalCache();
-```
-
-### Batch Operations
-
-```typescript
-import { generateEIDBatch } from 'seql-js';
-
-const buttons = document.querySelectorAll('button');
-const result = generateEIDBatch(Array.from(buttons));
-
-console.log(`Generated ${result.successful.length} EIDs`);
-console.log(`Failed: ${result.failed.length}`);
-```
+- `yarn build`: Build the library (outputs to `dist/`).
+- `yarn test`: Run all tests using Vitest.
+- `yarn test:watch`: Run tests in watch mode.
+- `yarn test:coverage`: Run tests with coverage report.
+- `yarn types:check`: Run TypeScript type checking.
+- `npx vitest <path>`: Run a specific test file.
 
 ## Documentation
 
-- [Architecture](docs/specs/ARCHITECTURE.md)
-- [Developer Guide](CLAUDE.md)
-- [Specifications](docs/specs/SPECIFICATION.md) _(Russian)_
-
-## Development
-
-```bash
-# Install dependencies
-yarn install
-
-# Build
-yarn build
-
-# Run tests
-yarn test
-
-# Type check
-yarn types:check
-```
+- [Architecture Design](docs/specs/ARCHITECTURE.md)
+- [EID Specification v1.0](docs/specs/SPECIFICATION.md) (Russian)
+- [Developer Guidelines](CLAUDE.md)
+- [Migration Guide](docs/MIGRATION.md)
 
 ## Migrating from v0.x
 
-If you're upgrading from v0.x, note these breaking changes:
-
+If you are upgrading from v0.x, note these breaking changes:
 - `generateDsl()` → `generateEID()`
 - `resolveDsl()` → `resolve()`
 - `DslIdentity` → `ElementIdentity`
 - `DslCache` → `EIDCache`
 - `validateDsl()` → `validateEID()`
 
-See full migration guide in [docs/MIGRATION.md](docs/MIGRATION.md).
+See the full [Migration Guide](docs/MIGRATION.md) for details.
 
 ## License
 

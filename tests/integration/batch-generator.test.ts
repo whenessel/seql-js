@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   generateEIDBatch,
   generateEIDForElements,
-} from '../src/utils/batch-generator';
-import { createEIDCache, resetGlobalCache } from '../src/utils/eid-cache';
+} from '../../src/utils/batch-generator';
+import { createEIDCache, resetGlobalCache } from '../../src/utils/eid-cache';
 
 describe('batch-generator', () => {
   let doc: Document;

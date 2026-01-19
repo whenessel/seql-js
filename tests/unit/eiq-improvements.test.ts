@@ -4,7 +4,7 @@ import {
   generateEIQ,
   stringifyEID,
   type ElementIdentity,
-} from '../src';
+} from '../../src';
 
 describe('EIQ Improvements', () => {
   it('should generate human-readable EIQ for links with ID and href', () => {

@@ -7,7 +7,7 @@ import {
   resolveEIQ,
   generateEID,
   type ElementIdentity,
-} from '../src';
+} from '../../src';
 
 describe('EIQ Parser', () => {
   describe('stringifyEID', () => {

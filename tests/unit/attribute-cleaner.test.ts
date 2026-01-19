@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cleanAttributeValue } from '../src/utils/attribute-cleaner';
+import { cleanAttributeValue } from '../../src/utils/attribute-cleaner';
 
 describe('AttributeCleaner', () => {
   describe('cleanAttributeValue', () => {
