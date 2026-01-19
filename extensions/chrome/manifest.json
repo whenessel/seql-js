@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "SEQL Inspector",
+  "version": "1.0.0",
+  "description": "Generate stable SEQL selectors for DOM elements using the seql-js library",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "devtools_page": "devtools.html",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/seql-js.umd.cjs"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

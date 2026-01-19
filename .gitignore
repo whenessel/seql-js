@@ -214,3 +214,5 @@ desktop.ini
 *~
 .cache/
 .turbo/
+/.serena/.gitignore
+/.serena/project.yml

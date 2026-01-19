@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SEQL Inspector</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div class="panel-container">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button id="btn-generate-all" class="toolbar-btn primary">
+        <span class="btn-icon">⚡</span>
+        Generate for All Elements
+      </button>
+      <button id="btn-pick-element" class="toolbar-btn">
+        <span class="btn-icon">🎯</span>
+        Pick Element
+      </button>
+      <span id="status-text" class="status-text">Ready</span>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Type SEQL selector to search..." class="search-input">
+        <span id="search-status" class="search-status"></span>
+      </div>
+      <div class="filter-container">
+        <select id="tag-filter" class="tag-filter">
+          <option value="">All Tags</option>
+        </select>
+        <select id="grouping-mode" class="grouping-mode">
+          <option value="tag">Group by Tag</option>
+          <option value="structure">Group by Structure</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <!-- Selector List (Left Panel) -->
+      <div class="selector-list-panel">
+        <div id="selector-tree" class="selector-tree">
+          <div class="empty-state">
+            <p>No selectors generated yet.</p>
+            <p>Click "Generate for All Elements" or "Pick Element" to start.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Panel (Right Panel) -->
+      <div id="details-panel" class="details-panel hidden">
+        <div class="details-header">
+          <h3>Element Details</h3>
+          <button id="btn-close-details" class="btn-close">×</button>
+        </div>
+        <div class="details-content">
+          <!-- Full Selector -->
+          <div class="detail-section">
+            <label>SEQL Selector</label>
+            <div class="selector-display">
+              <code id="detail-selector"></code>
+              <button id="btn-copy-selector" class="btn-small" title="Copy to clipboard">📋</button>
+            </div>
+          </div>
+
+          <!-- Element Tag -->
+          <div class="detail-section">
+            <label>Tag</label>
+            <span id="detail-tag" class="detail-value"></span>
+          </div>
+
+          <!-- Confidence Score -->
+          <div class="detail-section">
+            <label>Confidence Score</label>
+            <span id="detail-confidence" class="detail-value"></span>
+          </div>
+
+          <!-- Semantics -->
+          <div class="detail-section">
+            <label>Semantics</label>
+            <pre id="detail-semantics" class="semantics-json"></pre>
+          </div>
+
+          <!-- Element Preview -->
+          <div class="detail-section">
+            <label>HTML Preview</label>
+            <pre id="detail-preview" class="html-preview"></pre>
+          </div>
+
+          <!-- Element Reference (like browser console $()) -->
+          <div class="detail-section">
+            <label>Element</label>
+            <div class="element-reference">
+              <span id="element-ref-link" class="element-link" title="Click to reveal in Elements panel">▶ &lt;element&gt;</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="detail-actions">
+            <button id="btn-scroll-to" class="btn-action">
+              <span>📍</span> Scroll to Element
+            </button>
+            <button id="btn-highlight" class="btn-action">
+              <span>✨</span> Highlight Element
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="panel.js"></script>
+</body>
+</html>
