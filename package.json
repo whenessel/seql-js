@@ -2,6 +2,7 @@
   "name": "@whenessel/seql-js",
   "version": "1.0.2",
   "description": "Semantic Element Query Language JS Implementation",
+  "author": "Artem Demidenko <ar.demidenko@gmail.com>",
   "scripts": {
     "types:check": "tsc --noEmit",
     "build": "vite build",
