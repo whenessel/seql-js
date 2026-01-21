@@ -47,6 +47,8 @@ export interface AnchorNode {
   score: number;
   /** Whether this is a degraded/fallback anchor */
   degraded: boolean;
+  /** Position among siblings (1-based, for nth-child CSS selector) */
+  nthChild?: number;
 }
 
 /**

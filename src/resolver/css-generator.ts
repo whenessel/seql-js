@@ -1018,7 +1018,16 @@ export class CssGenerator {
       }
     }
 
-    // Step 4: Try tag with nth-of-type
+    // Step 4: Use nth-child from EID if available (most reliable)
+    if (eid.anchor.nthChild !== undefined) {
+      // Use nth-child instead of nth-of-type for accuracy
+      const selectorWithNth = `${tag}:nth-child(${eid.anchor.nthChild})`;
+      if (this.isUnique(selectorWithNth, root)) {
+        return selectorWithNth;
+      }
+    }
+
+    // Step 5: Try tag with nth-of-type (fallback for old EIDs without nthChild)
     // Find all elements with this tag in root
     const allAnchors = Array.from(root.querySelectorAll(tag));
 

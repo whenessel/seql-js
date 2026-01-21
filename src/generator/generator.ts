@@ -64,6 +64,19 @@ export function generateEID(
   // Determine if anchor is degraded
   const anchorDegraded = !anchorResult || anchorResult.tier === 'C';
 
+  // Calculate nth-child position for anchor (same logic as for target)
+  // Skip for body/html elements as they are unique by definition
+  const anchorTag = anchorElement.tagName.toLowerCase();
+  const anchorParent = anchorElement.parentElement;
+  let anchorNthChild: number | undefined;
+  if (anchorParent && anchorTag !== 'body' && anchorTag !== 'html') {
+    const siblings = Array.from(anchorParent.children);
+    const index = siblings.indexOf(anchorElement);
+    if (index !== -1) {
+      anchorNthChild = index + 1; // 1-based for CSS nth-child()
+    }
+  }
+
   // 2. Build anchor node
   const anchorSemantics = semanticExtractor.extract(anchorElement);
   const anchorNode = {
@@ -71,6 +84,7 @@ export function generateEID(
     semantics: anchorSemantics,
     score: anchorResult?.score ?? ANCHOR_SCORE.DEGRADED_SCORE,
     degraded: anchorDegraded,
+    nthChild: anchorNthChild,
   };
 
   // 3. Build path (now returns PathBuildResult with degradation info)
