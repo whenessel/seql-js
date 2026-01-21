@@ -1240,7 +1240,19 @@ export class CssGenerator {
    * Escapes special characters for CSS selector
    */
   private escapeCSS(str: string): string {
-    return str.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+    // Экранируем ведущий дефис для классов, начинающихся с дефиса (например, -bottom-6)
+    // Согласно CSS спецификации, класс -bottom-6 должен быть записан как \-bottom-6
+    let escaped = str;
+    
+    // Если строка начинается с дефиса, экранируем его
+    if (escaped.startsWith('-')) {
+      escaped = '\\-' + escaped.slice(1);
+    }
+    
+    // Экранируем другие специальные символы (дефис внутри имен классов валиден, только ведущий требует экранирования)
+    escaped = escaped.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+    
+    return escaped;
   }
 
   /**

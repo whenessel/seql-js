@@ -108,6 +108,37 @@ describe('ClassClassifier', () => {
       expect(isUtilityClass('4')).toBe(true);
     });
 
+    it('should detect negative Tailwind utility classes (margins, positioning)', () => {
+      // Negative margins
+      expect(isUtilityClass('-m-4')).toBe(true);
+      expect(isUtilityClass('-mt-2')).toBe(true);
+      expect(isUtilityClass('-mx-4')).toBe(true);
+      expect(isUtilityClass('-mb-6')).toBe(true);
+      expect(isUtilityClass('-py-2')).toBe(true);
+
+      // Negative positioning
+      expect(isUtilityClass('-top-4')).toBe(true);
+      expect(isUtilityClass('-bottom-6')).toBe(true);
+      expect(isUtilityClass('-left-6')).toBe(true);
+      expect(isUtilityClass('-right-8')).toBe(true);
+      expect(isUtilityClass('-inset-0')).toBe(true);
+
+      // Negative z-index
+      expect(isUtilityClass('-z-10')).toBe(true);
+      expect(isUtilityClass('-z-20')).toBe(true);
+
+      // Negative spacing
+      expect(isUtilityClass('-space-x-2')).toBe(true);
+      expect(isUtilityClass('-space-y-4')).toBe(true);
+
+      // Negative transforms
+      expect(isUtilityClass('-translate-x-4')).toBe(true);
+      expect(isUtilityClass('-translate-y-2')).toBe(true);
+      expect(isUtilityClass('-rotate-45')).toBe(true);
+      expect(isUtilityClass('-scale-50')).toBe(true);
+      expect(isUtilityClass('-skew-x-12')).toBe(true);
+    });
+
     it('should NOT detect semantic classes', () => {
       expect(isUtilityClass('nav-item')).toBe(false);
       expect(isUtilityClass('button-primary')).toBe(false);

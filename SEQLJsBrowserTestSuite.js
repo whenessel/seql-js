@@ -1,6 +1,6 @@
 // ============================================================================
 // SEQL-JS BROWSER TEST SUITE
-// Тестирование полного цикла: Element → EID → EIQ → EID → Element → CSS/XPath
+// Тестирование полного цикла: Element → EID → SEQL → EID → Element → CSS/XPath
 // ============================================================================
 
 (function() {
@@ -142,38 +142,38 @@
     console.log('');
 
     // ========================================================================
-    // ШАГ 2: EID → EIQ (String)
+    // ШАГ 2: EID → SEQL (String)
     // ========================================================================
 
-    console.group('📝 ШАГ 2: Сериализация EID → EIQ');
-    console.time('⏱️ stringifyEID');
+    console.group('📝 ШАГ 2: Сериализация EID → SEQL');
+    console.time('⏱️ stringifySEQL');
 
-    const eiq = lib.stringifyEID(eid);
+    const eiq = lib.stringifySEQL(eid);
 
-    console.timeEnd('⏱️ stringifyEID');
+    console.timeEnd('⏱️ stringifySEQL');
 
-    console.log('✅ EIQ string сгенерирован');
+    console.log('✅ SEQL string сгенерирован');
     console.log('%c' + eiq, 'color: #0a0; font-family: monospace; font-size: 12px; background: #f0f0f0; padding: 4px');
     console.log('📏 Длина:', eiq.length, 'символов');
     console.groupEnd();
     console.log('');
 
     // ========================================================================
-    // ШАГ 3: EIQ → EID (Parse & Compare)
+    // ШАГ 3: SEQL → EID (Parse & Compare)
     // ========================================================================
 
-    console.group('🔄 ШАГ 3: Парсинг EIQ → EID + Сравнение');
-    console.time('⏱️ parseEIQ');
+    console.group('🔄 ШАГ 3: Парсинг SEQL → EID + Сравнение');
+    console.time('⏱️ parseSEQL');
 
     let parsedEID;
     try {
-      parsedEID = lib.parseEIQ(eiq);
-      console.timeEnd('⏱️ parseEIQ');
-      console.log('✅ EIQ успешно распарсен');
+      parsedEID = lib.parseSEQL(eiq);
+      console.timeEnd('⏱️ parseSEQL');
+      console.log('✅ SEQL успешно распарсен');
       console.log('📊 Структура parsed EID:', parsedEID);
     } catch (error) {
-      console.timeEnd('⏱️ parseEIQ');
-      console.error('❌ Ошибка парсинга EIQ:', error);
+      console.timeEnd('⏱️ parseSEQL');
+      console.error('❌ Ошибка парсинга SEQL:', error);
       console.groupEnd();
       return;
     }
@@ -329,7 +329,7 @@
         'Target': eid.target.tag,
         'Confidence': eid.meta?.confidence
       },
-      'EIQ': {
+      'SEQL': {
         'Длина': eiq.length + ' симв.',
         'Версия': eid.version,
         'Парсинг': comparison.isEqual ? '✅ OK' : '⚠️ Diff',
@@ -382,11 +382,11 @@
   // QUICK TEST FUNCTIONS
   // ============================================================================
 
-  // Быстрая проверка только EIQ
-  window.testEIQ = function(element = $0) {
+  // Быстрая проверка только SEQL
+  window.testSEQL = function(element = $0) {
     const eid = lib.generateEID(element);
-    const eiq = lib.stringifyEID(eid);
-    console.log('EIQ:', eiq);
+    const eiq = lib.stringifySEQL(eid);
+    console.log('SEQL:', eiq);
     return { eid, eiq };
   };
 
@@ -399,15 +399,15 @@
     return css;
   };
 
-  // Тест круговой поездки: element → eiq → element
+  // Тест круговой поездки: element → SEQL → element
   window.testRoundTrip = function(element = $0) {
     console.clear();
-    console.log('🔄 Round-trip test: Element → EIQ → Element');
+    console.log('🔄 Round-trip test: Element → SEQL → Element');
 
-    const eiq = lib.generateEIQ(element);
-    console.log('1️⃣ EIQ:', eiq);
+    const eiq = lib.generateSEQL(element);
+    console.log('1️⃣ SEQL:', eiq);
 
-    const resolved = lib.resolveEIQ(eiq, document);
+    const resolved = lib.resolveSEQL(eiq, document);
     console.log('2️⃣ Resolved:', resolved);
 
     const match = resolved.length > 0 && resolved[0] === element;
@@ -434,9 +434,9 @@
   console.log('%cДоступные команды:', 'font-weight: bold');
   console.log('');
   console.log('  %ctestSeqlJs($0)%c    - Полный тест всех этапов', `color: ${linkColor}; font-family: monospace`, `color: ${dimColor}`);
-  console.log('  %ctestEIQ($0)%c       - Быстрый тест EIQ генерации', `color: ${linkColor}; font-family: monospace`, `color: ${dimColor}`);
+  console.log('  %ctestSEQL($0)%c      - Быстрый тест SEQL генерации', `color: ${linkColor}; font-family: monospace`, `color: ${dimColor}`);
   console.log('  %ctestCSS($0)%c       - Быстрый тест CSS селектора', `color: ${linkColor}; font-family: monospace`, `color: ${dimColor}`);
-  console.log('  %ctestRoundTrip($0)%c - Тест круговой поездки Element→EIQ→Element', `color: ${linkColor}; font-family: monospace`, `color: ${dimColor}`);
+  console.log('  %ctestRoundTrip($0)%c - Тест круговой поездки Element→SEQL→Element', `color: ${linkColor}; font-family: monospace`, `color: ${dimColor}`);
   console.log('');
   console.log('%c💡 Выберите элемент в DevTools (станет доступен как $0), затем запустите команду', 'color: #666; font-style: italic');
   console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #666');

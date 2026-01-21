@@ -487,6 +487,9 @@
   function selectItem(elementId) {
     state.selectedId = elementId;
 
+    // Clear search results state
+    clearSearchResultsState();
+
     // Update selection visual
     elements.selectorTree.querySelectorAll('.tree-item').forEach(item => {
       item.classList.toggle('selected', item.dataset.id === elementId);
@@ -510,6 +513,53 @@
     // Update element reference link text
     const tagLower = data.tag.toLowerCase();
     elements.elementRefLink.textContent = `▶ <${tagLower}>`;
+
+    elements.detailsPanel.classList.remove('hidden');
+  }
+
+  // Show details panel for search result
+  function showDetailsFromSearch(data, totalCount = 1) {
+    // Clear selection in tree (this is a search result, not a list item)
+    state.selectedId = null;
+    elements.selectorTree.querySelectorAll('.tree-item.selected').forEach(item => {
+      item.classList.remove('selected');
+    });
+
+    // Show details (reusing existing logic)
+    elements.detailSelector.textContent = data.selector;
+    elements.detailTag.textContent = data.tag;
+    elements.detailConfidence.textContent = (data.confidence * 100).toFixed(1) + '%';
+    elements.detailSemantics.textContent = JSON.stringify(
+      data.eid?.target?.semantics || {},
+      null,
+      2
+    );
+    elements.detailPreview.textContent = data.preview;
+
+    const tagLower = data.tag.toLowerCase();
+    elements.elementRefLink.textContent = `▶ <${tagLower}>`;
+
+    // Store for action buttons (scroll, highlight, inspect)
+    state.selectedId = data.elementId;
+
+    // Add multi-match indicator
+    if (totalCount > 1) {
+      const selectorContainer = elements.detailSelector.parentElement;
+      let badge = selectorContainer.querySelector('.multi-match-badge');
+
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'multi-match-badge';
+        selectorContainer.appendChild(badge);
+      }
+
+      badge.textContent = `${totalCount} matches`;
+      badge.title = `This selector matches ${totalCount} elements. Showing first match.`;
+    } else {
+      // Remove badge if exists
+      const badge = document.querySelector('.multi-match-badge');
+      if (badge) badge.remove();
+    }
 
     elements.detailsPanel.classList.remove('hidden');
   }
@@ -669,6 +719,39 @@
           const elements = window.SeqlJS.resolveSEQL(${JSON.stringify(query)}, document);
           
           if (elements && elements.length > 0) {
+            // Generate full EID data for found elements
+            const searchResults = elements.map((el, i) => {
+              try {
+                const seql = window.SeqlJS.generateSEQL(el);
+                const eid = window.SeqlJS.generateEID(el);
+
+                if (!seql || !eid) return null;
+
+                // Unique ID for search results
+                const elementId = 'seql-search-' + Date.now() + '-' + i;
+                el.setAttribute('data-seql-id', elementId);
+
+                const shortSelector = seql.split('>').pop().trim();
+                let preview = el.outerHTML;
+                if (preview.length > 200) {
+                  preview = preview.substring(0, 200) + '...';
+                }
+
+                return {
+                  selector: seql,
+                  shortSelector: shortSelector,
+                  tag: el.tagName.toLowerCase(),
+                  elementId: elementId,
+                  eid: eid,
+                  preview: preview,
+                  confidence: eid.target?.confidence || 0
+                };
+              } catch (e) {
+                console.warn('Failed to generate EID for search result:', e);
+                return null;
+              }
+            }).filter(r => r !== null);
+
             // Highlight matched elements
             elements.forEach((el, i) => {
               const rect = el.getBoundingClientRect();
@@ -696,7 +779,8 @@
 
             return {
               status: elements.length === 1 ? 'success' : 'warning',
-              count: elements.length
+              count: elements.length,
+              results: searchResults
             };
           } else {
             return { status: 'error', count: 0 };
@@ -711,25 +795,38 @@
       if (error || !result) {
         elements.searchStatus.textContent = '✗ Error';
         elements.searchStatus.className = 'search-status error';
+        hideDetails();
         return;
       }
 
       if (result.error) {
         elements.searchStatus.textContent = '✗ ' + result.error;
         elements.searchStatus.className = 'search-status error';
+        hideDetails();
         return;
       }
 
       if (result.status === 'success') {
         elements.searchStatus.textContent = `✓ Found ${result.count}`;
         elements.searchStatus.className = 'search-status success';
+
+        // Show details for the first (and only) match
+        if (result.results && result.results[0]) {
+          showDetailsFromSearch(result.results[0]);
+        }
       } else if (result.status === 'warning') {
         elements.searchStatus.textContent = `⚠ Found ${result.count}`;
         elements.searchStatus.className = 'search-status warning';
+
+        // Show details for first match, indicate multiple matches
+        if (result.results && result.results[0]) {
+          showDetailsFromSearch(result.results[0], result.count);
+        }
       } else {
         elements.searchStatus.textContent = '✗ Not found';
         elements.searchStatus.className = 'search-status error';
         clearHighlights();
+        hideDetails();
       }
 
       // Auto-clear highlights after 3 seconds
@@ -744,6 +841,13 @@
         document.querySelectorAll('.seql-search-highlight').forEach(el => el.remove());
       })()
     `);
+  }
+
+  // Clear search results state
+  function clearSearchResultsState() {
+    // Remove multi-match badge if exists
+    const badge = document.querySelector('.multi-match-badge');
+    if (badge) badge.remove();
   }
 
   // Escape HTML for safe display

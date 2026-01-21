@@ -1871,4 +1871,200 @@ describe('CssGenerator Selector Generation', () => {
       });
     });
   });
+
+  // ========================================================================
+  // NEW TEST: Leading dash escaping for Tailwind negative margin classes
+  // ========================================================================
+
+  describe('FIX: Leading dash escaping for Tailwind classes', () => {
+    it('should filter out Tailwind negative margin utility classes like -bottom-6', () => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <section id="welcome" class="section">
+          <div class="container">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div class="animate-fade-in"></div>
+              <div class="relative animate-fade-in">
+                <div class="aspect-[4/3] rounded-2xl overflow-hidden"></div>
+                <div class="absolute -bottom-6 -left-6 w-2/3 rounded-2xl overflow-hidden shadow-xl">
+                  <img src="https://images.unsplash.com/photo-1545579133-99bb5ab189bd?w=400&h=300&fit=crop"
+                       alt="Luxury apartment interior"
+                       class="w-full h-full object-cover">
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+      document.body.appendChild(div);
+
+      try {
+        const target = div.querySelector('div.-bottom-6.-left-6')!;
+        expect(target).not.toBeNull();
+
+        const dsl: DslIdentity = {
+          version: '1.0',
+          anchor: {
+            tag: 'section',
+            semantics: {
+              id: 'welcome',
+              classes: ['section']
+            },
+            score: 0.9,
+            degraded: false
+          },
+          path: [
+            { tag: 'div', semantics: { classes: ['container'] }, nthChild: 1, score: 0.8 }
+          ],
+          target: {
+            tag: 'div',
+            semantics: {
+              // Note: Utility classes are filtered out during EID generation
+              classes: []
+            },
+            nthChild: 2,
+            score: 0.7
+          },
+          constraints: [],
+          fallback: { onMultiple: 'first', onMissing: 'none', maxDepth: 3 },
+          meta: {
+            confidence: 0.85,
+            generatedAt: new Date().toISOString(),
+            generator: 'test',
+            source: 'test',
+            degraded: false
+          }
+        };
+
+        const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
+
+        console.log('Leading dash test - Generated:', result);
+
+        // Verify that utility classes are NOT present in the selector
+        expect(result.selector).not.toContain('-bottom-6');
+        expect(result.selector).not.toContain('-left-6');
+        expect(result.selector).not.toContain('w-2');
+        expect(result.selector).not.toContain('rounded');
+        expect(result.selector).not.toContain('overflow');
+        expect(result.selector).not.toContain('shadow');
+
+        // Verify the selector finds at least one element using structural selectors
+        const matched = div.querySelectorAll(result.selector);
+        expect(matched.length).toBeGreaterThanOrEqual(1);
+        // Verify target is among matched elements
+        expect(Array.from(matched)).toContain(target);
+
+        // Verify the actual target has the correct classes
+        expect(target.classList.contains('-bottom-6')).toBe(true);
+        expect(target.classList.contains('-left-6')).toBe(true);
+      } finally {
+        document.body.removeChild(div);
+      }
+    });
+
+    it('should escape leading dash for all Tailwind negative classes (-mt-4, -mx-2, -z-10)', () => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <div>
+          <div class="-mt-4 -mx-2 -z-10 card">Content</div>
+        </div>
+      `;
+      document.body.appendChild(div);
+
+      try {
+        const target = div.querySelector('.-mt-4')!;
+        expect(target).not.toBeNull();
+
+        const dsl: DslIdentity = {
+          anchor: { tag: 'div', semantics: {} },
+          path: [],
+          target: {
+            tag: 'div',
+            semantics: {
+              classes: ['-mt-4', '-mx-2', '-z-10', 'card']
+            }
+          }
+        };
+
+        const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
+
+        console.log('Multiple leading dashes test - Generated:', result);
+
+        // All leading dashes should be escaped
+        if (result.selector.includes('-mt-4')) {
+          expect(result.selector).toMatch(/\\\-mt-4/);
+        }
+        if (result.selector.includes('-mx-2')) {
+          expect(result.selector).toMatch(/\\\-mx-2/);
+        }
+        if (result.selector.includes('-z-10')) {
+          expect(result.selector).toMatch(/\\\-z-10/);
+        }
+
+        // Verify selector works
+        expect(result.isUnique).toBe(true);
+        const matched = div.querySelectorAll(result.selector);
+        expect(matched.length).toBe(1);
+        expect(matched[0]).toBe(target);
+      } finally {
+        document.body.removeChild(div);
+      }
+    });
+
+    it('should not escape dashes inside class names, only leading dashes', () => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <div>
+          <div class="my-class -top-4 text-gray-500">Content</div>
+        </div>
+      `;
+      document.body.appendChild(div);
+
+      try {
+        const target = div.querySelector('.-top-4')!;
+        expect(target).not.toBeNull();
+
+        const dsl: DslIdentity = {
+          anchor: { tag: 'div', semantics: {} },
+          path: [],
+          target: {
+            tag: 'div',
+            semantics: {
+              classes: ['my-class', '-top-4', 'text-gray-500']
+            }
+          }
+        };
+
+        const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
+
+        console.log('Mixed dashes test - Generated:', result);
+
+        // my-class should NOT have escaped dashes (dashes inside are valid)
+        if (result.selector.includes('my-class')) {
+          expect(result.selector).toMatch(/\.my-class/);
+          expect(result.selector).not.toMatch(/\.my\\-class/);
+        }
+
+        // -top-4 should have escaped LEADING dash only
+        if (result.selector.includes('-top-4')) {
+          expect(result.selector).toMatch(/\\\-top-4/);
+          expect(result.selector).not.toMatch(/\\\-top\\\-4/); // Should not escape internal dash
+        }
+
+        // text-gray-500 should NOT have escaped dashes
+        if (result.selector.includes('text-gray-500')) {
+          expect(result.selector).toMatch(/\.text-gray-500/);
+          expect(result.selector).not.toMatch(/\.text\\-gray\\-500/);
+        }
+
+        // Verify selector works
+        expect(result.isUnique).toBe(true);
+        const matched = div.querySelectorAll(result.selector);
+        expect(matched.length).toBe(1);
+        expect(matched[0]).toBe(target);
+      } finally {
+        document.body.removeChild(div);
+      }
+    });
+  });
 });

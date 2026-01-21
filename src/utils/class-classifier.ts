@@ -88,6 +88,16 @@ const UTILITY_CLASS_PATTERNS = [
   /^(gap|space)-/,
   /^[mp][trblxy]?-(\d+|auto|px)$/,
 
+  // === Negative Tailwind utilities (margins, positioning, transforms) ===
+  /^-[mp][trblxy]?-\d+$/,           // -m-4, -mt-2, -mx-4, -px-4, -py-2
+  /^-(top|right|bottom|left|inset)-\d+$/,  // -top-4, -bottom-6, -left-6, -inset-0
+  /^-z-\d+$/,                        // -z-10, -z-20
+  /^-space-[xy]-\d+$/,               // -space-x-2, -space-y-4
+  /^-translate-[xy]-\d+$/,           // -translate-x-4, -translate-y-2
+  /^-rotate-\d+$/,                   // -rotate-45, -rotate-90
+  /^-scale-\d+$/,                    // -scale-50, -scale-75
+  /^-skew-[xy]-\d+$/,                // -skew-x-12, -skew-y-6
+
   // === Sizing ===
   /^(w|h|min-w|min-h|max-w|max-h|size)-/,
 
@@ -114,6 +124,7 @@ const UTILITY_CLASS_PATTERNS = [
 
   // === Overflow & Scrolling ===
   /^(overflow|overscroll|scroll)-/,
+  /^object-(contain|cover|fill|none|scale-down)$/,
 
   // === Interactivity ===
   /^(cursor|pointer-events|select|resize)-/,
