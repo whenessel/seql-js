@@ -46,11 +46,11 @@ git pull origin main
 # 2. Update version in package.json
 # Option A: Manually edit package.json
 # Option B: Use npm version command
-npm version patch  # bumps 0.1.0 → 0.1.1
+npm version patch --no-git-tag-version  # bumps 0.1.0 → 0.1.1
 # or
-npm version minor  # bumps 0.1.0 → 0.2.0
+npm version minor --no-git-tag-version  # bumps 0.1.0 → 0.2.0
 # or
-npm version major  # bumps 0.1.0 → 1.0.0
+npm version major --no-git-tag-version  # bumps 0.1.0 → 1.0.0
 
 # 3. Push the version update commit
 git push origin main
