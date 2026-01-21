@@ -20,6 +20,7 @@
   const elements = {
     btnGenerateAll: document.getElementById('btn-generate-all'),
     btnPickElement: document.getElementById('btn-pick-element'),
+    btnClearResults: document.getElementById('btn-clear-results'),
     statusText: document.getElementById('status-text'),
     searchInput: document.getElementById('search-input'),
     searchStatus: document.getElementById('search-status'),
@@ -49,6 +50,7 @@
   function bindEvents() {
     elements.btnGenerateAll.addEventListener('click', handleGenerateAll);
     elements.btnPickElement.addEventListener('click', handlePickElement);
+    elements.btnClearResults.addEventListener('click', handleClearResults);
     elements.btnCloseDetails.addEventListener('click', hideDetails);
     elements.btnCopySelector.addEventListener('click', handleCopySelector);
     elements.btnScrollTo.addEventListener('click', handleScrollTo);
@@ -76,7 +78,7 @@
     });
   }
 
-  // Generate selectors for all interactive elements
+  // Generate selectors for all DOM elements
   function handleGenerateAll() {
     setStatus('Generating selectors...');
     elements.btnGenerateAll.disabled = true;
@@ -87,28 +89,30 @@
           return { error: 'seql-js library not loaded. Please refresh the page.' };
         }
 
-        const selector = 'button, a, input, select, textarea, [role], [data-testid], [aria-label], form, nav, main, header, footer, aside, section, article';
-        const elements = document.querySelectorAll(selector);
+        // Select all DOM elements
+        const elements = document.querySelectorAll('*');
         const results = [];
+        const errors = [];
         let index = 0;
 
         elements.forEach(el => {
           try {
-            // Skip hidden elements
-            if (el.offsetParent === null && el.tagName !== 'INPUT' && el.type !== 'hidden') {
+            // Skip script, style, and other non-visible technical elements
+            const skipTags = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'LINK', 'META', 'HEAD', 'TITLE'];
+            if (skipTags.includes(el.tagName)) {
               return;
             }
 
             const seql = window.SeqlJS.generateSEQL(el);
             const eid = window.SeqlJS.generateEID(el);
-            
+
             if (seql && eid) {
               const elementId = 'seql-el-' + index++;
               el.setAttribute('data-seql-id', elementId);
-              
+
               // Get short selector (last segment)
               const shortSelector = seql.split('>').pop().trim();
-              
+
               // Get outer HTML preview (truncated)
               let preview = el.outerHTML;
               if (preview.length > 200) {
@@ -126,11 +130,29 @@
               });
             }
           } catch (e) {
-            console.warn('Failed to generate selector for element:', e);
+            // Log error with element reference to console
+            console.group('%c[SEQL Generation Error]', 'color: #c23030; font-weight: bold;');
+            console.error('Failed to generate selector for element:');
+            console.log('Element:', el);
+            console.error('Error:', e.message);
+            console.trace();
+            console.groupEnd();
+
+            errors.push({
+              tag: el.tagName,
+              error: e.message
+            });
           }
         });
 
-        return { selectors: results };
+        if (errors.length > 0) {
+          console.group('%c[SEQL Generation Summary]', 'color: #bf7600; font-weight: bold;');
+          console.warn(\`Total errors: \${errors.length}\`);
+          console.table(errors);
+          console.groupEnd();
+        }
+
+        return { selectors: results, errorCount: errors.length };
       })()
     `;
 
@@ -149,11 +171,56 @@
       }
 
       state.selectors = result.selectors || [];
-      setStatus(`Generated ${state.selectors.length} selectors`);
+
+      // Update status with error count if present
+      let statusMsg = `Generated ${state.selectors.length} selectors`;
+      if (result.errorCount > 0) {
+        statusMsg += ` (${result.errorCount} errors - see console)`;
+      }
+      setStatus(statusMsg);
 
       updateTagFilter();
       renderTree();
     });
+  }
+
+  // Clear all results
+  function handleClearResults() {
+    // Clear selectors state
+    state.selectors = [];
+    state.selectedId = null;
+    state.tagFilter = '';
+    state.expandedGroups.clear();
+
+    // Clear search results state
+    clearSearchResultsState();
+
+    // Clear UI
+    elements.tagFilter.value = '';
+    elements.searchInput.value = '';
+    elements.searchStatus.textContent = '';
+    elements.searchStatus.className = 'search-status';
+
+    // Hide details panel
+    hideDetails();
+
+    // Clear highlights in page
+    clearHighlights();
+
+    // Remove all data-seql-id attributes from page
+    evalInPage(`
+      (function() {
+        document.querySelectorAll('[data-seql-id]').forEach(el => {
+          el.removeAttribute('data-seql-id');
+        });
+      })()
+    `);
+
+    // Render empty tree
+    renderTree();
+
+    setStatus('Results cleared');
+    setTimeout(() => setStatus('Ready'), 2000);
   }
 
   // Element picker mode

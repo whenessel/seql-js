@@ -172,8 +172,41 @@ class SemanticExtractor {
     raw: string;
     normalized: string;
   };
+  
+  /**
+   * Extracts attributes with stability filtering (v1.0.3)
+   * Excludes state attributes, library-generated attributes
+   */
+  extractAttributes(element: Element): Record<string, string>;
 }
 ```
+
+**Фильтрация атрибутов (v1.0.3):**
+
+`SemanticExtractor` использует модуль `attribute-filters` для отделения стабильных атрибутов идентичности от временных атрибутов состояния:
+
+```typescript
+import { isStableAttribute } from '../utils/attribute-filters';
+
+// В extractAttributes()
+for (const attr of element.attributes) {
+  // Фильтр состояния и библиотечных атрибутов
+  if (!isStableAttribute(attr.name, attr.value)) continue;
+  
+  // Только стабильные атрибуты попадают в DSL
+  attrs[attr.name] = attr.value;
+}
+```
+
+**Критерии стабильности:**
+- ✅ ARIA семантика: `aria-label`, `aria-labelledby`, `role`
+- ❌ ARIA состояние: `aria-selected`, `aria-expanded`, `aria-hidden`
+- ✅ HTML семантика: `name`, `type`, `placeholder`, `href`
+- ❌ HTML состояние: `disabled`, `checked`, `value`
+- ✅ Test ID: `data-testid`, `data-cy`, `data-*-id`
+- ❌ Library state: `data-radix-*`, `data-state`, `data-orientation`
+- ✅ Stable IDs: пользовательские ID
+- ❌ Generated IDs: `radix-:ru:-*`, `headlessui-*`, `mui-*`
 
 #### 1.4 SVG Fingerprinter
 ```typescript
@@ -292,7 +325,36 @@ class FallbackHandler {
 
 ### 3. Utilities
 
-#### 3.1 Scoring
+#### 3.1 Attribute Filters (v1.0.3)
+```typescript
+/**
+ * Фильтрация атрибутов по стабильности
+ * Отделяет атрибуты идентичности от атрибутов состояния
+ */
+function isStableAttribute(name: string, value: string): boolean;
+
+// Константы классификации
+const ARIA_STABLE_ATTRIBUTES: string[];      // aria-label, role, etc.
+const ARIA_STATE_ATTRIBUTES: string[];       // aria-selected, aria-expanded
+const DATA_STATE_ATTRIBUTES: string[];       // data-state, data-active
+const LIBRARY_DATA_PREFIXES: string[];       // data-radix-, data-headlessui-
+const DATA_ID_PATTERNS: string[];            // data-testid, data-cy, data-*-id
+const HTML_STABLE_ATTRIBUTES: string[];      // name, type, placeholder
+const HTML_STATE_ATTRIBUTES: string[];       // disabled, checked, value
+const GENERATED_ID_PATTERNS: RegExp[];       // /^radix-/, /^headlessui-/
+```
+
+**Назначение:**
+- Обеспечивает стабильность EID при изменении состояния элемента
+- Исключает библиотечные сгенерированные атрибуты
+- Фильтрует динамические ID от UI фреймворков
+
+**Философия:**
+> SEQL идентифицирует элементы по их **семантической идентичности**, 
+> а не по **текущему состоянию**. Элемент остается тем же элементом,
+> независимо от того, активен он или нет, виден или скрыт.
+
+#### 3.2 Scoring
 ```typescript
 class Scorer {
   /**
@@ -307,7 +369,7 @@ class Scorer {
 }
 ```
 
-#### 3.2 Validation
+#### 3.3 Validation
 ```typescript
 class DslValidator {
   /**
@@ -454,6 +516,7 @@ dsl-identity/
 │   │   └── FallbackHandler.ts
 │   │
 │   ├── utils/
+│   │   ├── attribute-filters.ts   # v1.0.3: Attribute stability filtering
 │   │   ├── Scorer.ts
 │   │   ├── Validator.ts
 │   │   ├── TextNormalizer.ts

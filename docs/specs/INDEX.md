@@ -17,8 +17,10 @@
 | 4 | [**DECISIONS.md**](./DECISIONS.md) | 13KB | Архитектурные решения с обоснованиями | Architects, Tech Leads |
 | 5 | [**ARCHITECTURE.md**](./ARCHITECTURE.md) | 23KB | Техническая архитектура системы | Developers, Architects |
 | 6 | [**AI_AGENT_INSTRUCTIONS.md**](./AI_AGENT_INSTRUCTIONS.md) | 21KB | Инструкции для ИИ-ассистентов | AI Agents, Claude, GPT |
+| 7 | [**ATTRIBUTE_FILTERING.md**](./ATTRIBUTE_FILTERING.md) | 18KB | Фильтрация атрибутов по стабильности (v1.0.3) | Developers, QA |
+| 8 | [**SEQL_IMPROVEMENTS_SUMMARY.md**](./SEQL_IMPROVEMENTS_SUMMARY.md) | 25KB | История улучшений и изменений | Architects, Developers |
 
-**Общий объем**: ~120KB документации
+**Общий объем**: ~163KB документации
 
 ---
 
@@ -209,6 +211,8 @@
 | Какие типы использовать? | ARCHITECTURE.md § 7 |
 | Как интегрировать с rrweb? | ARCHITECTURE.md § 6 |
 | Как общаться с Artem? | AI_AGENT_INSTRUCTIONS.md § 3 |
+| Какие атрибуты стабильные? | ATTRIBUTE_FILTERING.md |
+| Почему исключаются state-атрибуты? | ATTRIBUTE_FILTERING.md § Decision Log |
 
 ---
 

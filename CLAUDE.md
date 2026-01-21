@@ -98,6 +98,7 @@ Helper functions and shared logic:
 - **`batch-generator.ts`**: Batch processing for generating DSLs for multiple elements
 - **`scorer.ts`**: Confidence and element scoring algorithms
 - **`text-normalizer.ts`**: Text normalization (whitespace, Unicode, case)
+- **`attribute-filters.ts`** (v1.0.3): Filters attributes by stability - separates identity-defining attributes from state-based attributes
 - **`class-filter.ts`**: Filters utility/framework classes (Tailwind, Bootstrap, etc.)
 - **`class-classifier.ts`**: Classifies CSS classes as semantic vs. utility
 - **`attribute-cleaner.ts`**: Cleans and normalizes HTML attributes
@@ -110,11 +111,13 @@ Helper functions and shared logic:
 
 2. **Semantic-First**: The system prioritizes semantic HTML and ARIA attributes over structural selectors (nth-child, positional selectors are avoided).
 
-3. **Stability Over Precision**: The EID trades some precision for stability across DOM changes. A slightly less specific selector that survives refactoring is better than a brittle precise one.
+3. **State Independence** (v1.0.3): EID identifies elements by their semantic identity, not their current state. Filters out state attributes (`aria-selected`, `data-state`, `disabled`) and library-generated attributes (`data-radix-*`) to ensure stability across state changes.
 
-4. **No Framework Dependencies**: The library is framework-agnostic and works with vanilla DOM APIs.
+4. **Stability Over Precision**: The EID trades some precision for stability across DOM changes. A slightly less specific selector that survives refactoring is better than a brittle precise one.
 
-5. **Caching Strategy**: Uses an LRU cache (`EIDCache`) to avoid redundant computation. Cache keys are based on element identity and options.
+5. **No Framework Dependencies**: The library is framework-agnostic and works with vanilla DOM APIs.
+
+6. **Caching Strategy**: Uses an LRU cache (`EIDCache`) to avoid redundant computation. Cache keys are based on element identity and options.
 
 ## Project Documentation
 
@@ -122,6 +125,8 @@ Comprehensive specifications are in `docs/specs/`:
 
 - **`SPECIFICATION.md`**: Complete EID v1.0 specification (Russian) - the authoritative reference
 - **`ARCHITECTURE.md`**: System architecture and component design
+- **`ATTRIBUTE_FILTERING.md`** (v1.0.3): Detailed guide on attribute stability filtering - stable vs state attributes
+- **`SEQL_IMPROVEMENTS_SUMMARY.md`**: History of all improvements and changes to the system
 - **`AI_AGENT_INSTRUCTIONS.md`**: Guidelines for AI assistants working on this project - contains critical rules about not deviating from specifications
 
 **Important**: Changes to core algorithms (anchor finding, path building, resolution) must align with `SPECIFICATION.md`. This is not a "suggestions" document - it's the formal specification.

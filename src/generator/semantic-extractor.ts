@@ -4,6 +4,7 @@ import { filterClasses } from '../utils/class-filter';
 import { isDynamicId, ID_REFERENCE_ATTRIBUTES, hasDynamicIdReference } from '../utils/id-validator';
 import { ATTRIBUTE_PRIORITY, IGNORED_ATTRIBUTES } from '../utils/constants';
 import { cleanAttributeValue } from '../utils/attribute-cleaner';
+import { isStableAttribute } from '../utils/attribute-filters';
 import type { EIDCache } from '../utils/eid-cache';
 
 /**
@@ -177,6 +178,9 @@ export class SemanticExtractor {
 
       // Skip ignored attributes
       if (this.shouldIgnoreAttribute(name)) continue;
+
+      // Skip unstable/state-based attributes (e.g., aria-selected, data-state, disabled)
+      if (!isStableAttribute(name, attr.value)) continue;
 
       // Skip ID-reference attributes with dynamic IDs
       if (ID_REFERENCE_ATTRIBUTES.has(name) && hasDynamicIdReference(attr.value)) {

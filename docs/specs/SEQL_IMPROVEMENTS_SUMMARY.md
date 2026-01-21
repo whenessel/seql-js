@@ -475,6 +475,202 @@ analytics.track('Element Clicked', {
 
 ---
 
+## 17. Фильтрация атрибутов по стабильности (v1.0.3)
+
+**Проблема:**
+SEQL селекторы включали атрибуты состояния (state), которые изменяются при взаимодействии с элементом:
+- `aria-selected="true"` → `aria-selected="false"` при переключении вкладок
+- `data-state="active"` → `data-state="inactive"` при изменении состояния
+- `disabled` → появляется/исчезает динамически
+
+Это приводило к тому, что селектор не находил элемент после изменения его состояния.
+
+**Решение:**
+Добавлена система классификации атрибутов на **стабильные** (identity) и **нестабильные** (state).
+
+### Категории атрибутов
+
+#### ARIA атрибуты
+
+**Стабильные** (описывают семантику):
+```typescript
+aria-label, aria-labelledby, aria-describedby, 
+aria-controls, aria-owns, aria-level, aria-posinset, 
+aria-setsize, aria-haspopup
+```
+
+**Нестабильные** (описывают состояние):
+```typescript
+aria-selected, aria-checked, aria-pressed, aria-expanded,
+aria-hidden, aria-disabled, aria-current, aria-busy
+```
+
+#### data-* атрибуты
+
+**Исключаются** (состояние):
+```typescript
+data-state, data-active, data-selected, data-open,
+data-visible, data-hidden, data-disabled, data-loading,
+data-orientation, data-theme
+```
+
+**Исключаются** (библиотечные префиксы):
+```typescript
+data-radix-*, data-headlessui-*, data-mui-*,
+data-chakra-*, data-mantine-*, data-tw-*
+```
+
+**Включаются** (идентификаторы):
+```typescript
+data-testid, data-cy, data-qa, data-*-id
+```
+
+#### HTML атрибуты
+
+**Стабильные**:
+```typescript
+id, name, type, placeholder, title, for, alt, href
+```
+
+**Нестабильные**:
+```typescript
+disabled, checked, selected, hidden, readonly, value
+```
+
+#### ID фильтрация
+
+**Исключаются сгенерированные ID**:
+```typescript
+radix-:ru:-trigger-card    ❌
+headlessui-menu-1          ❌  
+mui-12345                  ❌
+:r1:, :ru:                 ❌
+
+user-profile               ✅
+main-nav                   ✅
+```
+
+### Примеры
+
+**До фильтрации:**
+```json
+{
+  "target": {
+    "tag": "button",
+    "semantics": {
+      "attributes": {
+        "role": "tab",
+        "aria-label": "Settings",
+        "aria-selected": "true",      // ❌ состояние
+        "data-state": "active",        // ❌ состояние
+        "data-testid": "settings-tab", // ✅ ID
+        "disabled": ""                 // ❌ состояние
+      }
+    }
+  }
+}
+```
+
+**После фильтрации:**
+```json
+{
+  "target": {
+    "tag": "button",
+    "semantics": {
+      "attributes": {
+        "role": "tab",                 // ✅ семантика
+        "aria-label": "Settings",      // ✅ семантика
+        "data-testid": "settings-tab"  // ✅ ID
+      }
+    }
+  }
+}
+```
+
+### Преимущества
+
+1. **Стабильность через изменения состояния**
+   ```typescript
+   // Элемент найдется независимо от состояния
+   <button aria-selected="true">   // найден ✅
+   <button aria-selected="false">  // найден ✅
+   ```
+
+2. **Устойчивость к библиотечным атрибутам**
+   ```typescript
+   // Radix UI, Headless UI атрибуты игнорируются
+   <div data-radix-collection-item data-state="open">
+   // → использует только role, aria-label
+   ```
+
+3. **Точность идентификации**
+   ```typescript
+   // Фокус на том, ЧТО элемент есть, а не в КАКОМ он состоянии
+   identity: "button для настроек"
+   state: "активен / неактивен" // игнорируется
+   ```
+
+### Имплементация
+
+**Модуль:** `src/utils/attribute-filters.ts`
+
+```typescript
+/**
+ * Определяет, представляет ли атрибут стабильную идентичность
+ */
+export function isStableAttribute(name: string, value: string): boolean {
+  // Whitelist стабильных ARIA
+  if (ARIA_STABLE_ATTRIBUTES.includes(name)) return true;
+  
+  // Blacklist ARIA состояния
+  if (ARIA_STATE_ATTRIBUTES.includes(name)) return false;
+  
+  // Фильтрация сгенерированных ID
+  if (name === 'id' && GENERATED_ID_PATTERNS.some(p => p.test(value))) {
+    return false;
+  }
+  
+  // ... остальная логика
+}
+```
+
+**Интеграция:** `src/generator/semantic-extractor.ts`
+
+```typescript
+// В методе extractAttributes()
+for (const attr of element.attributes) {
+  // Проверка стабильности атрибута
+  if (!isStableAttribute(attr.name, attr.value)) continue;
+  
+  // ... остальная обработка
+}
+```
+
+### Тестирование
+
+**Покрытие:** 100% (31 новых тестов)
+- 17 unit тестов (attribute-filtering.test.ts)
+- 14 интеграционных тестов (generator-attribute-filtering.test.ts)
+
+**Регрессия:** ✅ Все существующие тесты проходят (255 тестов)
+
+### Backward Compatibility
+
+⚠️ **Breaking Change:** Сгенерированные EID для элементов с state-атрибутами изменятся.
+
+**Миграция:**
+```typescript
+// До v1.0.3
+"attributes": { "aria-selected": "true", "disabled": "" }
+
+// После v1.0.3  
+"attributes": { } // состояние исключено
+
+// Рекомендация: перегенерировать EID для всех элементов
+```
+
+---
+
 ## ✨ Итого
 
 Создана **production-ready спецификация EIQ v1.0** с:
@@ -488,5 +684,6 @@ analytics.track('Element Clicked', {
 - ✅ Edge cases и best practices
 - ✅ Миграционными паттернами
 - ✅ Analytics интеграцией
+- ✅ **Фильтрацией атрибутов по стабильности (v1.0.3)**
 
 **Готово к реализации и использованию!**

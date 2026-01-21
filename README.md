@@ -8,7 +8,8 @@ Semantic Element Query Language (SEQL) - Stable DOM element identification for w
 
 - **Semantic-first**: Uses ARIA roles, labels, semantic HTML tags, and stable attributes.
 - **Resilient**: Designed to be stable across UI updates and DOM changes.
-- **Dual Format**: 
+- **State-independent** (v1.0.3): Filters out state attributes (`aria-selected`, `data-state`, `disabled`) to ensure elements are found regardless of their current state.
+- **Dual Format**:
   - **EID** (JSON): Structured descriptor for internal operations and high precision.
   - **SEQL Selector** (String): Canonical string format for easy transport (analytics) and storage.
 - **Deterministic**: Guaranteed same output for the same DOM state.

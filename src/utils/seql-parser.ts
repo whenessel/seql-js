@@ -282,9 +282,9 @@ function stringifyNode(
     }
   }
 
+  // Prepare finalAttrs for later use
+  let finalAttrs = attrStrings;
   if (attrStrings.length > 0) {
-    let finalAttrs = attrStrings;
-
     // Advanced simplification for target node
     if (isTarget && options.simplifyTarget && semantics.id) {
        // If we have ID, we can afford to be more selective,
@@ -300,11 +300,10 @@ function stringifyNode(
     if (finalAttrs.length > 0) {
       // Final alphabetical sort for the attributes in the bracket
       finalAttrs.sort((a, b) => a.localeCompare(b));
-      result += `[${finalAttrs.join(',')}]`;
     }
   }
 
-  // 2. Add stable classes
+  // 2. Add stable classes FIRST (before attributes)
   if (semantics.classes && semantics.classes.length > 0) {
     const stableClasses = filterStableClasses(semantics.classes);
 
@@ -322,7 +321,12 @@ function stringifyNode(
     }
   }
 
-  // 3. Add position (nth-child)
+  // 3. Add attributes SECOND (after classes)
+  if (finalAttrs.length > 0) {
+    result += `[${finalAttrs.join(',')}]`;
+  }
+
+  // 4. Add position (nth-child)
   if ('nthChild' in node && node.nthChild) {
     // SEQL Selector position is #N
     const hasStrongIdentifier = !!semantics.id ||
