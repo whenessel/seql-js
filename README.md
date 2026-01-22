@@ -148,10 +148,15 @@ Manage the LRU cache to improve performance for frequent generations/resolutions
 
 ## Documentation
 
-- [Architecture Design](docs/specs/ARCHITECTURE.md)
-- [EID Specification v1.0](docs/specs/SPECIFICATION.md) (Russian)
-- [Developer Guidelines](CLAUDE.md)
-- [Migration Guide](docs/MIGRATION.md)
+- **[Getting Started](docs/getting-started/)** - Installation and quick start guide
+- **[API Reference](docs/api/)** - Complete API documentation
+- **[Examples](docs/examples/)** - Practical code examples
+- **[Specification](docs/specification/)** - EID and SEQL format specifications
+- **[Architecture](docs/architecture/)** - System design and internals
+- **[Guides](docs/guides/)** - Advanced topics and patterns
+- **[Contributing](docs/contributing/)** - Development guide
+- **[Troubleshooting](docs/troubleshooting/)** - Common issues and solutions
+- **[CLAUDE.md](CLAUDE.md)** - AI agent development guidelines
 
 ## Migrating from v0.x
 
