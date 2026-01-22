@@ -22,7 +22,8 @@ export default defineConfig({
   plugins: [
     dts({
       rollupTypes: true,
-      insertTypesEntry: true
+      insertTypesEntry: true,
+      include: ['src/**/*.ts']
     })
   ]
 });

@@ -25,7 +25,10 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["lib/seql-js.umd.cjs"],
+      "resources": [
+        "lib/seql-js.umd.cjs",
+        "lib/seql-js-test-tools.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

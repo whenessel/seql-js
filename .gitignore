@@ -217,3 +217,5 @@ desktop.ini
 /.serena/.gitignore
 /.serena/project.yml
 /.serena/
+/.test-results/
+/.coverage/
