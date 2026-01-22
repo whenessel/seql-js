@@ -1,6 +1,7 @@
 # Требуется исследование: Неправильные элементы
 
 ## Статус
+
 🔴 **CRITICAL BUG FOUND**
 
 Селекторы генерируются корректно и находят по 1 элементу, НО это **неправильные элементы**!
@@ -8,11 +9,13 @@
 ## Проблема
 
 ### Date 18
+
 - **XPath (правильный):** `/html/body/div[3]/div/div/div/div/table/tbody/tr[4]/td[1]` → строка 4, ячейка 1
 - **Что находится:** Ячейка с датой **18**
 - **Что находит селектор:** Ячейка с датой **1** (!)
 
 ### Date 31
+
 - **XPath (правильный):** `/html/body/div[3]/div/div/div/div/table/tbody/tr[5]/td[7]` → строка 5, ячейка 7
 - **Что находится:** Ячейка с датой **31** в строке 5
 - **Что находит селектор:** Ячейка с датой **31** в строке 1 (!)
@@ -22,6 +25,7 @@
 ### Гипотеза 1: querySelector('.rdp-day') находит не тот элемент
 
 В календаре может быть несколько кнопок с одинаковым текстом:
+
 ```
 Row 1: [28] [29] [30] [31] [1] [2] [3]  ← серые даты предыдущего месяца + начало января
 Row 2: [4]  [5]  [6]  [7]  [8] [9] [10]
@@ -31,6 +35,7 @@ Row 5: [25] [26] [27] [28] [29] [30] [31]
 ```
 
 При поиске по тексту "31":
+
 - Первый найденный: **row 1, cell 4** (серая дата из декабря)
 - Нужный элемент: **row 5, cell 7** (31 января)
 
@@ -38,8 +43,9 @@ Row 5: [25] [26] [27] [28] [29] [30] [31]
 
 ```javascript
 // Это находит ПЕРВЫЙ элемент с текстом "18"
-const cell = Array.from(document.querySelectorAll('.rdp-day'))
-  .find(el => el.textContent.trim() === '18');
+const cell = Array.from(document.querySelectorAll('.rdp-day')).find(
+  (el) => el.textContent.trim() === '18'
+);
 ```
 
 Если в календаре есть серые даты, это может быть не та дата!
@@ -47,6 +53,7 @@ const cell = Array.from(document.querySelectorAll('.rdp-day'))
 ### Гипотеза 3: Структура table/tbody/tr нарушена
 
 Возможно calendar использует:
+
 - `<div role="grid">` вместо `<table>`
 - Плоскую структуру без реальных `<tr>`
 - Виртуализацию строк
@@ -56,6 +63,7 @@ const cell = Array.from(document.querySelectorAll('.rdp-day'))
 ### 1. Проверка структуры (ANALYZE_STRUCTURE.md)
 
 Этот скрипт покажет:
+
 - Реальную HTML структуру
 - Сколько элементов с одинаковым текстом
 - Какой элемент находит querySelector
@@ -64,6 +72,7 @@ const cell = Array.from(document.querySelectorAll('.rdp-day'))
 ### 2. Debug неправильных элементов (DEBUG_WRONG_ELEMENT.md)
 
 Этот скрипт сравнит:
+
 - XPath элемент (правильный)
 - querySelector элемент (найденный)
 - Selector matched элемент (результат)
@@ -75,6 +84,7 @@ const cell = Array.from(document.querySelectorAll('.rdp-day'))
 Откройте консоль браузера и выполните скрипт. Это покажет реальную структуру DOM.
 
 **Ожидаемый вывод покажет:**
+
 ```
 --- Date 18 Analysis ---
 1. XPath element (TD):
@@ -96,6 +106,7 @@ Found element position: Row X, Cell Y  ← неправильная позици
 ### Шаг 3: Определить root cause
 
 После выполнения скриптов мы узнаем:
+
 1. Есть ли дублирующиеся элементы с одинаковым текстом?
 2. Правильно ли querySelector находит элемент?
 3. Где именно происходит ошибка?
@@ -106,12 +117,14 @@ Found element position: Row X, Cell Y  ← неправильная позици
 
 ```javascript
 // Вместо:
-const cell = Array.from(document.querySelectorAll('.rdp-day'))
-  .find(el => el.textContent.trim() === '18');
+const cell = Array.from(document.querySelectorAll('.rdp-day')).find(
+  (el) => el.textContent.trim() === '18'
+);
 
 // Использовать:
-const cell = Array.from(document.querySelectorAll('.rdp-day:not(.rdp-day_disabled)'))
-  .find(el => el.textContent.trim() === '18');
+const cell = Array.from(document.querySelectorAll('.rdp-day:not(.rdp-day_disabled)')).find(
+  (el) => el.textContent.trim() === '18'
+);
 ```
 
 ### Решение 2: Использовать XPath для точного поиска
@@ -119,8 +132,8 @@ const cell = Array.from(document.querySelectorAll('.rdp-day:not(.rdp-day_disable
 ```javascript
 // Использовать XPath вместо querySelector
 function getByXPath(xpath) {
-  return document.evaluate(xpath, document, null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+    .singleNodeValue;
 }
 
 // Для даты 18
@@ -142,12 +155,11 @@ const button = targetCell.querySelector('button');
 ### Решение 4: Проверить что button находится в текущем месяце
 
 ```javascript
-const cells = Array.from(document.querySelectorAll('.rdp-day'))
-  .filter(el => {
-    // Проверить что это не серая дата
-    return !el.classList.contains('rdp-day_outside');
-  });
-const cell18 = cells.find(el => el.textContent.trim() === '18');
+const cells = Array.from(document.querySelectorAll('.rdp-day')).filter((el) => {
+  // Проверить что это не серая дата
+  return !el.classList.contains('rdp-day_outside');
+});
+const cell18 = cells.find((el) => el.textContent.trim() === '18');
 ```
 
 ## Следующие действия

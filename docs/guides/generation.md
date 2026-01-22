@@ -18,7 +18,7 @@ const eid = generateEID(element);
 Control how far the path extends:
 
 ```typescript
-generateEID(element, { maxPathDepth: 5 });  // Shorter paths
+generateEID(element, { maxPathDepth: 5 }); // Shorter paths
 ```
 
 ### Confidence Threshold
@@ -26,7 +26,7 @@ generateEID(element, { maxPathDepth: 5 });  // Shorter paths
 Set minimum quality:
 
 ```typescript
-generateEID(element, { confidenceThreshold: 0.3 });  // Higher quality only
+generateEID(element, { confidenceThreshold: 0.3 }); // Higher quality only
 ```
 
 ### SVG Fingerprinting
@@ -34,7 +34,7 @@ generateEID(element, { confidenceThreshold: 0.3 });  // Higher quality only
 Control SVG processing:
 
 ```typescript
-generateEID(element, { enableSvgFingerprint: false });  // Skip SVG
+generateEID(element, { enableSvgFingerprint: false }); // Skip SVG
 ```
 
 ## Understanding Results

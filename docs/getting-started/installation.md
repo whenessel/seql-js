@@ -52,7 +52,7 @@ import {
   resolve,
   type ElementIdentity,
   type ResolveResult,
-  type GeneratorOptions
+  type GeneratorOptions,
 } from 'seql-js';
 ```
 
@@ -114,6 +114,7 @@ document.body.removeChild(testElement);
 ```
 
 You should see output like:
+
 ```
 SEQL Selector: v1: button[type="button",text="Test Button"]
 ```

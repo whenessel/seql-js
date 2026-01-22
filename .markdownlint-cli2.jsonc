@@ -1,0 +1,20 @@
+{
+  "config": {
+    "extends": ".markdownlint.json",
+  },
+  "globs": ["**/*.md"],
+  "ignores": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/*.min.js",
+    "**/*.min.css",
+    "**/extensions/chrome/lib/**",
+    "**/fixtures/**",
+    "**/.aiassistant/**",
+    "**/.claude/**",
+    "**/.cursor/**",
+    "**/.junie/**",
+  ],
+}

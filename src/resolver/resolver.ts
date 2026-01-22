@@ -17,7 +17,7 @@ import { DEFAULT_RESOLVER_OPTIONS } from '../utils/constants';
 export function resolve(
   eid: ElementIdentity,
   dom: Document | Element,
-  options: ResolverOptions = {},
+  options: ResolverOptions = {}
 ): ResolveResult {
   const opts = { ...DEFAULT_RESOLVER_OPTIONS, ...options };
 
@@ -40,15 +40,11 @@ export function resolve(
   try {
     candidates = Array.from(root.querySelectorAll(selector));
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown selector error';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown selector error';
     return {
       status: 'error',
       elements: [],
-      warnings: [
-        `Invalid CSS selector: ${selector}`,
-        `Error: ${errorMessage}`,
-      ],
+      warnings: [`Invalid CSS selector: ${selector}`, `Error: ${errorMessage}`],
       confidence: 0,
       meta: { degraded: true, degradationReason: 'invalid-selector' },
     };
@@ -139,7 +135,7 @@ export function resolve(
  * Sorts constraints by priority (descending)
  */
 function sortByPriority(
-  constraints: ElementIdentity['constraints'],
+  constraints: ElementIdentity['constraints']
 ): ElementIdentity['constraints'] {
   return [...constraints].sort((a, b) => b.priority - a.priority);
 }

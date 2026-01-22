@@ -14,7 +14,7 @@ const selector = generateSEQL(button);
 
 // Later, find it again
 const found = resolveSEQL(selector, document);
-console.log(found[0] === button);  // true
+console.log(found[0] === button); // true
 ```
 
 ## 2. Form Submit Button
@@ -160,7 +160,7 @@ document.addEventListener('click', (event) => {
 
     // Send to analytics
     gtag('event', 'button_click', {
-      element_selector: selector
+      element_selector: selector,
     });
   }
 });
@@ -175,9 +175,7 @@ import { generateEIDBatch, stringifySEQL } from 'seql-js';
 
 const buttons = Array.from(document.querySelectorAll('button'));
 const eids = generateEIDBatch(buttons);
-const selectors = eids
-  .filter(eid => eid !== null)
-  .map(eid => stringifySEQL(eid!));
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
 
 console.log(`Generated ${selectors.length} button selectors`);
 ```

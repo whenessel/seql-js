@@ -3,6 +3,7 @@
 ## Context
 
 You are working on the `seql-js` library, a semantic element query language for stable DOM element identification. The library has two critical functions:
+
 - `stringifySEQL()` - converts EID to SEQL string
 - `parseSEQL()` - parses SEQL string back to EID
 
@@ -16,6 +17,7 @@ You are working on the `seql-js` library, a semantic element query language for 
 **Parser (`parseNode`)** expects: `tag.class[attrs]#pos`
 
 **Error:**
+
 ```
 Invalid node: unexpected content ".glass-card#2" in "form[data-seql-id="seql-el-17"].glass-card#2"
 ```
@@ -29,12 +31,14 @@ Fix the `stringifyNode` function in `/src/utils/seql-parser.ts` to generate comp
 In the `stringifyNode` function (approximately lines 221-339):
 
 **Current order:**
+
 1. Prepare attributes list
 2. Add attributes to result: `result += [...]`
 3. Add classes to result: `result += .class`
 4. Add position to result: `result += #N`
 
 **Required order:**
+
 1. Prepare attributes list (keep preparation logic)
 2. Add classes to result: `result += .class`
 3. Add attributes to result: `result += [...]`
@@ -44,20 +48,24 @@ In the `stringifyNode` function (approximately lines 221-339):
 
 1. **Locate the function `stringifyNode`** around line 221
 2. **Find the block that adds attributes** (lines ~298-304):
+
    ```typescript
    if (finalAttrs.length > 0) {
      finalAttrs.sort((a, b) => a.localeCompare(b));
      result += `[${finalAttrs.join(',')}]`;
    }
    ```
+
 3. **Find the block that adds classes** (lines ~306-320):
+
    ```typescript
    if (semantics.classes && semantics.classes.length > 0) {
      const stableClasses = filterStableClasses(semantics.classes);
      // ... filter logic ...
-     result += limitedClasses.map(c => `.${c}`).join('');
+     result += limitedClasses.map((c) => `.${c}`).join('');
    }
    ```
+
 4. **Move the classes block BEFORE the attributes block**
 5. **Keep all the filtering and simplification logic intact**
 6. **The preparation of `finalAttrs` must happen BEFORE the classes block, but the actual addition `result += [...]` must happen AFTER**
@@ -72,7 +80,7 @@ function stringifyNode(...): string {
   // 1. Prepare attributes (all the filtering logic stays here)
   const attrStrings: string[] = [];
   // ... attribute preparation code (lines 226-291) ...
-  
+
   let finalAttrs = attrStrings;
   if (isTarget && options.simplifyTarget && semantics.id) {
     finalAttrs = attrStrings.filter(/* ... */);
@@ -107,7 +115,7 @@ function stringifyNode(...): string {
 After making changes:
 
 1. Build the project: `npm run build` or `yarn build`
-2. Load the test suite in browser at https://appsurify.github.io/modern-seaside-stay/
+2. Load the test suite in browser at <https://appsurify.github.io/modern-seaside-stay/>
 3. Run: `window.testSeqlJs()`
 4. Verify:
    - ✅ SEQL string matches pattern: `tag.class[attrs]#pos`
@@ -117,12 +125,14 @@ After making changes:
 ## Expected Output
 
 **Before Fix:**
+
 ```
 v1.0: form[data-seql-id="seql-el-17"].glass-card#2 :: button[...]
       ↑ WRONG ORDER: [attrs].class
 ```
 
 **After Fix:**
+
 ```
 v1.0: form.glass-card[data-seql-id="seql-el-17"]#2 :: button[...]
       ↑ CORRECT ORDER: .class[attrs]

@@ -2,10 +2,7 @@
  * Constraint type identifiers
  * Following SPECIFICATION.md §13.4
  */
-export type ConstraintType =
-  | 'uniqueness'
-  | 'text-proximity'
-  | 'position';
+export type ConstraintType = 'uniqueness' | 'text-proximity' | 'position';
 
 /**
  * Base constraint structure
@@ -28,7 +25,6 @@ export interface UniquenessConstraint extends Constraint {
     mode: 'strict' | 'best-score' | 'allow-multiple';
   };
 }
-
 
 /**
  * Text proximity constraint (Levenshtein distance)

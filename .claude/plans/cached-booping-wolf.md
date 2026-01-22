@@ -7,6 +7,7 @@ Refactor documentation from Russian to English with improved organization, elimi
 ## Current State
 
 ### Documentation (46 files, ~8,600 lines)
+
 - **Language**: 85% Russian, comprehensive and high-quality
 - **Structure**:
   - `docs/specs/` (14 files): SPECIFICATION.md (1,107 lines), ARCHITECTURE.md (980 lines), SEQL_SPECIFICATION_v1.0.md (892 lines)
@@ -15,6 +16,7 @@ Refactor documentation from Russian to English with improved organization, elimi
 - **Version gap**: CHANGELOG.md only covers v1.0.3, missing v1.1.0 nth-child feature
 
 ### Codebase (32 TypeScript files, v1.1.0)
+
 - **Modules**: types/ generator/ resolver/ utils/
 - **Features**: EID/SEQL dual format, attribute filtering (v1.0.3), nth-child positioning (v1.1.0)
 - **Quality**: Zero dependencies, TypeScript-native, fully tested
@@ -134,19 +136,23 @@ seql-js/
 **Files to create** (12 files):
 
 1. **CHANGELOG.md** - Add v1.1.0 entry
+
    ```markdown
    ## [1.1.0] - 2026-01-22
 
    ### Added
+
    - **nth-child positioning**: EID now includes `nthChild` property for accurate element positioning
    - Anchor nodes record position among siblings
    - Enables precise table cell identification (tr:nth-child(4) > td:nth-child(1))
 
    ### Changed
+
    - Improved CSS selector generation with nth-child disambiguation
    - Reorganized documentation: migrated to English, improved structure
 
    ### Fixed
+
    - Anchor node positioning in complex DOM structures
    ```
 
@@ -168,6 +174,7 @@ seql-js/
    - `tables.md` - Table examples with nth-child (< 150 lines)
 
 5. **Update root README.md** - Add documentation links section
+
    ```markdown
    ## Documentation
 
@@ -294,10 +301,12 @@ After implementation, verify:
 ## Files to Modify
 
 ### Root Level
+
 - [CHANGELOG.md](CHANGELOG.md) - Add v1.1.0 entry
 - [README.md](README.md) - Update documentation links section
 
 ### Create New Documentation Structure
+
 - `docs/getting-started/` - 4 files
 - `docs/guides/` - 7 files
 - `docs/api/` - 5 files
@@ -308,6 +317,7 @@ After implementation, verify:
 - `docs/contributing/` - 5 files
 
 ### Archive Existing
+
 - Move `docs/specs/` → `docs/archive/legacy-specs-russian/`
 - Move `docs/issues/` → `docs/archive/issues-resolved/`
 
@@ -322,6 +332,7 @@ After implementation, verify:
 ## Implementation Notes
 
 This plan will be executed in phases over the course of implementation:
+
 - All new documentation will be written in clear, practical English
 - Russian originals preserved in archive for reference
 - Focus on code examples from actual tests

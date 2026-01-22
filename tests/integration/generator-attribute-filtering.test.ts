@@ -212,9 +212,7 @@ describe('Generator - Attribute Filtering Integration', () => {
 
       // Should include at least one ID attribute
       const hasIdAttr =
-        eidStr.includes('12345') ||
-        eidStr.includes('abc123') ||
-        eidStr.includes('xyz');
+        eidStr.includes('12345') || eidStr.includes('abc123') || eidStr.includes('xyz');
       expect(hasIdAttr).toBe(true);
     });
 

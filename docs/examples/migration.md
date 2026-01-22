@@ -72,13 +72,13 @@ import { generateSEQL } from 'seql-js';
 const criticalElements = [
   document.querySelector('.login-button'),
   document.querySelector('#email-input'),
-  document.querySelector('[data-testid="submit"]')
+  document.querySelector('[data-testid="submit"]'),
 ];
 
 // Generate SEQL selectors
 const selectors = criticalElements
-  .filter(el => el !== null)
-  .map(el => ({ element: el, seql: generateSEQL(el!) }));
+  .filter((el) => el !== null)
+  .map((el) => ({ element: el, seql: generateSEQL(el!) }));
 
 console.table(selectors);
 ```
@@ -118,18 +118,15 @@ function findElement(seqlSelector: string, fallbackCSS: string): Element | null 
 }
 
 // Usage
-const button = findElement(
-  'v1: form :: button[type="submit"]',
-  '.form button.submit'
-);
+const button = findElement('v1: form :: button[type="submit"]', '.form button.submit');
 ```
 
 ## Benefits of Migration
 
-| Aspect | CSS/XPath | SEQL |
-|--------|-----------|------|
-| Stability | ❌ Brittle | ✅ Resilient |
-| Readability | ❌ Technical | ✅ Semantic |
-| Maintenance | ❌ High | ✅ Low |
-| Refactoring | ❌ Breaks | ✅ Survives |
-| Framework updates | ❌ Breaks | ✅ Stable |
+| Aspect            | CSS/XPath    | SEQL         |
+| ----------------- | ------------ | ------------ |
+| Stability         | ❌ Brittle   | ✅ Resilient |
+| Readability       | ❌ Technical | ✅ Semantic  |
+| Maintenance       | ❌ High      | ✅ Low       |
+| Refactoring       | ❌ Breaks    | ✅ Survives  |
+| Framework updates | ❌ Breaks    | ✅ Stable    |

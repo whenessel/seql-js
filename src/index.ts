@@ -49,12 +49,7 @@ export type { ResolveStatus, ResolveResult, ValidationResult } from './types';
 export { generateEID } from './generator';
 
 // Generator components (for advanced usage)
-export {
-  AnchorFinder,
-  PathBuilder,
-  SemanticExtractor,
-  SvgFingerprinter,
-} from './generator';
+export { AnchorFinder, PathBuilder, SemanticExtractor, SvgFingerprinter } from './generator';
 export type { AnchorResult } from './generator';
 
 // ============================================================================
@@ -65,12 +60,7 @@ export type { AnchorResult } from './generator';
 export { resolve } from './resolver';
 
 // Resolver components (for advanced usage)
-export {
-  CssGenerator,
-  SemanticsMatcher,
-  ConstraintsEvaluator,
-  FallbackHandler,
-} from './resolver';
+export { CssGenerator, SemanticsMatcher, ConstraintsEvaluator, FallbackHandler } from './resolver';
 
 // ============================================================================
 // Utilities

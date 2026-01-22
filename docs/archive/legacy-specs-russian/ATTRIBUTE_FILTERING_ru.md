@@ -27,6 +27,7 @@ SEQL (Semantic Element Query Language) идентифицирует DOM элем
 ```
 
 **Проблема:** При переключении вкладки:
+
 ```typescript
 <button
   role="tab"
@@ -41,6 +42,7 @@ SEQL (Semantic Element Query Language) идентифицирует DOM элем
 ### Solution
 
 Система классификации атрибутов на:
+
 1. **Stable attributes** — описывают идентичность элемента
 2. **State attributes** — описывают текущее состояние элемента
 
@@ -57,25 +59,28 @@ SEQL (Semantic Element Query Language) идентифицирует DOM элем
 Атрибуты, описывающие семантику и роль элемента:
 
 ```typescript
-role                  // роль элемента
-aria-label            // метка элемента
-aria-labelledby       // ссылка на метку
-aria-describedby      // ссылка на описание
-aria-controls         // связь с контролируемым элементом
-aria-owns             // владение другими элементами
-aria-level            // уровень в иерархии (headings, tree)
-aria-posinset         // позиция в наборе (статическая)
-aria-setsize          // размер набора (статический)
-aria-haspopup         // наличие popup (capability, не state)
+role; // роль элемента
+aria - label; // метка элемента
+aria - labelledby; // ссылка на метку
+aria - describedby; // ссылка на описание
+aria - controls; // связь с контролируемым элементом
+aria - owns; // владение другими элементами
+aria - level; // уровень в иерархии (headings, tree)
+aria - posinset; // позиция в наборе (статическая)
+aria - setsize; // размер набора (статический)
+aria - haspopup; // наличие popup (capability, не state)
 ```
 
 **Примеры:**
+
 ```html
 <!-- Стабильные ARIA атрибуты -->
 <button role="tab" aria-label="Settings">
-<nav role="navigation" aria-label="Main menu">
-<h2 aria-level="2">Section Title</h2>
-<div role="listitem" aria-posinset="3" aria-setsize="10">
+  <nav role="navigation" aria-label="Main menu">
+    <h2 aria-level="2">Section Title</h2>
+    <div role="listitem" aria-posinset="3" aria-setsize="10"></div>
+  </nav>
+</button>
 ```
 
 #### State (Transient)
@@ -83,65 +88,73 @@ aria-haspopup         // наличие popup (capability, не state)
 Атрибуты, описывающие временное состояние:
 
 ```typescript
-aria-selected         // выбран/не выбран
-aria-checked          // отмечен/не отмечен (checkbox)
-aria-pressed          // нажат/не нажат (toggle button)
-aria-expanded         // развернут/свернут
-aria-hidden           // скрыт/виден
-aria-disabled         // отключен/включен
-aria-current          // текущий элемент
-aria-busy             // загружается/загружен
-aria-invalid          // валидация (valid/invalid)
-aria-grabbed          // drag & drop состояние
-aria-live             // live region update
-aria-atomic           // atomic update flag
+aria - selected; // выбран/не выбран
+aria - checked; // отмечен/не отмечен (checkbox)
+aria - pressed; // нажат/не нажат (toggle button)
+aria - expanded; // развернут/свернут
+aria - hidden; // скрыт/виден
+aria - disabled; // отключен/включен
+aria - current; // текущий элемент
+aria - busy; // загружается/загружен
+aria - invalid; // валидация (valid/invalid)
+aria - grabbed; // drag & drop состояние
+aria - live; // live region update
+aria - atomic; // atomic update flag
 ```
 
 **Примеры:**
+
 ```html
 <!-- Нестабильные ARIA атрибуты (исключаются) -->
-<button aria-selected="true">     <!-- меняется при клике -->
-<div aria-expanded="false">       <!-- меняется при раскрытии -->
-<input aria-invalid="true">       <!-- меняется при валидации -->
-<span aria-hidden="true">         <!-- меняется при показе/скрытии -->
+<button aria-selected="true">
+  <!-- меняется при клике -->
+  <div aria-expanded="false">
+    <!-- меняется при раскрытии -->
+    <input aria-invalid="true" />
+    <!-- меняется при валидации -->
+    <span aria-hidden="true"> <!-- меняется при показе/скрытии --></span>
+  </div>
+</button>
 ```
 
 ---
 
-### data-* Attributes
+### data-\* Attributes
 
 #### State Attributes (Excluded)
 
 Общие паттерны состояния:
 
 ```typescript
-data-state            // active/inactive/pending/error
-data-active           // true/false
-data-inactive         // true/false
-data-selected         // true/false
-data-open             // true/false (modal, dropdown)
-data-closed           // true/false
-data-visible          // true/false
-data-hidden           // true/false
-data-disabled         // true/false
-data-enabled          // true/false
-data-loading          // true/false
-data-error            // true/false
-data-success          // true/false
-data-highlighted      // true/false
-data-focused          // true/false
-data-hover            // true/false
-data-orientation      // horizontal/vertical (layout state)
-data-theme            // light/dark (UI state)
+data - state; // active/inactive/pending/error
+data - active; // true/false
+data - inactive; // true/false
+data - selected; // true/false
+data - open; // true/false (modal, dropdown)
+data - closed; // true/false
+data - visible; // true/false
+data - hidden; // true/false
+data - disabled; // true/false
+data - enabled; // true/false
+data - loading; // true/false
+data - error; // true/false
+data - success; // true/false
+data - highlighted; // true/false
+data - focused; // true/false
+data - hover; // true/false
+data - orientation; // horizontal/vertical (layout state)
+data - theme; // light/dark (UI state)
 ```
 
 **Примеры:**
+
 ```html
 <!-- Исключаются -->
 <div data-state="active">
-<button data-selected="true">
-<modal data-open="true">
-<input data-loading="false">
+  <button data-selected="true">
+    <modal data-open="true"> <input data-loading="false" /></modal>
+  </button>
+</div>
 ```
 
 #### Library Prefixes (Excluded)
@@ -159,15 +172,20 @@ data-tw-*             // Tailwind Merge
 ```
 
 **Примеры:**
+
 ```html
 <!-- Исключаются -->
 <div data-radix-collection-item>
-<div data-radix-scroll-area-viewport>
-<button data-headlessui-state="open">
-<span data-mui-color-scheme="light">
+  <div data-radix-scroll-area-viewport>
+    <button data-headlessui-state="open">
+      <span data-mui-color-scheme="light"></span>
+    </button>
+  </div>
+</div>
 ```
 
 **Обоснование:**
+
 - Эти атрибуты генерируются библиотеками для внутренних целей
 - Часто меняются между версиями библиотек
 - Не несут семантической информации об элементе
@@ -196,26 +214,31 @@ data-*-id             // любой атрибут, заканчивающийс
 ```
 
 **Примеры:**
+
 ```html
 <!-- Включаются -->
 <button data-testid="submit-button">
-<div data-cy="user-profile">
-<span data-product-id="12345">
-<form data-tracking-id="checkout-form">
+  <div data-cy="user-profile">
+    <span data-product-id="12345"> <form data-tracking-id="checkout-form"></form></span>
+  </div>
+</button>
 ```
 
-#### Generic data-* (Included by default)
+#### Generic data-\* (Included by default)
 
 Остальные `data-*` атрибуты включаются по умолчанию (blacklist approach):
 
 ```html
 <!-- Включаются (если не в blacklist) -->
 <div data-category="electronics">
-<button data-action="submit">
-<span data-section="header">
+  <button data-action="submit">
+    <span data-section="header"></span>
+  </button>
+</div>
 ```
 
 **Обоснование:**
+
 - Разработчики могут использовать кастомные `data-*` для идентификации
 - Безопаснее включить неизвестный атрибут, чем исключить нужный
 - Blacklist защищает от известных паттернов состояния
@@ -240,12 +263,13 @@ href                  // ссылка (a, link)
 ```
 
 **Примеры:**
+
 ```html
 <!-- Стабильные HTML атрибуты -->
-<input name="email" type="email" placeholder="Enter email">
+<input name="email" type="email" placeholder="Enter email" />
 <button type="submit" title="Submit form">
-<label for="email-input">
-<a href="/home">
+  <label for="email-input"> <a href="/home"></a></label>
+</button>
 ```
 
 #### State (Transient)
@@ -253,23 +277,26 @@ href                  // ссылка (a, link)
 Атрибуты, описывающие состояние формы/элемента:
 
 ```typescript
-disabled              // отключен/включен
-checked               // отмечен (checkbox/radio)
-selected              // выбран (option)
-hidden                // скрыт (HTML5 hidden)
-readonly              // только чтение
-required              // обязательное поле
-value                 // текущее значение input
+disabled; // отключен/включен
+checked; // отмечен (checkbox/radio)
+selected; // выбран (option)
+hidden; // скрыт (HTML5 hidden)
+readonly; // только чтение
+required; // обязательное поле
+value; // текущее значение input
 ```
 
 **Примеры:**
+
 ```html
 <!-- Нестабильные HTML атрибуты (исключаются) -->
-<input disabled>
-<input checked>
+<input disabled />
+<input checked />
 <option selected>
-<div hidden>
-<input value="current-text">
+  <div hidden>
+    <input value="current-text" />
+  </div>
+</option>
 ```
 
 ---
@@ -285,12 +312,16 @@ value                 // текущее значение input
 ```html
 <!-- Стабильные ID (включаются) -->
 <div id="main-nav">
-<form id="login-form">
-<button id="submit-button">
-<section id="user-profile">
+  <form id="login-form">
+    <button id="submit-button">
+      <section id="user-profile"></section>
+    </button>
+  </form>
+</div>
 ```
 
 **Признаки стабильного ID:**
+
 - Читаемое имя
 - Семантическое значение
 - Установлено разработчиком вручную
@@ -308,15 +339,19 @@ ID, генерируемые UI фреймворками:
 ```
 
 **Примеры:**
+
 ```html
 <!-- Генерируемые ID (исключаются) -->
 <div id="radix-:ru:-trigger-card">
-<div id="headlessui-menu-1">
-<input id="mui-text-field-42">
-<button id=":r1:">
+  <div id="headlessui-menu-1">
+    <input id="mui-text-field-42" />
+    <button id=":r1:"></button>
+  </div>
+</div>
 ```
 
 **Обоснование:**
+
 - Генерируемые ID меняются при ререндере
 - Не несут семантической информации
 - Зависят от порядка рендера
@@ -346,7 +381,7 @@ export function isStableAttribute(name: string, value: string): boolean {
   if (DATA_STATE_ATTRIBUTES.includes(name)) return false;
 
   // 4. Blacklist library-specific data-* prefixes
-  if (LIBRARY_DATA_PREFIXES.some(prefix => name.startsWith(prefix))) {
+  if (LIBRARY_DATA_PREFIXES.some((prefix) => name.startsWith(prefix))) {
     return false;
   }
 
@@ -358,7 +393,7 @@ export function isStableAttribute(name: string, value: string): boolean {
 
   // 7. Filter generated IDs by pattern
   if (name === 'id') {
-    if (GENERATED_ID_PATTERNS.some(pattern => pattern.test(value))) {
+    if (GENERATED_ID_PATTERNS.some((pattern) => pattern.test(value))) {
       return false;
     }
     return true;
@@ -421,6 +456,7 @@ class SemanticExtractor {
 ### Example 1: Tab Component
 
 **HTML:**
+
 ```html
 <div role="tablist">
   <button
@@ -437,16 +473,17 @@ class SemanticExtractor {
 ```
 
 **Generated EID (v1.0.3):**
+
 ```json
 {
   "target": {
     "tag": "button",
     "semantics": {
       "attributes": {
-        "role": "tab",                    // ✅ stable ARIA
-        "aria-label": "Profile",          // ✅ stable ARIA
+        "role": "tab", // ✅ stable ARIA
+        "aria-label": "Profile", // ✅ stable ARIA
         "aria-controls": "profile-panel", // ✅ stable ARIA
-        "data-testid": "profile-tab"      // ✅ test ID
+        "data-testid": "profile-tab" // ✅ test ID
         // aria-selected: excluded ❌
         // data-state: excluded ❌
       },
@@ -460,6 +497,7 @@ class SemanticExtractor {
 ```
 
 **Benefits:**
+
 - Селектор работает независимо от `aria-selected="true"` или `"false"`
 - Селектор работает независимо от `data-state="active"` или `"inactive"`
 
@@ -468,6 +506,7 @@ class SemanticExtractor {
 ### Example 2: Form Input
 
 **HTML:**
+
 ```html
 <form id="login-form">
   <input
@@ -478,21 +517,22 @@ class SemanticExtractor {
     disabled
     value="user@example.com"
     data-testid="email-input"
-  >
+  />
 </form>
 ```
 
 **Generated EID (v1.0.3):**
+
 ```json
 {
   "target": {
     "tag": "input",
     "semantics": {
       "attributes": {
-        "name": "email",                  // ✅ stable HTML
-        "type": "email",                  // ✅ stable HTML
+        "name": "email", // ✅ stable HTML
+        "type": "email", // ✅ stable HTML
         "placeholder": "Enter your email", // ✅ stable HTML
-        "data-testid": "email-input"      // ✅ test ID
+        "data-testid": "email-input" // ✅ test ID
         // required: excluded ❌
         // disabled: excluded ❌
         // value: excluded ❌
@@ -503,6 +543,7 @@ class SemanticExtractor {
 ```
 
 **Benefits:**
+
 - Поле найдется независимо от `disabled`/`enabled` состояния
 - Поле найдется независимо от текущего `value`
 - Поле найдется независимо от `required` валидации
@@ -512,6 +553,7 @@ class SemanticExtractor {
 ### Example 3: Radix UI Dialog
 
 **HTML:**
+
 ```html
 <div
   id="radix-:ru:-content"
@@ -527,14 +569,15 @@ class SemanticExtractor {
 ```
 
 **Generated EID (v1.0.3):**
+
 ```json
 {
   "target": {
     "tag": "div",
     "semantics": {
       "attributes": {
-        "role": "dialog",           // ✅ stable ARIA
-        "aria-label": "Settings"    // ✅ stable ARIA
+        "role": "dialog", // ✅ stable ARIA
+        "aria-label": "Settings" // ✅ stable ARIA
         // id: excluded (generated) ❌
         // aria-modal: excluded (state) ❌
         // data-radix-*: excluded (library) ❌
@@ -551,6 +594,7 @@ class SemanticExtractor {
 ```
 
 **Benefits:**
+
 - Независимость от Radix UI внутренних атрибутов
 - Независимость от сгенерированного ID
 - Фокус на семантике: это диалог с меткой "Settings"
@@ -562,15 +606,17 @@ class SemanticExtractor {
 ### Test Coverage
 
 **Unit Tests:** `tests/unit/attribute-filtering.test.ts`
+
 - 17 тестов, 100% покрытие
 - Категории:
   - ARIA attributes (stable vs state)
-  - data-* attributes (state, library, IDs)
+  - data-\* attributes (state, library, IDs)
   - HTML attributes (stable vs state)
   - ID filtering (generated vs stable)
   - Edge cases
 
 **Integration Tests:** `tests/integration/generator-attribute-filtering.test.ts`
+
 - 14 тестов
 - Сценарии:
   - Исключение state атрибутов из EID
@@ -580,6 +626,7 @@ class SemanticExtractor {
   - Комплексные сценарии
 
 **Regression Tests:**
+
 - ✅ Все 255 существующих тестов проходят
 - ✅ Нет breaking changes в существующей функциональности
 
@@ -587,17 +634,19 @@ class SemanticExtractor {
 
 ## Decision Log
 
-### Why Blacklist Approach for data-*?
+### Why Blacklist Approach for data-\*?
 
 **Решение:** Использовать blacklist (исключать известные паттерны состояния), а не whitelist (включать только известные).
 
 **Обоснование:**
+
 1. Разработчики используют кастомные `data-*` для идентификации
 2. Невозможно предугадать все кастомные атрибуты
 3. Безопаснее включить неизвестный, чем исключить нужный
 4. Blacklist защищает от известных антипаттернов
 
 **Альтернатива (отвергнута):**
+
 - Whitelist: включать только `data-testid`, `data-cy`, etc.
 - Проблема: исключит легитимные `data-product-id`, `data-entity-type`, etc.
 
@@ -608,18 +657,20 @@ class SemanticExtractor {
 **Решение:** Исключать атрибуты с префиксами `data-radix-*`, `data-headlessui-*`, etc.
 
 **Обоснование:**
+
 1. Библиотеки генерируют эти атрибуты для внутренних целей
 2. Атрибуты часто меняются между версиями
 3. Не несут семантической информации об элементе
 4. Могут содержать состояние или технические детали
 
 **Примеры нестабильности:**
+
 ```html
 <!-- v1 библиотеки -->
 <div data-radix-collection-item>
-
-<!-- v2 библиотеки -->
-<div data-radix-collection-member>  <!-- название изменилось -->
+  <!-- v2 библиотеки -->
+  <div data-radix-collection-member><!-- название изменилось --></div>
+</div>
 ```
 
 ---
@@ -629,6 +680,7 @@ class SemanticExtractor {
 **Вопрос:** Оба связаны с popup, почему один стабильный, а другой — нет?
 
 **Ответ:**
+
 - `aria-haspopup` — описывает **capability**: "у этого элемента ЕСТЬ popup"
   - Это свойство элемента, часть его идентичности
   - Не меняется при взаимодействии
@@ -638,15 +690,16 @@ class SemanticExtractor {
   - Меняется при каждом открытии/закрытии
 
 **Аналогия:**
+
 ```typescript
 // Capability (identity)
 const button = {
-  hasPopup: true  // ✅ стабильно
+  hasPopup: true, // ✅ стабильно
 };
 
 // State (transient)
 const button = {
-  isExpanded: false  // ❌ меняется при клике
+  isExpanded: false, // ❌ меняется при клике
 };
 ```
 
@@ -657,18 +710,22 @@ const button = {
 **Вопрос:** Почему `value` атрибут считается state, а не identity?
 
 **Ответ:**
+
 - `value` представляет **текущее содержимое** input поля
 - Меняется при каждом вводе пользователя
 - Не является частью идентичности поля
 
 **Идентичность input:**
+
 ```html
-<input name="email" type="email" placeholder="Enter email">
+<input name="email" type="email" placeholder="Enter email" />
 ```
 
 **Состояние input:**
+
 ```html
-<input value="user@example.com">  <!-- текущее значение -->
+<input value="user@example.com" />
+<!-- текущее значение -->
 ```
 
 **Исключение:** `value` для `<button>` может быть стабильным, но для упрощения исключаем везде.
@@ -682,6 +739,7 @@ const button = {
 ⚠️ **EID для элементов с state-атрибутами изменится**
 
 **До v1.0.3:**
+
 ```json
 {
   "attributes": {
@@ -694,6 +752,7 @@ const button = {
 ```
 
 **После v1.0.3:**
+
 ```json
 {
   "attributes": {
@@ -705,12 +764,14 @@ const button = {
 ### Recommended Actions
 
 1. **Перегенерировать все EID:**
+
    ```typescript
    // Для существующих элементов
    const newEID = generateEID(element);
    ```
 
 2. **Обновить stored EID в аналитике:**
+
    ```typescript
    // Migrация в БД
    UPDATE analytics_events
@@ -734,7 +795,7 @@ const eidOld = generateEID(element, { version: '1.0.2' });
 // Отправлять оба
 analytics.track('click', {
   element_id_v3: eidNew,
-  element_id_v2: eidOld  // для совместимости
+  element_id_v2: eidOld, // для совместимости
 });
 ```
 
@@ -745,6 +806,7 @@ analytics.track('click', {
 ### Generation Performance
 
 **Измерения:**
+
 - До v1.0.3: ~1.24ms per element
 - После v1.0.3: ~1.77ms per element
 - **Overhead: +0.53ms (+43%)**
@@ -764,16 +826,18 @@ analytics.track('click', {
 ### Potential Improvements
 
 1. **Configuration:**
+
    ```typescript
    generateEID(element, {
      attributeFiltering: {
        includeLibraryPrefixes: ['data-my-app-'],
-       excludeCustom: ['data-tmp-*']
-     }
+       excludeCustom: ['data-tmp-*'],
+     },
    });
    ```
 
 2. **Custom Classifiers:**
+
    ```typescript
    registerAttributeClassifier('data-custom', (value) => {
      return !value.includes('temp');
@@ -781,6 +845,7 @@ analytics.track('click', {
    ```
 
 3. **Versioned Strategies:**
+
    ```typescript
    // Разные стратегии для разных версий
    filterAttributes(attrs, { strategy: 'v1.0.3' });

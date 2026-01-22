@@ -13,16 +13,16 @@ function generateSEQL(
   element: Element,
   generatorOptions?: GeneratorOptions,
   stringifyOptions?: StringifyOptions
-): string | null
+): string | null;
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `element` | `Element` | Yes | The DOM element to generate a selector for |
-| `generatorOptions` | `GeneratorOptions` | No | Options for EID generation |
-| `stringifyOptions` | `StringifyOptions` | No | Options for SEQL string formatting |
+| Parameter          | Type               | Required | Description                                |
+| ------------------ | ------------------ | -------- | ------------------------------------------ |
+| `element`          | `Element`          | Yes      | The DOM element to generate a selector for |
+| `generatorOptions` | `GeneratorOptions` | No       | Options for EID generation                 |
+| `stringifyOptions` | `StringifyOptions` | No       | Options for SEQL string formatting         |
 
 ### Returns
 
@@ -33,7 +33,7 @@ function generateSEQL(
 
 ```typescript
 interface StringifyOptions {
-  verbose?: boolean;        // Include all details (default: false)
+  verbose?: boolean; // Include all details (default: false)
   includeNthChild?: boolean; // Include nth-child positions (default: true)
 }
 ```
@@ -61,7 +61,7 @@ const input = document.querySelector('input[type="email"]');
 const selector = generateSEQL(
   input,
   { maxPathDepth: 5 },
-  { verbose: false }  // Compact format (default)
+  { verbose: false } // Compact format (default)
 );
 
 console.log(selector);
@@ -77,7 +77,7 @@ const link = document.querySelector('a');
 const selector = generateSEQL(
   link,
   {},
-  { verbose: true }  // Include all semantic details
+  { verbose: true } // Include all semantic details
 );
 
 console.log(selector);
@@ -93,13 +93,15 @@ v1: <anchor> :: <path> > <target>
 ```
 
 **Components**:
+
 - `v1:` - Version prefix
 - `<anchor>` - Semantic root element with attributes
 - `::` - Anchor-to-path separator
-- `<path>` - Semantic traversal (` > ` separated)
+- `<path>` - Semantic traversal (`>` separated)
 - `<target>` - Target element with attributes
 
 **Example Breakdown**:
+
 ```
 v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
 │   └──────anchor──────────┘    └──path──┘   └─────────target──────────────┘
@@ -119,16 +121,16 @@ function resolveSEQL(
   selector: string,
   dom: Document | Element,
   options?: ResolverOptions
-): Element[]
+): Element[];
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `selector` | `string` | Yes | The SEQL selector to resolve |
-| `dom` | `Document \| Element` | Yes | Document or container to search within |
-| `options` | `ResolverOptions` | No | Options for resolution |
+| Parameter  | Type                  | Required | Description                            |
+| ---------- | --------------------- | -------- | -------------------------------------- |
+| `selector` | `string`              | Yes      | The SEQL selector to resolve           |
+| `dom`      | `Document \| Element` | Yes      | Document or container to search within |
+| `options`  | `ResolverOptions`     | No       | Options for resolution                 |
 
 ### Returns
 
@@ -175,7 +177,7 @@ import { resolveSEQL } from 'seql-js';
 const selector = 'v1: form :: input[name="email"]';
 const elements = resolveSEQL(selector, document, {
   strictMode: true,
-  requireUniqueness: true
+  requireUniqueness: true,
 });
 
 // Will only return element if exactly 1 high-confidence match
@@ -220,14 +222,14 @@ Parses a SEQL selector string into an `ElementIdentity` object.
 ### Signature
 
 ```typescript
-function parseSEQL(selector: string): ElementIdentity
+function parseSEQL(selector: string): ElementIdentity;
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `selector` | `string` | Yes | SEQL selector string to parse |
+| Parameter  | Type     | Required | Description                   |
+| ---------- | -------- | -------- | ----------------------------- |
+| `selector` | `string` | Yes      | SEQL selector string to parse |
 
 ### Returns
 
@@ -247,8 +249,8 @@ import { parseSEQL } from 'seql-js';
 const selector = 'v1: form :: button[type="submit"]';
 const eid = parseSEQL(selector);
 
-console.log('Anchor tag:', eid.anchor.tag);        // "form"
-console.log('Target tag:', eid.target.tag);        // "button"
+console.log('Anchor tag:', eid.anchor.tag); // "form"
+console.log('Target tag:', eid.target.tag); // "button"
 console.log('Target type:', eid.target.semantics.attributes.type); // "submit"
 ```
 
@@ -267,7 +269,7 @@ try {
 
   // Resolve with custom options
   const result = resolve(eid, document, {
-    strictMode: true
+    strictMode: true,
   });
 
   console.log('Status:', result.status);
@@ -298,18 +300,15 @@ Converts an `ElementIdentity` object into a SEQL selector string.
 ### Signature
 
 ```typescript
-function stringifySEQL(
-  eid: ElementIdentity,
-  options?: StringifyOptions
-): string
+function stringifySEQL(eid: ElementIdentity, options?: StringifyOptions): string;
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `eid` | `ElementIdentity` | Yes | The EID to convert |
-| `options` | `StringifyOptions` | No | Formatting options |
+| Parameter | Type               | Required | Description        |
+| --------- | ------------------ | -------- | ------------------ |
+| `eid`     | `ElementIdentity`  | Yes      | The EID to convert |
+| `options` | `StringifyOptions` | No       | Formatting options |
 
 ### Returns
 
@@ -475,16 +474,16 @@ const button = resolveSEQL(buttonSelector!, document)[0];
 
 ## Comparison with EID/Core API
 
-| Feature | SEQL Functions | EID/Core Functions |
-|---------|---------------|-------------------|
+| Feature     | SEQL Functions         | EID/Core Functions                  |
+| ----------- | ---------------------- | ----------------------------------- |
 | Return type | `string` / `Element[]` | `ElementIdentity` / `ResolveResult` |
-| Simplicity | ⭐⭐⭐⭐⭐ Simple | ⭐⭐⭐ Advanced |
-| Size | ~100-300 bytes | ~500-2000 bytes |
-| Metadata | None | Full details |
-| Status info | No | Yes (4 statuses) |
-| Confidence | No | Yes (0-1 score) |
-| Warnings | No | Yes |
-| Use case | Analytics, storage | Debugging, advanced |
+| Simplicity  | ⭐⭐⭐⭐⭐ Simple      | ⭐⭐⭐ Advanced                     |
+| Size        | ~100-300 bytes         | ~500-2000 bytes                     |
+| Metadata    | None                   | Full details                        |
+| Status info | No                     | Yes (4 statuses)                    |
+| Confidence  | No                     | Yes (0-1 score)                     |
+| Warnings    | No                     | Yes                                 |
+| Use case    | Analytics, storage     | Debugging, advanced                 |
 
 ## Next Steps
 

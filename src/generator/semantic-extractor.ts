@@ -118,8 +118,7 @@ export class SemanticExtractor {
 
     // Angular/React service attributes
     if (attrName.startsWith('ng-') || attrName.startsWith('_ng')) return true;
-    if (attrName.startsWith('data-reactid') || attrName.startsWith('data-react'))
-      return true;
+    if (attrName.startsWith('data-reactid') || attrName.startsWith('data-react')) return true;
     if (attrName.startsWith('data-v-')) return true; // Vue scoped styles
 
     return false;
@@ -193,9 +192,7 @@ export class SemanticExtractor {
 
       // Clean value for href/src
       const value =
-        name === 'href' || name === 'src'
-          ? cleanAttributeValue(name, attr.value)
-          : attr.value;
+        name === 'href' || name === 'src' ? cleanAttributeValue(name, attr.value) : attr.value;
 
       // Skip empty values
       if (!value || value.trim() === '') continue;
@@ -222,12 +219,9 @@ export class SemanticExtractor {
 
     // Limit text length for performance
     const maxLength = 100;
-    const truncatedRaw =
-      rawText.length > maxLength ? rawText.slice(0, maxLength) + '...' : rawText;
+    const truncatedRaw = rawText.length > maxLength ? rawText.slice(0, maxLength) + '...' : rawText;
     const truncatedNorm =
-      normalized.length > maxLength
-        ? normalized.slice(0, maxLength) + '...'
-        : normalized;
+      normalized.length > maxLength ? normalized.slice(0, maxLength) + '...' : normalized;
 
     return {
       raw: truncatedRaw,
@@ -282,5 +276,4 @@ export class SemanticExtractor {
       'summary',
     ].includes(tag);
   }
-
 }

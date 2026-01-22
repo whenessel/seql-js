@@ -259,8 +259,8 @@ File: /src/utils/seql-parser.ts
 ## Summary Table
 
 | Component  | Generator Order (Before) | Generator Order (After) | Parser Order | Match? |
-|------------|-------------------------|------------------------|--------------|--------|
-| Tag        | 1                       | 1                      | 1            | ✅     |
-| Attributes | **2** ❌                | **3** ✅               | 3            | ✅     |
-| Classes    | **3** ❌                | **2** ✅               | 2            | ✅     |
-| Position   | 4                       | 4                      | 4            | ✅     |
+| ---------- | ------------------------ | ----------------------- | ------------ | ------ |
+| Tag        | 1                        | 1                       | 1            | ✅     |
+| Attributes | **2** ❌                 | **3** ✅                | 3            | ✅     |
+| Classes    | **3** ❌                 | **2** ✅                | 2            | ✅     |
+| Position   | 4                        | 4                       | 4            | ✅     |

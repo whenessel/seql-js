@@ -103,7 +103,7 @@ describe('resolver', () => {
       expect(dsl).not.toBeNull();
 
       // Verify that nthChild is present in path nodes
-      const pathWithNthChild = dsl!.path.filter(node => node.nthChild !== undefined);
+      const pathWithNthChild = dsl!.path.filter((node) => node.nthChild !== undefined);
       expect(pathWithNthChild.length).toBeGreaterThan(0);
 
       // Resolve back
@@ -121,14 +121,14 @@ describe('resolver', () => {
       const table = doc.createElement('table');
       table.setAttribute('role', 'grid');
       table.setAttribute('aria-labelledby', 'calendar-title');
-      
+
       const tbody = doc.createElement('tbody');
       tbody.className = 'calendar-body';
       table.appendChild(tbody);
 
       // Row 1: Previous month dates (28, 29, 30) + current month (1, 2, 3, 4)
       const row1 = doc.createElement('tr');
-      ['28', '29', '30', '31', '1', '2', '3'].forEach(text => {
+      ['28', '29', '30', '31', '1', '2', '3'].forEach((text) => {
         const td = doc.createElement('td');
         td.setAttribute('role', 'presentation');
         td.textContent = text;
@@ -138,7 +138,7 @@ describe('resolver', () => {
 
       // Row 2: Current month dates (4-10)
       const row2 = doc.createElement('tr');
-      ['4', '5', '6', '7', '8', '9', '10'].forEach(text => {
+      ['4', '5', '6', '7', '8', '9', '10'].forEach((text) => {
         const td = doc.createElement('td');
         td.setAttribute('role', 'presentation');
         td.textContent = text;
@@ -148,7 +148,7 @@ describe('resolver', () => {
 
       // Row 3: Current month dates (11-17)
       const row3 = doc.createElement('tr');
-      ['11', '12', '13', '14', '15', '16', '17'].forEach(text => {
+      ['11', '12', '13', '14', '15', '16', '17'].forEach((text) => {
         const td = doc.createElement('td');
         td.setAttribute('role', 'presentation');
         td.textContent = text;
@@ -158,7 +158,7 @@ describe('resolver', () => {
 
       // Row 4: Current month dates (18-24) - TARGET ROW
       const row4 = doc.createElement('tr');
-      ['18', '19', '20', '21', '22', '23', '24'].forEach(text => {
+      ['18', '19', '20', '21', '22', '23', '24'].forEach((text) => {
         const td = doc.createElement('td');
         td.setAttribute('role', 'presentation');
         td.textContent = text;
@@ -168,7 +168,7 @@ describe('resolver', () => {
 
       // Row 5: Current month dates (25-31)
       const row5 = doc.createElement('tr');
-      ['25', '26', '27', '28', '29', '30', '31'].forEach(text => {
+      ['25', '26', '27', '28', '29', '30', '31'].forEach((text) => {
         const td = doc.createElement('td');
         td.setAttribute('role', 'presentation');
         td.textContent = text;
@@ -183,10 +183,10 @@ describe('resolver', () => {
       const targetTd = targetRow.children[6] as HTMLTableCellElement; // Cell 7 (0-indexed: 6)
 
       expect(targetTd.textContent).toBe('31');
-      
+
       // Verify there are multiple TDs with text "31"
       const allTdsWithText31 = Array.from(table.querySelectorAll('td')).filter(
-        td => td.textContent === '31'
+        (td) => td.textContent === '31'
       );
       expect(allTdsWithText31.length).toBe(2); // One in row 1, one in row 5
 
@@ -195,11 +195,11 @@ describe('resolver', () => {
       expect(dsl).not.toBeNull();
 
       // Verify that nthChild is present in path nodes
-      const pathWithNthChild = dsl!.path.filter(node => node.nthChild !== undefined);
+      const pathWithNthChild = dsl!.path.filter((node) => node.nthChild !== undefined);
       expect(pathWithNthChild.length).toBeGreaterThan(0);
 
       // Find the TR node in path and verify its nthChild is 5 (row 5)
-      const trNode = dsl!.path.find(node => node.tag === 'tr');
+      const trNode = dsl!.path.find((node) => node.tag === 'tr');
       expect(trNode).toBeDefined();
       expect(trNode!.nthChild).toBe(5); // Row 5
 
@@ -210,15 +210,15 @@ describe('resolver', () => {
       expect(result.elements).toHaveLength(1);
       expect(result.elements[0]).toBe(targetTd);
       expect(result.elements[0].textContent).toBe('31');
-      
+
       // Verify it's the correct TD by checking its position
       const resolvedTd = result.elements[0] as HTMLTableCellElement;
       const resolvedRow = resolvedTd.parentElement as HTMLTableRowElement;
       const resolvedTbody = resolvedRow.parentElement as HTMLTableSectionElement;
-      
+
       const rowIndex = Array.from(resolvedTbody.children).indexOf(resolvedRow);
       const cellIndex = Array.from(resolvedRow.children).indexOf(resolvedTd);
-      
+
       expect(rowIndex).toBe(4); // Row 5 (0-indexed: 4)
       expect(cellIndex).toBe(6); // Cell 7 (0-indexed: 6)
     });
@@ -229,7 +229,7 @@ describe('resolver', () => {
       table.setAttribute('role', 'grid');
       table.setAttribute('aria-labelledby', 'react-day-picker-28');
       table.className = 'w-full border-collapse space-y-1';
-      
+
       const tbody = doc.createElement('tbody');
       tbody.className = 'rdp-tbody';
       table.appendChild(tbody);
@@ -271,15 +271,15 @@ describe('resolver', () => {
       expect(result.elements).toHaveLength(1);
       expect(result.elements[0]).toBe(targetTd);
       expect(result.elements[0].tagName.toLowerCase()).toBe('td');
-      
+
       // Verify it's the correct TD by checking its position
       const resolvedTd = result.elements[0] as HTMLTableCellElement;
       const resolvedRow = resolvedTd.parentElement as HTMLTableRowElement;
       const resolvedTbody = resolvedRow.parentElement as HTMLTableSectionElement;
-      
+
       const rowIndex = Array.from(resolvedTbody.children).indexOf(resolvedRow);
       const cellIndex = Array.from(resolvedRow.children).indexOf(resolvedTd);
-      
+
       expect(rowIndex).toBe(2); // Row 3 (0-indexed: 2)
       expect(cellIndex).toBe(3); // Cell 4 (0-indexed: 3)
     });
@@ -289,7 +289,7 @@ describe('resolver', () => {
       const table = doc.createElement('table');
       table.setAttribute('role', 'grid');
       table.setAttribute('aria-labelledby', 'react-day-picker-28');
-      
+
       const tbody = doc.createElement('tbody');
       tbody.className = 'rdp-tbody';
       table.appendChild(tbody);
@@ -309,7 +309,7 @@ describe('resolver', () => {
 
       // Target: TR element (row 4, 0-indexed: 3)
       const targetRow = tbody.children[3] as HTMLTableRowElement;
-      
+
       expect(targetRow.tagName.toLowerCase()).toBe('tr');
       expect(targetRow.children.length).toBe(7);
 
@@ -319,26 +319,26 @@ describe('resolver', () => {
 
       // Verify DSL structure
       expect(dsl!.target.tag).toBe('tr');
-      
+
       // Verify that nthChild is present in target
       expect(dsl!.target.nthChild).toBeDefined();
       expect(dsl!.target.nthChild).toBe(4); // Row 4 (1-based)
 
       // Resolve back - should find the correct TR element
       const result = resolve(dsl!, doc);
-      
+
       expect(result.status).toBe('success');
       expect(result.elements).toHaveLength(1);
       expect(result.elements[0]).toBe(targetRow);
       expect(result.elements[0].tagName.toLowerCase()).toBe('tr');
-      
+
       // Verify it's the correct TR by checking its position
       const resolvedRow = result.elements[0] as HTMLTableRowElement;
       const resolvedTbody = resolvedRow.parentElement as HTMLTableSectionElement;
-      
+
       const rowIndex = Array.from(resolvedTbody.children).indexOf(resolvedRow);
       expect(rowIndex).toBe(3); // Row 4 (0-indexed: 3)
-      
+
       // Verify row content
       expect(resolvedRow.children[0].textContent).toBe('22'); // First cell of row 4
     });

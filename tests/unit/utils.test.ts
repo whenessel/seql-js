@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  normalizeText,
-  filterClasses,
-  isUtilityClass,
-  validateEID,
-} from '../../src/utils';
+import { normalizeText, filterClasses, isUtilityClass, validateEID } from '../../src/utils';
 import type { ElementIdentity } from '../../src/types';
 
 describe('utils', () => {
@@ -12,9 +7,7 @@ describe('utils', () => {
     it('should trim and collapse whitespace', () => {
       expect(normalizeText('  hello   world  ')).toBe('hello world');
       expect(normalizeText('hello\n\tworld')).toBe('hello world');
-      expect(normalizeText('   multiple   spaces   here   ')).toBe(
-        'multiple spaces here',
-      );
+      expect(normalizeText('   multiple   spaces   here   ')).toBe('multiple spaces here');
     });
 
     it('should handle empty and null values', () => {
@@ -38,13 +31,7 @@ describe('utils', () => {
     });
 
     it('should filter out dynamic classes as utility', () => {
-      const classes = [
-        'nav-item',
-        'css-abc123',
-        'jss123',
-        'button-primary',
-        'sc-bdVaJa-0',
-      ];
+      const classes = ['nav-item', 'css-abc123', 'jss123', 'button-primary', 'sc-bdVaJa-0'];
       const result = filterClasses(classes);
 
       expect(result.semantic).toEqual(['nav-item', 'button-primary']);

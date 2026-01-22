@@ -56,7 +56,7 @@ Create `.ai/naming/` directory with:
 2. **files.md** (~80 lines)
 
 - File naming rules (kebab-case)
-- Test file conventions (*.test.ts, *.spec.ts)
+- Test file conventions (_.test.ts,_.spec.ts)
 - Generic examples (user-service.ts, data-processor.ts)
 
 3. **directories.md** (~80 lines)

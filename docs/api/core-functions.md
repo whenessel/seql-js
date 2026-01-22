@@ -9,18 +9,15 @@ Generates an Element Identity Descriptor (EID) from a DOM element.
 ### Signature
 
 ```typescript
-function generateEID(
-  target: Element,
-  options?: GeneratorOptions
-): ElementIdentity | null
+function generateEID(target: Element, options?: GeneratorOptions): ElementIdentity | null;
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `target` | `Element` | Yes | The DOM element to generate an EID for |
-| `options` | `GeneratorOptions` | No | Configuration options for generation |
+| Parameter | Type               | Required | Description                            |
+| --------- | ------------------ | -------- | -------------------------------------- |
+| `target`  | `Element`          | Yes      | The DOM element to generate an EID for |
+| `options` | `GeneratorOptions` | No       | Configuration options for generation   |
 
 ### Returns
 
@@ -31,11 +28,11 @@ function generateEID(
 
 ```typescript
 interface GeneratorOptions {
-  maxPathDepth?: number;          // Max depth for path building (default: 10)
+  maxPathDepth?: number; // Max depth for path building (default: 10)
   enableSvgFingerprint?: boolean; // Enable SVG fingerprinting (default: true)
-  confidenceThreshold?: number;   // Min confidence threshold (default: 0.1)
-  fallbackToBody?: boolean;       // Use <body> if no anchor found (default: true)
-  cache?: EIDCache;              // Custom cache instance (default: global cache)
+  confidenceThreshold?: number; // Min confidence threshold (default: 0.1)
+  fallbackToBody?: boolean; // Use <body> if no anchor found (default: true)
+  cache?: EIDCache; // Custom cache instance (default: global cache)
 }
 ```
 
@@ -66,9 +63,9 @@ import { generateEID } from 'seql-js';
 
 const input = document.querySelector('input[type="email"]');
 const eid = generateEID(input, {
-  maxPathDepth: 5,                // Shorter path for performance
-  enableSvgFingerprint: false,    // Disable SVG processing
-  confidenceThreshold: 0.3        // Higher quality threshold
+  maxPathDepth: 5, // Shorter path for performance
+  enableSvgFingerprint: false, // Disable SVG processing
+  confidenceThreshold: 0.3, // Higher quality threshold
 });
 ```
 
@@ -88,20 +85,20 @@ const eid = generateEID(element, { cache: sessionCache });
 
 ```typescript
 interface ElementIdentity {
-  version: string;               // EID format version (e.g., "1.0")
+  version: string; // EID format version (e.g., "1.0")
 
-  anchor: AnchorNode;           // Semantic root element
-  path: PathNode[];             // Semantic traversal
-  target: TargetNode;           // The element itself
+  anchor: AnchorNode; // Semantic root element
+  path: PathNode[]; // Semantic traversal
+  target: TargetNode; // The element itself
 
-  constraints?: Constraint[];    // Disambiguation rules
+  constraints?: Constraint[]; // Disambiguation rules
   fallbackRules?: FallbackRules; // Fallback resolution rules
 
   meta: {
-    confidence: number;          // Quality score (0-1)
-    generatedAt: string;         // ISO timestamp
-    degraded: boolean;           // True if ideal conditions not met
-    degradationReason?: string;  // Why degraded (if applicable)
+    confidence: number; // Quality score (0-1)
+    generatedAt: string; // ISO timestamp
+    degraded: boolean; // True if ideal conditions not met
+    degradationReason?: string; // Why degraded (if applicable)
   };
 }
 ```
@@ -110,9 +107,9 @@ interface ElementIdentity {
 
 ```typescript
 interface AnchorNode {
-  tag: string;                   // Tag name (e.g., "form", "main")
-  semantics: ElementSemantics;   // Semantic features
-  nthChild?: number;             // Position among siblings (v1.1.0)
+  tag: string; // Tag name (e.g., "form", "main")
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position among siblings (v1.1.0)
 }
 ```
 
@@ -120,9 +117,9 @@ interface AnchorNode {
 
 ```typescript
 interface TargetNode {
-  tag: string;                   // Tag name (e.g., "button", "input")
-  semantics: ElementSemantics;   // Semantic features
-  nthChild?: number;             // Position among siblings (v1.1.0)
+  tag: string; // Tag name (e.g., "button", "input")
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position among siblings (v1.1.0)
 }
 ```
 
@@ -131,18 +128,21 @@ interface TargetNode {
 `generateEID()` returns `null` in these cases:
 
 1. **Element not connected to DOM**
+
    ```typescript
    const orphan = document.createElement('button');
    generateEID(orphan); // Returns null
    ```
 
 2. **Element lacks owner document**
+
    ```typescript
    const detached = document.createElement('div');
    generateEID(detached); // Returns null
    ```
 
 3. **Confidence below threshold** (with custom threshold)
+
    ```typescript
    generateEID(element, { confidenceThreshold: 0.9 }); // May return null
    ```
@@ -167,16 +167,16 @@ function resolve(
   eid: ElementIdentity,
   dom: Document | Element,
   options?: ResolverOptions
-): ResolveResult
+): ResolveResult;
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `eid` | `ElementIdentity` | Yes | The EID to resolve |
-| `dom` | `Document \| Element` | Yes | Document or container element to search within |
-| `options` | `ResolverOptions` | No | Configuration options for resolution |
+| Parameter | Type                  | Required | Description                                    |
+| --------- | --------------------- | -------- | ---------------------------------------------- |
+| `eid`     | `ElementIdentity`     | Yes      | The EID to resolve                             |
+| `dom`     | `Document \| Element` | Yes      | Document or container element to search within |
+| `options` | `ResolverOptions`     | No       | Configuration options for resolution           |
 
 ### Returns
 
@@ -186,10 +186,10 @@ Always returns a `ResolveResult` object with status, elements, and metadata.
 
 ```typescript
 interface ResolverOptions {
-  strictMode?: boolean;         // Reject degraded matches (default: false)
-  requireUniqueness?: boolean;  // Fail if multiple matches (default: false)
-  enableFallback?: boolean;     // Try fallback resolution (default: true)
-  maxCandidates?: number;       // Max candidates to consider (default: 100)
+  strictMode?: boolean; // Reject degraded matches (default: false)
+  requireUniqueness?: boolean; // Fail if multiple matches (default: false)
+  enableFallback?: boolean; // Try fallback resolution (default: true)
+  maxCandidates?: number; // Max candidates to consider (default: 100)
 }
 ```
 
@@ -240,7 +240,7 @@ switch (result.status) {
   case 'error':
     // No matches found
     console.error('Element not found');
-    result.warnings.forEach(w => console.warn(w));
+    result.warnings.forEach((w) => console.warn(w));
     break;
 }
 ```
@@ -253,7 +253,7 @@ import { resolve } from 'seql-js';
 // Only accept perfect matches
 const result = resolve(eid, document, {
   strictMode: true,
-  requireUniqueness: true
+  requireUniqueness: true,
 });
 
 if (result.status === 'success') {
@@ -271,7 +271,7 @@ import { resolve } from 'seql-js';
 // Search only within modal
 const modal = document.querySelector('.modal');
 if (modal) {
-  const result = resolve(eid, modal);  // Scoped to modal
+  const result = resolve(eid, modal); // Scoped to modal
   // ...
 }
 ```
@@ -281,48 +281,53 @@ if (modal) {
 ```typescript
 interface ResolveResult {
   status: 'success' | 'ambiguous' | 'degraded-fallback' | 'error';
-  elements: Element[];           // Matched elements (0 or more)
-  warnings: string[];            // Warning messages
-  confidence: number;            // Match confidence (0-1)
+  elements: Element[]; // Matched elements (0 or more)
+  warnings: string[]; // Warning messages
+  confidence: number; // Match confidence (0-1)
   meta: {
-    degraded: boolean;           // True if match quality is reduced
-    degradationReason?: string;  // Why degraded (if applicable)
+    degraded: boolean; // True if match quality is reduced
+    degradationReason?: string; // Why degraded (if applicable)
   };
 }
 ```
 
 ### Status Values
 
-| Status | Description | Elements Count | Confidence |
-|--------|-------------|----------------|------------|
-| `success` | Perfect match | 1 | Original EID confidence |
-| `ambiguous` | Multiple matches | 2+ | Original EID confidence |
-| `degraded-fallback` | Partial match via fallback | 1+ | Reduced (< original) |
-| `error` | No matches found | 0 | 0 |
+| Status              | Description                | Elements Count | Confidence              |
+| ------------------- | -------------------------- | -------------- | ----------------------- |
+| `success`           | Perfect match              | 1              | Original EID confidence |
+| `ambiguous`         | Multiple matches           | 2+             | Original EID confidence |
+| `degraded-fallback` | Partial match via fallback | 1+             | Reduced (< original)    |
+| `error`             | No matches found           | 0              | 0                       |
 
 ### Resolution Algorithm (5 Phases)
 
 The resolver uses a multi-phase algorithm for robustness:
 
-**Phase 1: CSS Narrowing**
+### Phase 1: CSS Narrowing
+
 - Generate optimized CSS selector from EID
 - Query DOM using native browser APIs
 - Narrow candidate set
 
-**Phase 2: Semantic Filtering**
+### Phase 2: Semantic Filtering
+
 - Score candidates by semantic similarity
 - Filter low-scoring matches
 - Prioritize semantically similar elements
 
-**Phase 3: Uniqueness Check**
+### Phase 3: Uniqueness Check
+
 - If exactly 1 candidate remains, return early (status: `success`)
 - Skip phases 4-5 for performance
 
-**Phase 4: Constraints Evaluation**
+### Phase 4: Constraints Evaluation
+
 - Apply uniqueness, visibility, text proximity constraints
 - Filter candidates that don't meet constraints
 
-**Phase 5: Ambiguity Handling**
+### Phase 5: Ambiguity Handling
+
 - Multiple matches: return all (status: `ambiguous`)
 - No matches + fallback enabled: try fallback rules (status: `degraded-fallback`)
 - No matches + no fallback: return error (status: `error`)
@@ -364,13 +369,13 @@ if (result.confidence > 0.8) {
 // Try strict resolution first
 let result = resolve(eid, document, {
   enableFallback: false,
-  requireUniqueness: true
+  requireUniqueness: true,
 });
 
 if (result.status !== 'success') {
   // Retry with fallback
   result = resolve(eid, document, {
-    enableFallback: true
+    enableFallback: true,
   });
 }
 ```
@@ -384,25 +389,25 @@ if (result.status !== 'success') {
 
 ## Comparison: generateEID() vs generateSEQL()
 
-| Aspect | generateEID() | generateSEQL() |
-|--------|---------------|----------------|
-| Return type | `ElementIdentity` (JSON) | `string` |
-| Use case | Advanced, programmatic | Simple, storage |
-| Size | ~500-2000 bytes | ~100-300 bytes |
-| Parsing | Native JSON | SEQL parser required |
-| Metadata | Full semantic structure | Compact representation |
-| Performance | Slightly slower | Slightly faster |
+| Aspect      | generateEID()            | generateSEQL()         |
+| ----------- | ------------------------ | ---------------------- |
+| Return type | `ElementIdentity` (JSON) | `string`               |
+| Use case    | Advanced, programmatic   | Simple, storage        |
+| Size        | ~500-2000 bytes          | ~100-300 bytes         |
+| Parsing     | Native JSON              | SEQL parser required   |
+| Metadata    | Full semantic structure  | Compact representation |
+| Performance | Slightly slower          | Slightly faster        |
 
 ## Comparison: resolve() vs resolveSEQL()
 
-| Aspect | resolve() | resolveSEQL() |
-|--------|-----------|---------------|
-| Input | `ElementIdentity` (JSON) | `string` |
+| Aspect      | resolve()                  | resolveSEQL()        |
+| ----------- | -------------------------- | -------------------- |
+| Input       | `ElementIdentity` (JSON)   | `string`             |
 | Return type | `ResolveResult` (detailed) | `Element[]` (simple) |
-| Status info | Yes (4 statuses) | No (just array) |
-| Confidence | Yes | No |
-| Warnings | Yes | No |
-| Use case | Advanced, debugging | Simple, quick |
+| Status info | Yes (4 statuses)           | No (just array)      |
+| Confidence  | Yes                        | No                   |
+| Warnings    | Yes                        | No                   |
+| Use case    | Advanced, debugging        | Simple, quick        |
 
 ## Next Steps
 

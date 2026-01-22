@@ -46,7 +46,7 @@ if (shadowRoot) {
 ```html
 <form id="outer">
   <form id="inner">
-    <input name="email">
+    <input name="email" />
   </form>
 </form>
 ```

@@ -35,10 +35,7 @@ export {
 } from './class-classifier';
 
 // Attribute cleaning
-export {
-  cleanAttributeValue,
-  type CleanAttributeOptions,
-} from './attribute-cleaner';
+export { cleanAttributeValue, type CleanAttributeOptions } from './attribute-cleaner';
 
 // ID validation
 export { isDynamicId, isStableId } from './id-validator';
@@ -50,12 +47,7 @@ export { calculateConfidence, calculateElementScore } from './scorer';
 export { validateEID, isEID } from './validator';
 
 // SEQL Selector Parser
-export {
-  parseSEQL,
-  stringifySEQL,
-  generateSEQL,
-  resolveSEQL
-} from './seql-parser';
+export { parseSEQL, stringifySEQL, generateSEQL, resolveSEQL } from './seql-parser';
 
 // Cache
 export {

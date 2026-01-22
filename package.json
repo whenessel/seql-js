@@ -14,9 +14,13 @@
     "test:unit:coverage": "vitest run --config vitest.config.unit.ts --coverage",
     "test:integration": "vitest run --config vitest.config.integration.ts",
     "test:integration:coverage": "vitest run --config vitest.config.integration.ts --coverage",
-    "test:smoke": "vitest run --config vitest.config.smoke.ts",
-    "test:ci": "vitest run --coverage",
-    "extension:prepare": "yarn build && mkdir -p extensions/chrome/lib && cp dist/seql-js.umd.cjs extensions/chrome/lib/"
+    "extension:prepare": "yarn build && mkdir -p extensions/chrome/lib && cp dist/seql-js.umd.cjs extensions/chrome/lib/",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint:check": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "md:check": "markdownlint-cli2",
+    "md:fix": "markdownlint-cli2 --fix"
   },
   "type": "module",
   "repository": {
@@ -52,12 +56,21 @@
   },
   "homepage": "https://github.com/whenessel/seql-js/issues#readme",
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
     "@types/jsdom": "^27.0.0",
     "@vitest/coverage-v8": "^4.0.15",
     "@whenessel/jsdom-extended": "^0.1.2",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-markdownlint": "^0.3.0",
+    "eslint-plugin-vitest-globals": "^1.5.0",
     "jsdom": "^27.2.0",
+    "markdownlint": "^0.35.0",
+    "markdownlint-cli2": "^0.15.0",
+    "prettier": "^3.7.4",
     "tsup": "^8.3.5",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.18.2",
     "vite": "^7.2.2",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.15"

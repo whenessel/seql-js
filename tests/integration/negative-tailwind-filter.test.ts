@@ -33,7 +33,7 @@ describe('Negative Tailwind classes filtering', () => {
     expect(eid).not.toBeNull();
 
     // Проверяем, что родитель с классами -bottom-6, -left-6 НЕ содержит эти классы в семантике
-    const pathNode = eid!.path.find(node => node.tag === 'div');
+    const pathNode = eid!.path.find((node) => node.tag === 'div');
 
     if (pathNode?.semantics.classes) {
       // Все Tailwind утилиты должны быть отфильтрованы

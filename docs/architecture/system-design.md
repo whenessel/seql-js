@@ -5,11 +5,13 @@ Component architecture and data flow.
 ## Component Layers
 
 ### 1. Public API Layer
+
 - `generateEID()`, `resolve()` - Core functions
 - `generateSEQL()`, `resolveSEQL()` - String-based convenience
 - `generateEIDBatch()` - Batch processing
 
 ### 2. Generator Layer
+
 - **AnchorFinder**: Finds semantic root element
 - **PathBuilder**: Builds semantic traversal path
 - **SemanticExtractor**: Extracts element semantics
@@ -17,12 +19,14 @@ Component architecture and data flow.
 - **ConfidenceCalculator**: Scores EID quality
 
 ### 3. Resolver Layer
+
 - **CssGenerator**: Builds CSS selectors from EID
 - **SemanticsMatcher**: Scores semantic similarity
 - **ConstraintsEvaluator**: Applies disambiguation rules
 - **FallbackHandler**: Handles resolution failures
 
 ### 4. Utilities Layer
+
 - **EIDCache**: Multi-level caching
 - **Validators**: EID validation
 - **Parsers**: SEQL string parsing
@@ -31,6 +35,7 @@ Component architecture and data flow.
 ## Data Flow
 
 **Generation Flow:**
+
 ```
 Element
   → AnchorFinder.findAnchor()
@@ -42,6 +47,7 @@ Element
 ```
 
 **Resolution Flow:**
+
 ```
 ElementIdentity
   → CssGenerator.buildSelector()

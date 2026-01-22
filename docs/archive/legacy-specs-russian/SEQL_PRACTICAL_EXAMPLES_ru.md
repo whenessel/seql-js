@@ -616,13 +616,13 @@ test('submit form', async ({ page }) => {
 gtag('event', 'click', {
   event_category: 'engagement',
   element_identity: 'v1: section :: button.btn-primary',
-  event_label: 'CTA Click'
+  event_label: 'CTA Click',
 });
 
 // Track form submissions
 gtag('event', 'submit', {
   event_category: 'conversion',
-  element_identity: 'v1: form[id="newsletter"] :: button[type="submit"]'
+  element_identity: 'v1: form[id="newsletter"] :: button[type="submit"]',
 });
 ```
 
@@ -632,7 +632,7 @@ gtag('event', 'submit', {
 analytics.track('Element Clicked', {
   elementIdentity: 'v1: nav :: a[href="/pricing"]',
   elementType: 'link',
-  timestamp: Date.now()
+  timestamp: Date.now(),
 });
 ```
 
@@ -713,7 +713,7 @@ EIQ:     v1: body :: button[aria-label="Close"]
 
 1. ✅ Начинается с версии (`v1:`)
 2. ✅ Есть anchor separator (`::`)
-3. ✅ Используется только ` > ` между узлами
+3. ✅ Используется только `>` между узлами
 4. ✅ Атрибуты в алфавитном порядке
 5. ✅ Классы семантические, не утилитарные
 6. ✅ Текст в двойных кавычках и нормализован

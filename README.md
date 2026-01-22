@@ -97,27 +97,35 @@ Resolution: EID → resolve() → ResolveResult
 ### SEQL Selector Functions
 
 #### `generateSEQL(element, generatorOptions?, stringifyOptions?)`
+
 Convenience function: `generateEID` + `stringifySEQL`. Returns a string or `null`.
 
 #### `resolveSEQL(selector, root, options?)`
+
 Convenience function: `parseSEQL` + `resolve`. Returns `Element[]`.
 
 #### `parseSEQL(selector)`
+
 Parses a SEQL Selector into an `ElementIdentity` object.
 
 #### `stringifySEQL(eid, options?)`
+
 Converts an `ElementIdentity` object into a canonical SEQL Selector.
 
 ### Core Functions
 
 #### `generateEID(element, options?)`
+
 Generates an `ElementIdentity` (EID) from a DOM element.
+
 - `maxPathDepth`: Default 10.
 - `enableSvgFingerprint`: Default true.
 - `confidenceThreshold`: Default 0.1.
 
 #### `resolve(eid, root, options?)`
+
 Resolves an EID back to DOM element(s). Returns a `ResolveResult` object.
+
 - `status`: `'success' | 'ambiguous' | 'error' | 'degraded-fallback'`.
 - `elements`: `Element[]` of matches.
 - `confidence`: Match confidence score (0-1).
@@ -125,9 +133,11 @@ Resolves an EID back to DOM element(s). Returns a `ResolveResult` object.
 ### Utilities & Advanced
 
 #### `generateEIDBatch(elements, options?)`
+
 Optimized generation for multiple elements at once.
 
 #### `createEIDCache(options?)` / `getGlobalCache()`
+
 Manage the LRU cache to improve performance for frequent generations/resolutions.
 
 ## Project Structure
@@ -161,6 +171,7 @@ Manage the LRU cache to improve performance for frequent generations/resolutions
 ## Migrating from v0.x
 
 If you are upgrading from v0.x, note these breaking changes:
+
 - `generateDsl()` → `generateEID()`
 - `resolveDsl()` → `resolve()`
 - `DslIdentity` → `ElementIdentity`

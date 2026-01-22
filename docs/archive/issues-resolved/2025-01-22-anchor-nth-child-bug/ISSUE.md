@@ -1,7 +1,9 @@
 # BUG: Неправильный nth-of-type для anchor в CSS селекторе
 
 ## Дата: 2025-01-22
+
 ## Приоритет: CRITICAL
+
 ## Статус: В работе
 
 ---
@@ -11,6 +13,7 @@
 CSS генератор создаёт селекторы с неправильным `nth-of-type` индексом для anchor элемента, что приводит к невозможности найти элементы на странице (находит 0 элементов вместо 1).
 
 **Пример:**
+
 - **Ожидаемый селектор:** `section:nth-of-type(2) div.container:nth-child(1) div:nth-child(2)`
 - **Фактический селектор:** `section:nth-of-type(1) div.container:nth-child(1) div:nth-child(2)`
 - **Результат:** Находит **0 элементов** вместо **1**
@@ -20,21 +23,25 @@ CSS генератор создаёт селекторы с неправильн
 ## 🔍 КОНТЕКСТ ПРОБЛЕМЫ
 
 ### Тестируемый элемент
-**URL:** https://appsurify.github.io/modern-seaside-stay/
+
+**URL:** <https://appsurify.github.io/modern-seaside-stay/>
 
 **XPath (работает корректно):**
+
 ```
 /html/body/div/div[2]/main/section[2]/div/div/div[2]/div[2]
 ```
 
 **HTML:**
+
 ```html
 <div class="absolute -bottom-6 -left-6 w-2/3 rounded-2xl overflow-hidden shadow-xl">
-  <img src="..." alt="Luxury apartment interior">
+  <img src="..." alt="Luxury apartment interior" />
 </div>
 ```
 
 ### DOM путь от body к элементу
+
 ```
 1. div#root (nth-child: 1, nth-of-type: 1)
 2. div.min-h-screen (nth-child: 2, nth-of-type: 2)
@@ -42,11 +49,12 @@ CSS генератор создаёт селекторы с неправильн
 4. section#welcome (nth-child: 2, nth-of-type: 2) ← ANCHOR
 5. div.container (nth-child: 1, nth-of-type: 1)
 6. div.grid (nth-child: 1, nth-of-type: 1) ← пропущен в path
-7. div.relative (nth-child: 2, nth-of-type: 2) ← пропущен в path  
+7. div.relative (nth-child: 2, nth-of-type: 2) ← пропущен в path
 8. div.absolute (nth-child: 2, nth-of-type: 2) ← TARGET
 ```
 
 ### Результаты теста
+
 ```
 ✅ EID успешно сгенерирован
 ✅ SEQL string: v1.0: section[id="welcome"] :: div.container#1 > div#2
@@ -60,6 +68,7 @@ CSS генератор создаёт селекторы с неправильн
 ## 🐛 КОРНЕВАЯ ПРИЧИНА
 
 ### Проблема №1: Anchor node не имеет nthChild
+
 **Файл:** `src/generator/generator.ts` (строки 75-82)
 
 ```typescript
@@ -73,10 +82,12 @@ const anchorNode = {
 ```
 
 **В то же время:**
+
 - Path nodes ИМЕЮТ nthChild (`path-builder.ts` строки 73-88)
 - Target node ИМЕЕТ nthChild (`generator.ts` строки 96-101)
 
 ### Проблема №2: ensureUniqueAnchor вычисляет nth-of-type неправильно
+
 **Файл:** `src/resolver/css-generator.ts` (строки 654-672)
 
 ```typescript
@@ -85,7 +96,7 @@ const allAnchors = Array.from(root.querySelectorAll(tag));
 
 if (allAnchors.length > 1) {
   const matchingAnchor = this.findElementBySemantics(allAnchors, semantics);
-  
+
   if (matchingAnchor) {
     const nthIndex = this.getNthOfTypeIndex(matchingAnchor, tag);
     if (nthIndex) {
@@ -96,13 +107,15 @@ if (allAnchors.length > 1) {
 ```
 
 **Проблема в findElementBySemantics** (строки 680-713):
+
 ```typescript
 if (!hasSemantics) {
-  return elements.length > 0 ? elements[0] : null;  // ❌ Возвращает ПЕРВЫЙ элемент!
+  return elements.length > 0 ? elements[0] : null; // ❌ Возвращает ПЕРВЫЙ элемент!
 }
 ```
 
 **Что происходит:**
+
 1. Anchor имеет semantics с `id="welcome"` (но ID уже включён в selector как `section#welcome`)
 2. findElementBySemantics считает что нет дополнительных semantics
 3. Возвращает **первый** section вместо **второго**
@@ -113,6 +126,7 @@ if (!hasSemantics) {
 ## ✅ РЕШЕНИЕ
 
 ### Шаг 1: Добавить nthChild в anchor node
+
 **Файл:** `src/generator/generator.ts`
 
 **Позиция:** После строки 71, перед созданием anchorNode
@@ -136,11 +150,12 @@ const anchorNode = {
   semantics: anchorSemantics,
   score: anchorResult?.score ?? ANCHOR_SCORE.DEGRADED_SCORE,
   degraded: anchorDegraded,
-  nthChild: anchorNthChild,  // ✅ Добавить
+  nthChild: anchorNthChild, // ✅ Добавить
 };
 ```
 
 ### Шаг 2: Использовать nthChild в ensureUniqueAnchor
+
 **Файл:** `src/resolver/css-generator.ts`
 
 **Позиция:** В методе `ensureUniqueAnchor`, после строки 650
@@ -161,16 +176,18 @@ const allAnchors = Array.from(root.querySelectorAll(tag));
 ```
 
 ### Шаг 3: Обновить TypeScript типы
+
 **Файл:** `src/types/index.ts`
 
 **Найти интерфейс AnchorNode и добавить:**
+
 ```typescript
 export interface AnchorNode {
   tag: string;
   semantics: ElementSemantics;
   score: number;
   degraded: boolean;
-  nthChild?: number;  // ✅ Добавить
+  nthChild?: number; // ✅ Добавить
 }
 ```
 
@@ -179,6 +196,7 @@ export interface AnchorNode {
 ## 🧪 ТЕСТИРОВАНИЕ
 
 ### Тестовый случай
+
 **Файл:** `tests/unit/css-generator.test.ts`
 
 ```typescript
@@ -191,25 +209,25 @@ describe('CssGenerator - Anchor with nth-of-type', () => {
         semantics: { id: 'welcome', classes: ['section'] },
         score: 0.6,
         degraded: false,
-        nthChild: 2  // ✅ Второй section в main
+        nthChild: 2, // ✅ Второй section в main
       },
       path: [
         {
           tag: 'div',
           semantics: { classes: ['container'] },
           score: 0.5,
-          nthChild: 1
-        }
+          nthChild: 1,
+        },
       ],
       target: {
         tag: 'div',
         semantics: { classes: ['absolute', '-bottom-6'] },
         score: 0.5,
-        nthChild: 2
+        nthChild: 2,
       },
       constraints: [],
       fallback: { onMultiple: 'best-score', onMissing: 'anchor-only', maxDepth: 3 },
-      meta: { confidence: 0.52, generatedAt: new Date().toISOString() }
+      meta: { confidence: 0.52, generatedAt: new Date().toISOString() },
     };
 
     const generator = new CssGenerator();
@@ -223,7 +241,8 @@ describe('CssGenerator - Anchor with nth-of-type', () => {
 ```
 
 ### Проверка на реальной странице
-1. Открыть https://appsurify.github.io/modern-seaside-stay/
+
+1. Открыть <https://appsurify.github.io/modern-seaside-stay/>
 2. Найти элемент по XPath: `/html/body/div/div[2]/main/section[2]/div/div/div[2]/div[2]`
 3. Сгенерировать EID с `ensureUnique: true`
 4. Построить CSS селектор
@@ -243,7 +262,7 @@ describe('CssGenerator - Anchor with nth-of-type', () => {
 
 ## 🔗 ССЫЛКИ
 
-- **Тестовый сайт:** https://appsurify.github.io/modern-seaside-stay/
+- **Тестовый сайт:** <https://appsurify.github.io/modern-seaside-stay/>
 - **Спецификация:** `/Users/whenessel/Development/WebstormProjects/seql-js/docs/`
 - **Тестовый скрипт:** `/Users/whenessel/Development/WebstormProjects/seql-js/SEQLJsBrowserTestSuite.js`
 
@@ -260,7 +279,9 @@ describe('CssGenerator - Anchor with nth-of-type', () => {
 ## 📝 ДОПОЛНИТЕЛЬНЫЕ НАБЛЮДЕНИЯ
 
 ### Почему пропущены промежуточные div элементы?
+
 Path builder фильтрует элементы без семантического значения (`shouldInclude`). Элементы `div.grid` и `div.relative` не имеют:
+
 - role атрибута
 - ARIA атрибутов
 - Семантических (не утилитарных) классов
@@ -269,4 +290,5 @@ Path builder фильтрует элементы без семантическо
 Поэтому они исключаются из path, но их nth-child позиции всё равно используются в селекторе.
 
 ### Почему resolve находит другой элемент?
+
 CSS селектор с неправильным nth-of-type(1) находит первый section, не второй. Внутри первого section может быть похожая структура, что приводит к резолву неправильного элемента.

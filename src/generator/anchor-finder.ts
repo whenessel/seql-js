@@ -119,10 +119,7 @@ export class AnchorFinder {
     }
 
     // ARIA attributes bonus
-    if (
-      element.hasAttribute('aria-label') ||
-      element.hasAttribute('aria-labelledby')
-    ) {
+    if (element.hasAttribute('aria-label') || element.hasAttribute('aria-labelledby')) {
       score += ANCHOR_SCORE.ARIA_LABEL;
     }
 
@@ -154,8 +151,7 @@ export class AnchorFinder {
     }
 
     const penalty =
-      (depth - ANCHOR_SCORE.DEPTH_PENALTY_THRESHOLD) *
-      ANCHOR_SCORE.DEPTH_PENALTY_FACTOR;
+      (depth - ANCHOR_SCORE.DEPTH_PENALTY_THRESHOLD) * ANCHOR_SCORE.DEPTH_PENALTY_FACTOR;
 
     return Math.max(0, score - penalty);
   }

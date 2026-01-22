@@ -2,7 +2,7 @@
  * SEQL Inspector Content Script
  * Injects the seql-js library and test tools into the inspected page context
  */
-(async function() {
+(async function () {
   'use strict';
 
   if (window.__seqlInjected) return;
@@ -43,13 +43,14 @@
     console.log('[SEQL Inspector] Test tools injected');
 
     // 3. Уведомляем систему о готовности
-    window.dispatchEvent(new CustomEvent('seql-ready', {
-      detail: {
-        version: window.SeqlJS ? 'loaded' : 'unknown',
-        timestamp: Date.now()
-      }
-    }));
-
+    window.dispatchEvent(
+      new CustomEvent('seql-ready', {
+        detail: {
+          version: window.SeqlJS ? 'loaded' : 'unknown',
+          timestamp: Date.now(),
+        },
+      })
+    );
   } catch (error) {
     console.error(`[SEQL Inspector] Injection failed: ${error.message}`);
     window.__seqlInjected = false; // Позволяем повторную попытку при ошибке

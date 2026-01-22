@@ -17,6 +17,7 @@ Rules for building the semantic path from anchor to target.
 ## Node Filtering
 
 **Include** nodes with:
+
 - Semantic tags (section, article, aside, etc.)
 - Classes (semantic, not utility)
 - IDs (stable only)
@@ -24,6 +25,7 @@ Rules for building the semantic path from anchor to target.
 - Data attributes (stable)
 
 **Skip** nodes that are:
+
 - Generic `<div>` or `<span>` without attributes
 - Utility-class-only elements
 - Auto-generated wrappers
@@ -32,10 +34,13 @@ Rules for building the semantic path from anchor to target.
 
 ```html
 <form>
-  <div>  <!-- Skip: no semantic value -->
-    <div class="fields">  <!-- Include: has semantic class -->
-      <div>  <!-- Skip: no semantic value -->
-        <input type="email">
+  <div>
+    <!-- Skip: no semantic value -->
+    <div class="fields">
+      <!-- Include: has semantic class -->
+      <div>
+        <!-- Skip: no semantic value -->
+        <input type="email" />
       </div>
     </div>
   </div>
@@ -49,5 +54,6 @@ Rules for building the semantic path from anchor to target.
 Default: 10 nodes
 
 Paths longer than max are truncated from the middle, preserving:
+
 - Nodes closest to anchor (context)
 - Nodes closest to target (precision)

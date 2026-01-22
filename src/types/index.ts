@@ -11,11 +11,7 @@ export type {
 } from './eid';
 
 // Semantic types
-export type {
-  ElementSemantics,
-  TextContent,
-  SvgFingerprint,
-} from './semantics';
+export type { ElementSemantics, TextContent, SvgFingerprint } from './semantics';
 
 // Constraint types
 export type {

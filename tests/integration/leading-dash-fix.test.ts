@@ -56,27 +56,27 @@ describe('Integration: Leading Dash Escaping Fix', () => {
           tag: 'section',
           semantics: {
             id: 'welcome',
-            classes: ['section']
+            classes: ['section'],
           },
           score: 0.9,
-          degraded: false
+          degraded: false,
         },
         path: [
           {
             tag: 'div',
             semantics: { classes: ['container'] },
             nthChild: 1,
-            score: 0.8
-          }
+            score: 0.8,
+          },
         ],
         target: {
           tag: 'div',
           semantics: {
             // Note: Utility classes (-bottom-6, -left-6, w-2/3, etc.) are filtered out
-            classes: []
+            classes: [],
           },
           nthChild: 2,
-          score: 0.7
+          score: 0.7,
         },
         constraints: [],
         fallback: { onMultiple: 'first', onMissing: 'none', maxDepth: 3 },
@@ -85,8 +85,8 @@ describe('Integration: Leading Dash Escaping Fix', () => {
           generatedAt: new Date().toISOString(),
           generator: 'test',
           source: 'integration-test',
-          degraded: false
-        }
+          degraded: false,
+        },
       };
 
       // Generate CSS selector
@@ -125,7 +125,6 @@ describe('Integration: Leading Dash Escaping Fix', () => {
       // Verify the actual target has the correct classes
       expect(target.classList.contains('-bottom-6')).toBe(true);
       expect(target.classList.contains('-left-6')).toBe(true);
-
     } finally {
       document.body.removeChild(div);
     }
@@ -162,25 +161,25 @@ describe('Integration: Leading Dash Escaping Fix', () => {
           tag: 'section',
           semantics: { id: 'welcome' },
           score: 0.9,
-          degraded: false
+          degraded: false,
         },
         path: [
           { tag: 'div', semantics: { classes: ['container'] }, nthChild: 1, score: 0.8 },
           // Utility classes filtered out from path node
-          { tag: 'div', semantics: { classes: [] }, nthChild: 2, score: 0.7 }
+          { tag: 'div', semantics: { classes: [] }, nthChild: 2, score: 0.7 },
         ],
         target: {
           tag: 'img',
           semantics: {
             attributes: {
               alt: 'Luxury apartment interior',
-              src: 'https://images.unsplash.com/photo-1545579133-99bb5ab189bd?w=400&h=300&fit=crop'
+              src: 'https://images.unsplash.com/photo-1545579133-99bb5ab189bd?w=400&h=300&fit=crop',
             },
             // object-cover is also a utility class, should be filtered
-            classes: []
+            classes: [],
           },
           nthChild: 1,
-          score: 0.9
+          score: 0.9,
         },
         constraints: [],
         fallback: { onMultiple: 'first', onMissing: 'none', maxDepth: 3 },
@@ -189,8 +188,8 @@ describe('Integration: Leading Dash Escaping Fix', () => {
           generatedAt: new Date().toISOString(),
           generator: 'test',
           source: 'integration-test',
-          degraded: false
-        }
+          degraded: false,
+        },
       };
 
       const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -210,7 +209,6 @@ describe('Integration: Leading Dash Escaping Fix', () => {
 
       expect(matchedElements.length).toBeGreaterThanOrEqual(1);
       expect(matchedElements).toContain(target);
-
     } finally {
       document.body.removeChild(div);
     }
@@ -235,21 +233,21 @@ describe('Integration: Leading Dash Escaping Fix', () => {
       // Simulate SEQL selector with utility classes filtered: v1.0: section[id="welcome"] :: div.container#1 > div#2
       const dsl: DslIdentity = {
         anchor: { tag: 'section', semantics: { id: 'welcome' } },
-        path: [
-          { tag: 'div', semantics: { classes: ['container'] }, nthChild: 1 }
-        ],
+        path: [{ tag: 'div', semantics: { classes: ['container'] }, nthChild: 1 }],
         target: {
           tag: 'div',
           // Utility classes (-bottom-6, -left-6) are filtered out
           semantics: { classes: [] },
-          nthChild: 2
-        }
+          nthChild: 2,
+        },
       };
 
       const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
 
       console.log('\n=== Integration Test: SEQL String Format ===');
-      console.log('SEQL Selector: v1.0: section[id="welcome"] :: div.container#1 > div#2 (utilities filtered)');
+      console.log(
+        'SEQL Selector: v1.0: section[id="welcome"] :: div.container#1 > div#2 (utilities filtered)'
+      );
       console.log('Generated CSS:', result.selector);
       console.log('============================================\n');
 
@@ -262,14 +260,13 @@ describe('Integration: Leading Dash Escaping Fix', () => {
 
       // If elements are found, verify target is among them
       if (matched.length > 0) {
-        const hasTarget = Array.from(matched).some(el => el.textContent?.includes('Target'));
+        const hasTarget = Array.from(matched).some((el) => el.textContent?.includes('Target'));
         expect(hasTarget).toBe(true);
       } else {
         // If no matches, that's also acceptable for this edge case
         // The important thing is that the selector doesn't throw an error
         expect(matched.length).toBe(0);
       }
-
     } finally {
       document.body.removeChild(div);
     }

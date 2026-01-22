@@ -5,6 +5,7 @@ Universal naming conventions for TypeScript/JavaScript projects.
 ## Scope
 
 These conventions apply to:
+
 - TypeScript and JavaScript source files
 - Public and internal APIs
 - Test files
@@ -44,17 +45,17 @@ When applying naming rules, follow this priority:
 
 ## Quick Reference
 
-| Entity | Convention | Example |
-|--------|-----------|---------|
-| Files | kebab-case | `user-service.ts` |
-| Directories | kebab-case, plural | `services/`, `utils/` |
-| Variables | camelCase | `userName`, `data` |
-| Functions | camelCase, verb-based | `getUserById()`, `processData()` |
-| Classes | PascalCase, noun-based | `UserService`, `DataProcessor` |
-| Types/Interfaces | PascalCase | `UserProfile`, `ApiResponse` |
-| Constants | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT`, `DEFAULT_TIMEOUT` |
-| Enum types | PascalCase | `UserRole`, `HttpStatus` |
-| Enum members | UPPER_SNAKE_CASE | `ADMIN`, `ACTIVE` |
+| Entity           | Convention             | Example                              |
+| ---------------- | ---------------------- | ------------------------------------ |
+| Files            | kebab-case             | `user-service.ts`                    |
+| Directories      | kebab-case, plural     | `services/`, `utils/`                |
+| Variables        | camelCase              | `userName`, `data`                   |
+| Functions        | camelCase, verb-based  | `getUserById()`, `processData()`     |
+| Classes          | PascalCase, noun-based | `UserService`, `DataProcessor`       |
+| Types/Interfaces | PascalCase             | `UserProfile`, `ApiResponse`         |
+| Constants        | UPPER_SNAKE_CASE       | `MAX_RETRY_COUNT`, `DEFAULT_TIMEOUT` |
+| Enum types       | PascalCase             | `UserRole`, `HttpStatus`             |
+| Enum members     | UPPER_SNAKE_CASE       | `ADMIN`, `ACTIVE`                    |
 
 ## Principles
 

@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Key Concepts
 
 The EID is built around a semantic identity model consisting of:
+
 - **Anchor**: A semantic root element (e.g., `<form>`, `<main>`, elements with ARIA roles)
 - **Path**: Semantic traversal from anchor to target's parent
 - **Target**: The element being identified
@@ -16,12 +17,14 @@ The EID is built around a semantic identity model consisting of:
 - **Semantics**: Text content, ARIA labels, roles, stable IDs, and SVG fingerprints
 
 The system has two main operations:
+
 1. **Generation** (`generateEID`): DOM Element → EID Identity (JSON)
 2. **Resolution** (`resolve`): EID Identity (JSON) → DOM Element(s)
 
 ## Development Commands
 
 ### Building
+
 ```bash
 # Build the library (outputs to dist/)
 yarn build
@@ -31,6 +34,7 @@ yarn build:watch
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 yarn test
@@ -43,12 +47,14 @@ yarn test:coverage
 ```
 
 ### Type Checking
+
 ```bash
 # Type check without emitting
 yarn types:check
 ```
 
 ### Running a Single Test File
+
 ```bash
 # Using vitest directly
 yarn vitest run tests/resolver.test.ts
@@ -64,6 +70,7 @@ yarn vitest watch tests/resolver.test.ts
 The codebase is organized into four main directories under `src/`:
 
 #### 1. `generator/` - EID Generation Pipeline
+
 Converts DOM elements into EID identities. The generation follows a bottom-up approach:
 
 - **`anchor-finder.ts`**: Searches up the DOM tree (max 10 levels) to find a semantic anchor. Prioritizes semantic HTML tags (`<form>`, `<main>`, `<nav>`), ARIA roles, and stable attributes (data-testid, aria-label).
@@ -73,6 +80,7 @@ Converts DOM elements into EID identities. The generation follows a bottom-up ap
 - **`generator.ts`**: Main orchestrator that combines all components and adds constraints.
 
 #### 2. `resolver/` - EID Resolution Pipeline
+
 Converts EID identities back to DOM elements using a 5-phase algorithm:
 
 - **`css-generator.ts`**: Builds CSS selectors from EID semantics (Phase 1: CSS Narrowing).
@@ -82,6 +90,7 @@ Converts EID identities back to DOM elements using a 5-phase algorithm:
 - **`resolver.ts`**: Main orchestrator implementing the 5-phase resolution algorithm.
 
 #### 3. `types/` - TypeScript Type Definitions
+
 Core data structures and interfaces:
 
 - **`eid.ts`**: Main EID identity structure (`ElementIdentity`, `AnchorNode`, `PathNode`, `TargetNode`)
@@ -91,6 +100,7 @@ Core data structures and interfaces:
 - **`results.ts`**: Result types for resolution and validation
 
 #### 4. `utils/` - Shared Utilities
+
 Helper functions and shared logic:
 
 - **`constants.ts`**: Semantic tag lists, scoring weights, default options
@@ -177,6 +187,7 @@ const customCache = createEIDCache({ maxSize: 500 });
 ### Extending Semantic Extraction
 
 When adding new semantic features, update:
+
 1. `ElementSemantics` type in `types/semantics.ts`
 2. `SemanticExtractor` in `generator/semantic-extractor.ts`
 3. `SemanticsMatcher` scoring in `resolver/semantics-matcher.ts`
@@ -184,6 +195,7 @@ When adding new semantic features, update:
 ### Adding New Constraints
 
 To add a constraint type:
+
 1. Define the constraint interface in `types/constraints.ts`
 2. Implement evaluation in `resolver/constraints-evaluator.ts`
 3. Add generation logic in `generator/generator.ts`

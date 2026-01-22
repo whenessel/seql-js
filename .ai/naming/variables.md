@@ -16,22 +16,22 @@ Naming conventions for variables, parameters, and local identifiers.
 const userName = 'john';
 const userCount = 10;
 const isActive = true;
-const userData = fetchUserData();        // Descriptive, not generic
-const processResult = processResult();   // Descriptive, not generic
-const appConfig = loadConfig();          // Descriptive, not generic
+const userData = fetchUserData(); // Descriptive, not generic
+const processResult = processResult(); // Descriptive, not generic
+const appConfig = loadConfig(); // Descriptive, not generic
 ```
 
 ### Forbidden
 
 ```typescript
-const strUserName = 'john';        // Type encoding
-const userNameStr = 'john';       // Type encoding
-const user_name = 'john';         // snake_case
-const UserName = 'john';          // PascalCase
-const uName = 'john';             // Abbreviation
-const temp = fetchData();         // Too generic (forbidden)
-const result = processData();     // Too generic (forbidden)
-const value = getValue();         // Too generic (forbidden)
+const strUserName = 'john'; // Type encoding
+const userNameStr = 'john'; // Type encoding
+const user_name = 'john'; // snake_case
+const UserName = 'john'; // PascalCase
+const uName = 'john'; // Abbreviation
+const temp = fetchData(); // Too generic (forbidden)
+const result = processData(); // Too generic (forbidden)
+const value = getValue(); // Too generic (forbidden)
 ```
 
 ## Semantic Naming
@@ -52,9 +52,9 @@ const errorMessage = 'Failed to load';
 Avoid names that describe the role rather than the value:
 
 ```typescript
-const data = getUserById(id);     // Too generic
-const result = fetchOrders();      // Too generic
-const value = calculateTotal();   // Too generic
+const data = getUserById(id); // Too generic
+const result = fetchOrders(); // Too generic
+const value = calculateTotal(); // Too generic
 ```
 
 ## Boolean Variables
@@ -74,9 +74,9 @@ const isValid = true;
 ### Forbidden
 
 ```typescript
-const active = true;               // Not a predicate
-const permission = false;          // Not a predicate
-const edit = true;                 // Not a predicate
+const active = true; // Not a predicate
+const permission = false; // Not a predicate
+const edit = true; // Not a predicate
 ```
 
 ## Collections
@@ -95,9 +95,9 @@ const errors = [];
 ### Forbidden
 
 ```typescript
-const userList = [];               // Redundant suffix
-const orderArray = [];             // Type encoding
-const itemsList = [];              // Redundant suffix
+const userList = []; // Redundant suffix
+const orderArray = []; // Type encoding
+const itemsList = []; // Redundant suffix
 ```
 
 ## Loop Variables
@@ -147,9 +147,9 @@ const transformedData = transform(data);
 ### Forbidden
 
 ```typescript
-const temp = calculateIntermediate();    // Too generic
-const tmp = cache.get(key);              // Abbreviation
-const x = transform(data);               // Single letter
+const temp = calculateIntermediate(); // Too generic
+const tmp = cache.get(key); // Abbreviation
+const x = transform(data); // Single letter
 ```
 
 ## Parameters
@@ -168,8 +168,9 @@ function processUser(user: User, options: ProcessOptions) {
 ### Forbidden
 
 ```typescript
-function processUser(u: User, opts: ProcessOptions) {  // Abbreviations
-  const un = u.name;                                  // Abbreviation
+function processUser(u: User, opts: ProcessOptions) {
+  // Abbreviations
+  const un = u.name; // Abbreviation
   // ...
 }
 ```
@@ -188,8 +189,8 @@ const { totalPrice, itemCount } = order;
 ### Forbidden
 
 ```typescript
-const { name: n, email: e } = user;      // Single letters
-const { totalPrice: tp } = order;         // Abbreviation
+const { name: n, email: e } = user; // Single letters
+const { totalPrice: tp } = order; // Abbreviation
 ```
 
 ## Constants
@@ -203,15 +204,15 @@ See [constants.md](./constants.md) for constant naming (UPPER_SNAKE_CASE).
 ```typescript
 const user = getUserById(userId);
 const isUserActive = user.status === 'active';
-const activeUsers = users.filter(u => u.isActive);
+const activeUsers = users.filter((u) => u.isActive);
 const userCount = activeUsers.length;
 ```
 
 ### Bad
 
 ```typescript
-const u = getUserById(uid);               // Abbreviations
-const active = user.status === 'active';  // Not a predicate
-const usrs = users.filter(x => x.a);     // Abbreviations
-const cnt = usrs.length;                 // Abbreviation
+const u = getUserById(uid); // Abbreviations
+const active = user.status === 'active'; // Not a predicate
+const usrs = users.filter((x) => x.a); // Abbreviations
+const cnt = usrs.length; // Abbreviation
 ```

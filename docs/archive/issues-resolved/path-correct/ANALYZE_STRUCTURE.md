@@ -7,6 +7,7 @@
 ## Hypothesis
 
 Возможно структура такая:
+
 - `<table>` или `<div role="grid">`
   - `<tbody>` или просто контейнер
     - `<tr>` или `<div>` (строки)
@@ -14,6 +15,7 @@
         - `<button role="gridcell">` (кнопка с датой)
 
 XPath: `/html/body/div[3]/div/div/div/div/table/tbody/tr[4]/td[1]`
+
 - Указывает на `<td>` элемент (строка 4, ячейка 1)
 - Но `.rdp-day` находит `<button>` внутри `<td>`
 
@@ -25,8 +27,8 @@ console.log('=== Calendar Structure Analysis ===\n');
 
 // Get element by XPath
 function getByXPath(xpath) {
-  return document.evaluate(xpath, document, null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+    .singleNodeValue;
 }
 
 // Analyze Date 18
@@ -45,7 +47,9 @@ console.log('   Children count:', td18?.children.length);
 if (td18) {
   console.log('\n2. Children of TD:');
   Array.from(td18.children).forEach((child, idx) => {
-    console.log(`   [${idx}] ${child.tagName} class="${child.className}" text="${child.textContent.trim()}"`);
+    console.log(
+      `   [${idx}] ${child.tagName} class="${child.className}" text="${child.textContent.trim()}"`
+    );
   });
 
   // Find button inside
@@ -60,7 +64,7 @@ if (td18) {
   const allRdpDays = Array.from(document.querySelectorAll('.rdp-day'));
   console.log('\n4. All .rdp-day elements:', allRdpDays.length);
 
-  const foundByText = allRdpDays.find(el => el.textContent.trim() === '18');
+  const foundByText = allRdpDays.find((el) => el.textContent.trim() === '18');
   console.log('\n5. Found by text "18" in .rdp-day:');
   console.log('   Element:', foundByText);
   console.log('   Same as button in TD:', foundByText === button18);
@@ -89,7 +93,9 @@ if (td18) {
   console.log('   Total rows:', allRows.length);
   allRows.forEach((row, idx) => {
     const cells = Array.from(row.children);
-    console.log(`   Row ${idx + 1}: ${cells.length} cells, first cell text: "${cells[0]?.textContent.trim()}"`);
+    console.log(
+      `   Row ${idx + 1}: ${cells.length} cells, first cell text: "${cells[0]?.textContent.trim()}"`
+    );
   });
 
   // Get current cell position
@@ -103,7 +109,7 @@ if (td18) {
   console.log('   Row index (1-based):', rowIndex + 1);
   console.log('   Cell index (1-based):', cellIndex + 1);
   console.log('   XPath says: tr[4]/td[1] (1-based)');
-  console.log('   Match:', (rowIndex + 1 === 4) && (cellIndex + 1 === 1) ? '✅' : '❌');
+  console.log('   Match:', rowIndex + 1 === 4 && cellIndex + 1 === 1 ? '✅' : '❌');
 }
 
 console.log('\n' + '='.repeat(70) + '\n');
@@ -133,11 +139,11 @@ if (td31) {
   console.log('   Row index (1-based):', rowIndex31 + 1);
   console.log('   Cell index (1-based):', cellIndex31 + 1);
   console.log('   XPath says: tr[5]/td[7]');
-  console.log('   Match:', (rowIndex31 + 1 === 5) && (cellIndex31 + 1 === 7) ? '✅' : '❌');
+  console.log('   Match:', rowIndex31 + 1 === 5 && cellIndex31 + 1 === 7 ? '✅' : '❌');
 
   // Find by text
   const allRdpDays31 = Array.from(document.querySelectorAll('.rdp-day'));
-  const foundByText31 = allRdpDays31.find(el => el.textContent.trim() === '31');
+  const foundByText31 = allRdpDays31.find((el) => el.textContent.trim() === '31');
 
   console.log('\n4. Found by text "31":');
   console.log('   Same as button in TD:', foundByText31 === button31);
@@ -180,6 +186,7 @@ console.log('\n' + '='.repeat(70));
 ## Ожидаемый результат
 
 Скрипт должен показать:
+
 - ✅ XPath находит правильный TD элемент
 - ✅ Внутри TD есть button с нужным текстом
 - ❌ Но querySelector('.rdp-day') находит другой элемент!

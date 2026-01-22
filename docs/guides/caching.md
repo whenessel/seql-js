@@ -9,7 +9,7 @@ Automatically used:
 ```typescript
 import { generateEID } from 'seql-js';
 
-const eid = generateEID(element);  // Uses global cache
+const eid = generateEID(element); // Uses global cache
 ```
 
 ## Custom Cache
@@ -37,7 +37,7 @@ console.log('Size:', stats.size);
 ## Clearing
 
 ```typescript
-getGlobalCache().clear();  // Clear all cached data
+getGlobalCache().clear(); // Clear all cached data
 ```
 
 ## Best Practices

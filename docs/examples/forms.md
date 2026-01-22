@@ -6,8 +6,8 @@ Practical examples for identifying form elements.
 
 ```html
 <form aria-label="Login">
-  <input type="email" name="email" placeholder="Email">
-  <input type="password" name="password" placeholder="Password">
+  <input type="email" name="email" placeholder="Email" />
+  <input type="password" name="password" placeholder="Password" />
   <button type="submit">Sign In</button>
 </form>
 ```
@@ -39,14 +39,14 @@ generateSEQL(zipCode);
 ```typescript
 import { generateSEQL } from 'seql-js';
 
-document.querySelectorAll('input').forEach(input => {
+document.querySelectorAll('input').forEach((input) => {
   input.addEventListener('invalid', (event) => {
     const selector = generateSEQL(event.target as Element);
     console.log('Validation failed:', selector);
 
     // Track in analytics
     gtag('event', 'form_validation_error', {
-      field: selector
+      field: selector,
     });
   });
 });
@@ -56,9 +56,9 @@ document.querySelectorAll('input').forEach(input => {
 
 ```html
 <form>
-  <input type="radio" name="plan" value="free" id="plan-free">
-  <input type="radio" name="plan" value="pro" id="plan-pro">
-  <input type="radio" name="plan" value="enterprise" id="plan-enterprise">
+  <input type="radio" name="plan" value="free" id="plan-free" />
+  <input type="radio" name="plan" value="pro" id="plan-pro" />
+  <input type="radio" name="plan" value="enterprise" id="plan-enterprise" />
 </form>
 ```
 
@@ -72,9 +72,9 @@ generateSEQL(proRadio);
 
 ```html
 <form>
-  <input type="checkbox" name="features" value="feature1">
-  <input type="checkbox" name="features" value="feature2">
-  <input type="checkbox" name="features" value="feature3">
+  <input type="checkbox" name="features" value="feature1" />
+  <input type="checkbox" name="features" value="feature2" />
+  <input type="checkbox" name="features" value="feature3" />
 </form>
 ```
 
@@ -88,7 +88,7 @@ generateSEQL(feature2);
 
 ```html
 <form>
-  <input type="file" name="avatar" accept="image/*">
+  <input type="file" name="avatar" accept="image/*" />
 </form>
 ```
 

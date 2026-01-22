@@ -9,10 +9,7 @@
     "128": "icons/icon128.png"
   },
   "devtools_page": "devtools.html",
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
+  "permissions": ["activeTab", "storage"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -25,10 +22,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": [
-        "lib/seql-js.umd.cjs",
-        "lib/seql-js-test-tools.js"
-      ],
+      "resources": ["lib/seql-js.umd.cjs", "lib/seql-js-test-tools.js"],
       "matches": ["<all_urls>"]
     }
   ]

@@ -9,25 +9,29 @@ Tips for improving SEQL performance.
 **Solutions**:
 
 1. **Use Caching**
+
    ```typescript
    // Automatic with global cache
-   generateEID(element);  // Cached automatically
+   generateEID(element); // Cached automatically
    ```
 
 2. **Reduce Path Depth**
+
    ```typescript
    generateEID(element, { maxPathDepth: 5 });
    ```
 
 3. **Disable SVG Fingerprinting**
+
    ```typescript
    generateEID(element, { enableSvgFingerprint: false });
    ```
 
 4. **Batch Processing**
+
    ```typescript
    // Bad: Individual calls
-   elements.forEach(el => generateEID(el));
+   elements.forEach((el) => generateEID(el));
 
    // Good: Batch
    generateEIDBatch(elements);
@@ -40,6 +44,7 @@ Tips for improving SEQL performance.
 **Solutions**:
 
 1. **Scope to Container**
+
    ```typescript
    // Bad: Search entire document
    resolve(eid, document);
@@ -50,6 +55,7 @@ Tips for improving SEQL performance.
    ```
 
 2. **Limit Candidates**
+
    ```typescript
    resolve(eid, document, { maxCandidates: 50 });
    ```
@@ -65,11 +71,13 @@ Tips for improving SEQL performance.
 **Solutions**:
 
 1. **Limit Cache Size**
+
    ```typescript
    const cache = createEIDCache({ maxSize: 500 });
    ```
 
 2. **Clear Cache Periodically**
+
    ```typescript
    // On navigation
    window.addEventListener('beforeunload', () => {
@@ -78,12 +86,13 @@ Tips for improving SEQL performance.
    ```
 
 3. **Avoid Storing DOM References**
+
    ```typescript
    // Bad: Storing elements
    const elements = [element1, element2];
 
    // Good: Storing selectors
-   const selectors = elements.map(el => generateSEQL(el));
+   const selectors = elements.map((el) => generateSEQL(el));
    ```
 
 ## Monitoring

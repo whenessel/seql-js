@@ -20,21 +20,21 @@ Creates a new cache instance with custom configuration.
 ### Signature
 
 ```typescript
-function createEIDCache(options?: CacheOptions): EIDCache
+function createEIDCache(options?: CacheOptions): EIDCache;
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `options` | `CacheOptions` | No | Cache configuration options |
+| Parameter | Type           | Required | Description                 |
+| --------- | -------------- | -------- | --------------------------- |
+| `options` | `CacheOptions` | No       | Cache configuration options |
 
 ### Cache Options
 
 ```typescript
 interface CacheOptions {
-  maxSize?: number;          // Max entries in LRU cache (default: 1000)
-  enableStats?: boolean;     // Track cache statistics (default: true)
+  maxSize?: number; // Max entries in LRU cache (default: 1000)
+  enableStats?: boolean; // Track cache statistics (default: true)
 }
 ```
 
@@ -65,12 +65,12 @@ const sessionCache = createEIDCache({ maxSize: 2000 });
 
 const button = document.querySelector('button');
 const eid = generateEID(button, {
-  cache: sessionCache
+  cache: sessionCache,
 });
 
 // Subsequent calls use cached result
 const eid2 = generateEID(button, {
-  cache: sessionCache  // Instant return from cache
+  cache: sessionCache, // Instant return from cache
 });
 ```
 
@@ -89,7 +89,7 @@ class PageAnalyzer {
   analyzeElements(selector: string) {
     const elements = Array.from(document.querySelectorAll(selector));
     return generateEIDBatch(elements, {
-      cache: this.cache
+      cache: this.cache,
     });
   }
 
@@ -116,7 +116,7 @@ Returns the singleton global cache instance used by default.
 ### Signature
 
 ```typescript
-function getGlobalCache(): EIDCache
+function getGlobalCache(): EIDCache;
 ```
 
 ### Returns
@@ -146,7 +146,7 @@ const statsBefore = cache.getStats();
 
 // Generate EIDs
 const buttons = document.querySelectorAll('button');
-buttons.forEach(btn => generateEID(btn));
+buttons.forEach((btn) => generateEID(btn));
 
 // After
 const statsAfter = cache.getStats();
@@ -250,13 +250,14 @@ getStats(): CacheStats
 Get cache statistics.
 
 Returns:
+
 ```typescript
 interface CacheStats {
-  size: number;              // Current cache size
-  hits: number;              // Cache hit count
-  misses: number;            // Cache miss count
-  hitRate: number;           // Hit rate (0-1)
-  evictions: number;         // Number of evicted entries
+  size: number; // Current cache size
+  hits: number; // Cache hit count
+  misses: number; // Cache miss count
+  hitRate: number; // Hit rate (0-1)
+  evictions: number; // Number of evicted entries
 }
 ```
 
@@ -284,11 +285,13 @@ const eid = generateEID(element);
 ```
 
 **Pros:**
+
 - Zero configuration
 - Shared across entire application
 - Good for general use
 
 **Cons:**
+
 - Shared state may not suit all scenarios
 - No isolation between features
 
@@ -317,11 +320,13 @@ class FeatureB {
 ```
 
 **Pros:**
+
 - Isolated state per feature
 - Custom cache sizes
 - Easy to clear feature-specific cache
 
 **Cons:**
+
 - More memory usage
 - Less cache sharing
 
@@ -354,11 +359,13 @@ window.addEventListener('beforeunload', () => {
 ```
 
 **Pros:**
+
 - Fresh cache per page/session
 - Prevents stale data
 - Predictable behavior
 
 **Cons:**
+
 - Lose cross-page caching benefits
 - More computation on each page
 
@@ -370,33 +377,33 @@ window.addEventListener('beforeunload', () => {
 
 Typical hit rates in production scenarios:
 
-| Scenario | Hit Rate | Impact |
-|----------|----------|--------|
-| Static page | 60-80% | High |
-| Single-page app | 40-60% | Medium |
-| Dynamic content | 20-40% | Low |
-| First page load | 0-10% | None |
+| Scenario        | Hit Rate | Impact |
+| --------------- | -------- | ------ |
+| Static page     | 60-80%   | High   |
+| Single-page app | 40-60%   | Medium |
+| Dynamic content | 20-40%   | Low    |
+| First page load | 0-10%    | None   |
 
 ### Performance Metrics
 
 With cache (1000 elements, 50% hit rate):
 
-| Operation | Without Cache | With Cache | Improvement |
-|-----------|---------------|------------|-------------|
-| EID generation | 1500ms | 800ms | 47% faster |
-| Selector query | 300ms | 150ms | 50% faster |
-| Anchor finding | 500ms | 250ms | 50% faster |
+| Operation      | Without Cache | With Cache | Improvement |
+| -------------- | ------------- | ---------- | ----------- |
+| EID generation | 1500ms        | 800ms      | 47% faster  |
+| Selector query | 300ms         | 150ms      | 50% faster  |
+| Anchor finding | 500ms         | 250ms      | 50% faster  |
 
 ### Memory Usage
 
 Typical memory footprint:
 
-| Cache Size | Memory Usage |
-|------------|--------------|
-| 100 entries | ~1 MB |
-| 500 entries | ~5 MB |
-| 1000 entries | ~10 MB |
-| 5000 entries | ~50 MB |
+| Cache Size   | Memory Usage |
+| ------------ | ------------ |
+| 100 entries  | ~1 MB        |
+| 500 entries  | ~5 MB        |
+| 1000 entries | ~10 MB       |
+| 5000 entries | ~50 MB       |
 
 ---
 
@@ -404,13 +411,15 @@ Typical memory footprint:
 
 ### ✅ Do
 
-**Use global cache for most cases**
+#### Use global cache for most cases
+
 ```typescript
 import { generateEID } from 'seql-js';
-const eid = generateEID(element);  // Uses global cache
+const eid = generateEID(element); // Uses global cache
 ```
 
-**Monitor cache performance**
+#### Monitor cache performance
+
 ```typescript
 import { getGlobalCache } from 'seql-js';
 
@@ -419,10 +428,11 @@ setInterval(() => {
   if (stats.hitRate < 0.3) {
     console.warn('Low cache hit rate:', stats.hitRate);
   }
-}, 60000);  // Check every minute
+}, 60000); // Check every minute
 ```
 
-**Clear cache on major DOM changes**
+#### Clear cache on major DOM changes
+
 ```typescript
 import { getGlobalCache } from 'seql-js';
 
@@ -432,7 +442,8 @@ function onMajorDOMChange() {
 }
 ```
 
-**Use custom cache for isolated features**
+#### Use custom cache for isolated features
+
 ```typescript
 import { createEIDCache } from 'seql-js';
 
@@ -444,22 +455,24 @@ class IsolatedFeature {
 
 ### ❌ Don't
 
-**Don't create cache per element**
+#### Don't create cache per element
+
 ```typescript
 // ❌ Bad: Creates new cache for each element
-elements.forEach(el => {
+elements.forEach((el) => {
   const cache = createEIDCache();
   generateEID(el, { cache });
 });
 
 // ✅ Good: Reuse cache
 const cache = createEIDCache();
-elements.forEach(el => {
+elements.forEach((el) => {
   generateEID(el, { cache });
 });
 ```
 
-**Don't set maxSize too high**
+#### Don't set maxSize too high
+
 ```typescript
 // ❌ Bad: Excessive memory usage
 const cache = createEIDCache({ maxSize: 100000 });
@@ -468,7 +481,8 @@ const cache = createEIDCache({ maxSize: 100000 });
 const cache = createEIDCache({ maxSize: 1000 });
 ```
 
-**Don't clear cache too frequently**
+#### Don't clear cache too frequently
+
 ```typescript
 // ❌ Bad: Cache becomes useless
 setInterval(() => cache.clear(), 1000);
@@ -492,7 +506,7 @@ console.log('Cache stats:', {
   hitRate: `${(stats.hitRate * 100).toFixed(1)}%`,
   hits: stats.hits,
   misses: stats.misses,
-  evictions: stats.evictions
+  evictions: stats.evictions,
 });
 ```
 
@@ -555,13 +569,11 @@ async function warmCache() {
   const cache = createEIDCache({ maxSize: 1000 });
 
   // Generate EIDs for all important elements
-  const importantElements = Array.from(
-    document.querySelectorAll('[data-track], button, a, input')
-  );
+  const importantElements = Array.from(document.querySelectorAll('[data-track], button, a, input'));
 
   const eids = generateEIDBatch(importantElements, { cache });
 
-  console.log(`Cache warmed with ${eids.filter(e => e).length} entries`);
+  console.log(`Cache warmed with ${eids.filter((e) => e).length} entries`);
   return cache;
 }
 

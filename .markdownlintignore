@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+
+# Coverage
+coverage
+
+# Generated files
+*.min.js
+*.min.css
+
+# Extensions (may contain generated code)
+extensions/chrome/lib
+
+# Test fixtures
+fixtures
+
+# AI assistants directories
+.aiassistant
+.claude
+.cursor
+.junie

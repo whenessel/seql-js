@@ -1,212 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DSL Date Picker Test</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      padding: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .test-result {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-    .success { background: #d4edda; border-color: #c3e6cb; }
-    .error { background: #f8d7da; border-color: #f5c6cb; }
-    .info { background: #d1ecf1; border-color: #bee5eb; }
-    pre {
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 4px;
-      overflow-x: auto;
-      font-size: 12px;
-    }
-    h2 { margin-top: 30px; border-bottom: 2px solid #333; padding-bottom: 5px; }
-    button {
-      padding: 10px 20px;
-      margin: 10px 5px;
-      font-size: 16px;
-      cursor: pointer;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-    }
-    button:hover { background: #0056b3; }
-  </style>
-</head>
-<body>
-  <h1>DOM-DSL Date Picker Test</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSL Date Picker Test</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .test-result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+      .success {
+        background: #d4edda;
+        border-color: #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        border-color: #f5c6cb;
+      }
+      .info {
+        background: #d1ecf1;
+        border-color: #bee5eb;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+      h2 {
+        margin-top: 30px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px 5px;
+        font-size: 16px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>DOM-DSL Date Picker Test</h1>
 
-  <div>
-    <button onclick="window.open('https://appsurify.github.io/modern-seaside-stay/', '_blank')">
-      Open Test Website
-    </button>
-    <button onclick="runTests()">Run Tests</button>
-  </div>
+    <div>
+      <button onclick="window.open('https://appsurify.github.io/modern-seaside-stay/', '_blank')">
+        Open Test Website
+      </button>
+      <button onclick="runTests()">Run Tests</button>
+    </div>
 
-  <div id="results"></div>
+    <div id="results"></div>
 
-  <script src="./packages/dom-dsl/dist/dom-dsl.umd.cjs"></script>
+    <script src="./packages/dom-dsl/dist/dom-dsl.umd.cjs"></script>
 
-  <script>
-    const { generateDsl, resolveDsl, CssGenerator } = window.domDsl;
+    <script>
+      const { generateDsl, resolveDsl, CssGenerator } = window.domDsl;
 
-    function log(message, type = 'info') {
-      const results = document.getElementById('results');
-      const div = document.createElement('div');
-      div.className = `test-result ${type}`;
-      div.innerHTML = message;
-      results.appendChild(div);
-      console.log(message.replace(/<[^>]*>/g, ''));
-    }
-
-    function runTests() {
-      document.getElementById('results').innerHTML = '';
-      log('<h2>Starting DSL Tests on Current Page</h2>');
-
-      // Check if we're on the right page
-      if (!window.location.href.includes('modern-seaside-stay')) {
-        log('<strong>⚠️  Warning:</strong> Please open the test website first using the button above, then come back here and click "Run Tests"', 'error');
-        return;
+      function log(message, type = 'info') {
+        const results = document.getElementById('results');
+        const div = document.createElement('div');
+        div.className = `test-result ${type}`;
+        div.innerHTML = message;
+        results.appendChild(div);
+        console.log(message.replace(/<[^>]*>/g, ''));
       }
 
-      testDatePicker();
-    }
+      function runTests() {
+        document.getElementById('results').innerHTML = '';
+        log('<h2>Starting DSL Tests on Current Page</h2>');
 
-    function testDatePicker() {
-      log('<h2>Test 1: Date Picker Cell Selection</h2>');
-
-      // Find date cells
-      const dateCells = Array.from(document.querySelectorAll('.rdp-day'));
-      log(`Found ${dateCells.length} date cells in the picker`, 'info');
-
-      if (dateCells.length === 0) {
-        log('❌ No date cells found. Make sure the date picker is open!', 'error');
-        return;
-      }
-
-      // Test date 18
-      testDateCell('18');
-
-      // Test date 31
-      testDateCell('31');
-    }
-
-    function testDateCell(dateText) {
-      log(`<h3>Testing Date: ${dateText}</h3>`);
-
-      // Find the cell
-      const cell = Array.from(document.querySelectorAll('.rdp-day'))
-        .find(el => el.textContent.trim() === dateText);
-
-      if (!cell) {
-        log(`❌ Date ${dateText} not found in calendar`, 'error');
-        return;
-      }
-
-      log(`✅ Found cell with text "${dateText}"`, 'success');
-      log(`<pre>Tag: ${cell.tagName}
-Class: ${cell.className}
-Aria-Label: ${cell.getAttribute('aria-label') || 'none'}</pre>`, 'info');
-
-      // Generate DSL
-      try {
-        log(`<strong>Step 1:</strong> Generating DSL selector...`, 'info');
-        const dsl = generateDsl(cell);
-
-        if (!dsl) {
-          log('❌ Failed to generate DSL', 'error');
+        // Check if we're on the right page
+        if (!window.location.href.includes('modern-seaside-stay')) {
+          log(
+            '<strong>⚠️  Warning:</strong> Please open the test website first using the button above, then come back here and click "Run Tests"',
+            'error'
+          );
           return;
         }
 
-        log(`✅ DSL Generated successfully`, 'success');
-        log(`<pre>${JSON.stringify(dsl, null, 2)}</pre>`, 'info');
+        testDatePicker();
+      }
 
-        // Generate CSS selector
-        log(`<strong>Step 2:</strong> Generating CSS selector from DSL...`, 'info');
-        const generator = new CssGenerator();
-        const result = generator.buildSelector(dsl, {
-          ensureUnique: true,
-          root: document
-        });
+      function testDatePicker() {
+        log('<h2>Test 1: Date Picker Cell Selection</h2>');
 
-        log(`✅ CSS Selector generated`, 'success');
-        log(`<pre>Selector: ${result.selector}
-IsUnique: ${result.isUnique}
-UsedNthOfType: ${result.usedNthOfType}
-ExtraClassesAdded: ${result.extraClassesAdded}</pre>`, 'info');
+        // Find date cells
+        const dateCells = Array.from(document.querySelectorAll('.rdp-day'));
+        log(`Found ${dateCells.length} date cells in the picker`, 'info');
 
-        // Test the selector
-        log(`<strong>Step 3:</strong> Testing CSS selector...`, 'info');
-        const matches = document.querySelectorAll(result.selector);
-
-        log(`Found ${matches.length} element(s) with selector`, matches.length === 1 ? 'success' : 'error');
-
-        if (matches.length === 1) {
-          const matchedCell = matches[0];
-          const isCorrect = matchedCell === cell;
-          const matchedText = matchedCell.textContent.trim();
-
-          if (isCorrect) {
-            log(`✅ Selector matched the correct element!`, 'success');
-            log(`<pre>Matched text: "${matchedText}"
-Element matches: ${isCorrect}</pre>`, 'success');
-          } else {
-            log(`❌ Selector matched wrong element!`, 'error');
-            log(`<pre>Expected text: "${dateText}"
-Got text: "${matchedText}"</pre>`, 'error');
-          }
-        } else if (matches.length > 1) {
-          log(`❌ Selector is not unique! Found ${matches.length} elements:`, 'error');
-          matches.forEach((el, idx) => {
-            log(`<pre>[${idx}] ${el.tagName} - "${el.textContent.trim()}"</pre>`, 'error');
-          });
-        } else {
-          log(`❌ Selector found no elements!`, 'error');
+        if (dateCells.length === 0) {
+          log('❌ No date cells found. Make sure the date picker is open!', 'error');
+          return;
         }
 
-        // Resolve DSL back
-        log(`<strong>Step 4:</strong> Resolving DSL back to element...`, 'info');
-        const resolveResult = resolveDsl(dsl, document);
+        // Test date 18
+        testDateCell('18');
 
-        log(`<pre>Status: ${resolveResult.status}
+        // Test date 31
+        testDateCell('31');
+      }
+
+      function testDateCell(dateText) {
+        log(`<h3>Testing Date: ${dateText}</h3>`);
+
+        // Find the cell
+        const cell = Array.from(document.querySelectorAll('.rdp-day')).find(
+          (el) => el.textContent.trim() === dateText
+        );
+
+        if (!cell) {
+          log(`❌ Date ${dateText} not found in calendar`, 'error');
+          return;
+        }
+
+        log(`✅ Found cell with text "${dateText}"`, 'success');
+        log(
+          `<pre>Tag: ${cell.tagName}
+Class: ${cell.className}
+Aria-Label: ${cell.getAttribute('aria-label') || 'none'}</pre>`,
+          'info'
+        );
+
+        // Generate DSL
+        try {
+          log(`<strong>Step 1:</strong> Generating DSL selector...`, 'info');
+          const dsl = generateDsl(cell);
+
+          if (!dsl) {
+            log('❌ Failed to generate DSL', 'error');
+            return;
+          }
+
+          log(`✅ DSL Generated successfully`, 'success');
+          log(`<pre>${JSON.stringify(dsl, null, 2)}</pre>`, 'info');
+
+          // Generate CSS selector
+          log(`<strong>Step 2:</strong> Generating CSS selector from DSL...`, 'info');
+          const generator = new CssGenerator();
+          const result = generator.buildSelector(dsl, {
+            ensureUnique: true,
+            root: document,
+          });
+
+          log(`✅ CSS Selector generated`, 'success');
+          log(
+            `<pre>Selector: ${result.selector}
+IsUnique: ${result.isUnique}
+UsedNthOfType: ${result.usedNthOfType}
+ExtraClassesAdded: ${result.extraClassesAdded}</pre>`,
+            'info'
+          );
+
+          // Test the selector
+          log(`<strong>Step 3:</strong> Testing CSS selector...`, 'info');
+          const matches = document.querySelectorAll(result.selector);
+
+          log(
+            `Found ${matches.length} element(s) with selector`,
+            matches.length === 1 ? 'success' : 'error'
+          );
+
+          if (matches.length === 1) {
+            const matchedCell = matches[0];
+            const isCorrect = matchedCell === cell;
+            const matchedText = matchedCell.textContent.trim();
+
+            if (isCorrect) {
+              log(`✅ Selector matched the correct element!`, 'success');
+              log(
+                `<pre>Matched text: "${matchedText}"
+Element matches: ${isCorrect}</pre>`,
+                'success'
+              );
+            } else {
+              log(`❌ Selector matched wrong element!`, 'error');
+              log(
+                `<pre>Expected text: "${dateText}"
+Got text: "${matchedText}"</pre>`,
+                'error'
+              );
+            }
+          } else if (matches.length > 1) {
+            log(`❌ Selector is not unique! Found ${matches.length} elements:`, 'error');
+            matches.forEach((el, idx) => {
+              log(`<pre>[${idx}] ${el.tagName} - "${el.textContent.trim()}"</pre>`, 'error');
+            });
+          } else {
+            log(`❌ Selector found no elements!`, 'error');
+          }
+
+          // Resolve DSL back
+          log(`<strong>Step 4:</strong> Resolving DSL back to element...`, 'info');
+          const resolveResult = resolveDsl(dsl, document);
+
+          log(
+            `<pre>Status: ${resolveResult.status}
 Elements found: ${resolveResult.elements.length}
 Confidence: ${resolveResult.confidence}
 Warnings: ${resolveResult.warnings.join(', ') || 'none'}</pre>`,
-          resolveResult.status === 'success' ? 'success' : 'error');
+            resolveResult.status === 'success' ? 'success' : 'error'
+          );
 
-        if (resolveResult.elements.length === 1) {
-          const resolved = resolveResult.elements[0];
-          if (resolved === cell) {
-            log(`✅ DSL resolution returned the correct element!`, 'success');
-          } else {
-            log(`❌ DSL resolution returned wrong element!`, 'error');
+          if (resolveResult.elements.length === 1) {
+            const resolved = resolveResult.elements[0];
+            if (resolved === cell) {
+              log(`✅ DSL resolution returned the correct element!`, 'success');
+            } else {
+              log(`❌ DSL resolution returned wrong element!`, 'error');
+            }
           }
+        } catch (error) {
+          log(`❌ Error: ${error.message}`, 'error');
+          console.error(error);
         }
 
-      } catch (error) {
-        log(`❌ Error: ${error.message}`, 'error');
-        console.error(error);
+        log('<hr>');
       }
 
-      log('<hr>');
-    }
-
-    // Check if we're on the test page on load
-    window.addEventListener('load', () => {
-      if (window.location.href.includes('modern-seaside-stay')) {
-        log('✅ Test website loaded. Click "Run Tests" button above to start.', 'success');
-      } else {
-        log('ℹ️ Open the test website using the button above, then run tests.', 'info');
-      }
-    });
-  </script>
-</body>
+      // Check if we're on the test page on load
+      window.addEventListener('load', () => {
+        if (window.location.href.includes('modern-seaside-stay')) {
+          log('✅ Test website loaded. Click "Run Tests" button above to start.', 'success');
+        } else {
+          log('ℹ️ Open the test website using the button above, then run tests.', 'info');
+        }
+      });
+    </script>
+  </body>
 </html>

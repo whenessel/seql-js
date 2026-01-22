@@ -1,7 +1,8 @@
 # Команды для ручного тестирования в консоли браузера
 
 ## Статус
-✅ Сайт открыт: https://appsurify.github.io/modern-seaside-stay/
+
+✅ Сайт открыт: <https://appsurify.github.io/modern-seaside-stay/>
 ✅ Date picker открыт (January 2026)
 ✅ Библиотека domDsl загружена в `window.domDsl`
 
@@ -17,7 +18,7 @@ console.log('\n=== TEST 1: Date 18 ===\n');
 
 // Найти ячейку с датой 18
 const cells18 = Array.from(document.querySelectorAll('.rdp-day'));
-const cell18 = cells18.find(el => el.textContent.trim() === '18');
+const cell18 = cells18.find((el) => el.textContent.trim() === '18');
 
 if (!cell18) {
   console.error('❌ Cell 18 not found');
@@ -70,7 +71,9 @@ if (!cell18) {
   if (sel18.selector.includes(':nth-child(')) {
     console.log('\n✅ CORRECT: Selector uses :nth-child() for table elements');
   } else if (sel18.selector.includes(':nth-of-type(')) {
-    console.warn('\n⚠️  WARNING: Selector uses :nth-of-type() - this might not be unique for tables!');
+    console.warn(
+      '\n⚠️  WARNING: Selector uses :nth-of-type() - this might not be unique for tables!'
+    );
   }
 
   // Резолв DSL обратно
@@ -100,7 +103,7 @@ console.log('\n=== TEST 2: Date 31 ===\n');
 
 // Найти ячейку с датой 31
 const cells31 = Array.from(document.querySelectorAll('.rdp-day'));
-const cell31 = cells31.find(el => el.textContent.trim() === '31');
+const cell31 = cells31.find((el) => el.textContent.trim() === '31');
 
 if (!cell31) {
   console.error('❌ Cell 31 not found');
@@ -153,7 +156,9 @@ if (!cell31) {
   if (sel31.selector.includes(':nth-child(')) {
     console.log('\n✅ CORRECT: Selector uses :nth-child() for table elements');
   } else if (sel31.selector.includes(':nth-of-type(')) {
-    console.warn('\n⚠️  WARNING: Selector uses :nth-of-type() - this might not be unique for tables!');
+    console.warn(
+      '\n⚠️  WARNING: Selector uses :nth-of-type() - this might not be unique for tables!'
+    );
   }
 
   // Резолв DSL обратно
@@ -196,7 +201,7 @@ console.log('\n' + '='.repeat(60) + '\n');
 
 ## Ожидаемые результаты
 
-### Для каждого теста вы должны увидеть:
+### Для каждого теста вы должны увидеть
 
 1. ✅ Found cell [18/31]
 2. 📝 DSL Generated (with anchor, path, target)
@@ -212,17 +217,17 @@ console.log('\n' + '='.repeat(60) + '\n');
    - `Elements found: 1`
    - ✅ PASS: DSL resolves to correct element
 
-### Признаки успеха:
+### Признаки успеха
 
 - ✅ Селектор уникален (finds 1 element)
 - ✅ Использует `:nth-child()` для табличных элементов
 - ✅ Найденный элемент совпадает с ожидаемым
 - ✅ DSL корректно резолвится обратно в элемент
 
-### Признаки проблемы:
+### Признаки проблемы
 
 - ❌ Селектор находит > 1 элемента (не уникален)
-- ⚠️  Использует `:nth-of-type()` вместо `:nth-child()`
+- ⚠️ Использует `:nth-of-type()` вместо `:nth-child()`
 - ❌ Найденный элемент не совпадает
 - ❌ DSL не резолвится корректно
 
@@ -232,21 +237,25 @@ console.log('\n' + '='.repeat(60) + '\n');
 
 ```javascript
 // Quick test
-['18', '31'].forEach(date => {
-  const cell = Array.from(document.querySelectorAll('.rdp-day'))
-    .find(el => el.textContent.trim() === date);
+['18', '31'].forEach((date) => {
+  const cell = Array.from(document.querySelectorAll('.rdp-day')).find(
+    (el) => el.textContent.trim() === date
+  );
   const dsl = window.domDsl.generateDsl(cell);
   const cssGen = new window.domDsl.CssGenerator();
   const sel = cssGen.buildSelector(dsl, { ensureUnique: true });
   const matches = document.querySelectorAll(sel.selector);
 
-  console.log(`Date ${date}:`,
+  console.log(
+    `Date ${date}:`,
     matches.length === 1 && matches[0] === cell ? '✅ PASS' : '❌ FAIL',
-    `(${matches.length} matches, selector: ${sel.selector})`);
+    `(${matches.length} matches, selector: ${sel.selector})`
+  );
 });
 ```
 
 Это должно вывести:
+
 ```
 Date 18: ✅ PASS (1 matches, selector: ...)
 Date 31: ✅ PASS (1 matches, selector: ...)
@@ -255,5 +264,5 @@ Date 31: ✅ PASS (1 matches, selector: ...)
 ---
 
 **Дата создания:** 2026-01-16
-**Сайт:** https://appsurify.github.io/modern-seaside-stay/
+**Сайт:** <https://appsurify.github.io/modern-seaside-stay/>
 **Статус:** Готово к выполнению

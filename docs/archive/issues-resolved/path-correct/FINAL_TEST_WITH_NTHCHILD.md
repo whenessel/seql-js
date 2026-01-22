@@ -32,8 +32,8 @@ console.log('=== FINAL TEST WITH nthChild FIX ===\n');
 
 // Helper
 function getByXPath(xpath) {
-  return document.evaluate(xpath, document, null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+    .singleNodeValue;
 }
 
 // === TEST DATE 18 ===
@@ -243,11 +243,13 @@ Date 31: ✅ PASS
 Если тесты не проходят:
 
 1. **Проверьте что библиотека обновлена:**
+
    ```javascript
    console.log(window.domDsl);
    ```
 
 2. **Проверьте что nthChild есть в DSL:**
+
    ```javascript
    const dsl = window.domDsl.generateDsl(button18);
    console.log(dsl.path);

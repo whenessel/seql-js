@@ -12,8 +12,8 @@ record({
   emit(event) {
     // Add SEQL selector to click events
     if (event.type === 'IncrementalSnapshot' && event.data.source === 'MouseInteraction') {
-      const target = event.data.id;  // rrweb node ID
-      const element = getElementById(target);  // Convert to DOM element
+      const target = event.data.id; // rrweb node ID
+      const element = getElementById(target); // Convert to DOM element
 
       if (element) {
         event.data.seqlSelector = generateSEQL(element);
@@ -22,7 +22,7 @@ record({
 
     // Send to backend
     sendToBackend(event);
-  }
+  },
 });
 ```
 
@@ -35,7 +35,7 @@ import { Replayer } from 'rrweb';
 const replayer = new Replayer(events);
 
 // Highlight clicked elements
-events.forEach(event => {
+events.forEach((event) => {
   if (event.data?.seqlSelector) {
     const elements = resolveSEQL(event.data.seqlSelector, replayer.iframe.contentDocument);
 
@@ -54,7 +54,7 @@ const selector = generateSEQL(element);
 
 analytics.track('click', {
   seql_selector: selector,
-  rrweb_session_id: sessionId
+  rrweb_session_id: sessionId,
 });
 
 // Later, correlate rrweb sessions with analytics data

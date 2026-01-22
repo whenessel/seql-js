@@ -21,6 +21,7 @@ CSS селектор генерируется с неправильным `nth-o
 ## ✅ РЕШЕНИЕ (3 ФАЙЛА)
 
 ### 1️⃣ `src/generator/generator.ts` (после строки 71)
+
 ```typescript
 // ADD: Calculate nthChild for anchor
 const anchorParent = anchorElement.parentElement;
@@ -38,11 +39,12 @@ const anchorNode = {
   semantics: anchorSemantics,
   score: anchorResult?.score ?? ANCHOR_SCORE.DEGRADED_SCORE,
   degraded: anchorDegraded,
-  nthChild: anchorNthChild,  // ← ADD THIS
+  nthChild: anchorNthChild, // ← ADD THIS
 };
 ```
 
 ### 2️⃣ `src/resolver/css-generator.ts` (в ensureUniqueAnchor, после строки 650)
+
 ```typescript
 // ADD: Use nthChild from EID (before Step 4)
 if (eid.anchor.nthChild !== undefined) {
@@ -56,13 +58,14 @@ if (eid.anchor.nthChild !== undefined) {
 ```
 
 ### 3️⃣ `src/types/index.ts` (AnchorNode interface)
+
 ```typescript
 export interface AnchorNode {
   tag: string;
   semantics: ElementSemantics;
   score: number;
   degraded: boolean;
-  nthChild?: number;  // ← ADD THIS
+  nthChild?: number; // ← ADD THIS
 }
 ```
 
@@ -75,6 +78,7 @@ npm test
 ```
 
 **Ручная проверка:**
+
 ```javascript
 const el = $x('/html/body/div/div[2]/main/section[2]/div/div/div[2]/div[2]')[0];
 const eid = seqljs.generateEID(el);
@@ -98,7 +102,7 @@ console.log(document.querySelectorAll(result.selector).length); // Должно 
 
 ## 🔗 КОНТЕКСТ
 
-- **URL:** https://appsurify.github.io/modern-seaside-stay/
+- **URL:** <https://appsurify.github.io/modern-seaside-stay/>
 - **XPath:** `/html/body/div/div[2]/main/section[2]/div/div/div[2]/div[2]`
 - **Проект:** `/Users/whenessel/Development/WebstormProjects/seql-js`
 

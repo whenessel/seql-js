@@ -1,9 +1,11 @@
 # Исправленный тестовый скрипт
 
 ## Проблема
+
 Класс `.rdp-day` НЕ СУЩЕСТВУЕТ в календаре. Нужно использовать правильный селектор.
 
 ## Правильная структура
+
 ```html
 <td role="presentation">
   <button name="day" role="gridcell" class="rdp-button_reset rdp-button ...">18</button>
@@ -18,8 +20,8 @@ console.log('=== FIXED TEST: Date Picker with Correct Selectors ===\n');
 
 // Helper: Get element by XPath
 function getByXPath(xpath) {
-  return document.evaluate(xpath, document, null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+    .singleNodeValue;
 }
 
 // ===== TEST DATE 18 =====
@@ -40,7 +42,7 @@ const allButtons = Array.from(document.querySelectorAll('button[role="gridcell"]
 console.log('\n✓ Total buttons with role="gridcell":', allButtons.length);
 
 // Find by text (should find multiple if there are duplicate dates)
-const buttonsWithText18 = allButtons.filter(btn => btn.textContent.trim() === '18');
+const buttonsWithText18 = allButtons.filter((btn) => btn.textContent.trim() === '18');
 console.log('✓ Buttons with text "18":', buttonsWithText18.length);
 
 buttonsWithText18.forEach((btn, idx) => {
@@ -49,11 +51,13 @@ buttonsWithText18.forEach((btn, idx) => {
   const tbody = tr.closest('tbody');
   const rowIdx = Array.from(tbody.children).indexOf(tr);
   const cellIdx = Array.from(tr.children).indexOf(td);
-  console.log(`  [${idx}] Row ${rowIdx + 1}, Cell ${cellIdx + 1}, Text: "${btn.textContent.trim()}"`);
+  console.log(
+    `  [${idx}] Row ${rowIdx + 1}, Cell ${cellIdx + 1}, Text: "${btn.textContent.trim()}"`
+  );
 });
 
 // 3. Find the one in active month (not disabled/outside)
-const activeButton18 = allButtons.find(btn => {
+const activeButton18 = allButtons.find((btn) => {
   const text = btn.textContent.trim();
   const isDisabled = btn.disabled || btn.hasAttribute('disabled');
   const hasOutsideClass = btn.className.includes('outside') || btn.className.includes('disabled');
@@ -134,7 +138,7 @@ console.log('✓ Correct element (via XPath):');
 console.log('  Button text:', correctButton31.textContent.trim());
 
 // 2. Find by text
-const buttonsWithText31 = allButtons.filter(btn => btn.textContent.trim() === '31');
+const buttonsWithText31 = allButtons.filter((btn) => btn.textContent.trim() === '31');
 console.log('\n✓ Buttons with text "31":', buttonsWithText31.length);
 
 buttonsWithText31.forEach((btn, idx) => {
@@ -143,11 +147,13 @@ buttonsWithText31.forEach((btn, idx) => {
   const tbody = tr.closest('tbody');
   const rowIdx = Array.from(tbody.children).indexOf(tr);
   const cellIdx = Array.from(tr.children).indexOf(td);
-  console.log(`  [${idx}] Row ${rowIdx + 1}, Cell ${cellIdx + 1}, Text: "${btn.textContent.trim()}"`);
+  console.log(
+    `  [${idx}] Row ${rowIdx + 1}, Cell ${cellIdx + 1}, Text: "${btn.textContent.trim()}"`
+  );
 });
 
 // 3. Filter active
-const activeButton31 = allButtons.find(btn => {
+const activeButton31 = allButtons.find((btn) => {
   const text = btn.textContent.trim();
   const isDisabled = btn.disabled || btn.hasAttribute('disabled');
   const hasOutsideClass = btn.className.includes('outside') || btn.className.includes('disabled');
@@ -224,17 +230,19 @@ console.log('='.repeat(70));
 ## Ключевые изменения
 
 ### 1. Правильный селектор
+
 ```javascript
 // БЫЛО (неправильно):
-document.querySelectorAll('.rdp-day')
+document.querySelectorAll('.rdp-day');
 
 // СТАЛО (правильно):
-document.querySelectorAll('button[role="gridcell"]')
+document.querySelectorAll('button[role="gridcell"]');
 ```
 
 ### 2. Фильтрация активных дат
+
 ```javascript
-const activeButton = allButtons.find(btn => {
+const activeButton = allButtons.find((btn) => {
   const text = btn.textContent.trim();
   const isDisabled = btn.disabled || btn.hasAttribute('disabled');
   const hasOutsideClass = btn.className.includes('outside') || btn.className.includes('disabled');
@@ -243,6 +251,7 @@ const activeButton = allButtons.find(btn => {
 ```
 
 ### 3. Дополнительная проверка для даты 31
+
 ```javascript
 // Для 31 проверяем что это строка 5 (не строка 1)
 const rowIdx = Array.from(tbody.children).indexOf(tr);
@@ -254,6 +263,7 @@ return rowIdx === 4; // Row 5 (0-indexed)
 Скопируйте весь скрипт выше и выполните в консоли браузера.
 
 Ожидаемый результат:
+
 - ✅ Найдет правильные кнопки по XPath
 - ✅ Найдет те же кнопки через правильный селектор
 - ✅ DSL сгенерируется для правильного элемента

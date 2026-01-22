@@ -22,18 +22,13 @@ export function isDynamicId(id: string): boolean {
   if (/^:[a-z0-9]+:$/i.test(id)) return true;
 
   // Pattern: UUID-like (e.g., "550e8400-e29b-41d4-a716-446655440000")
-  if (
-    /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)
-  ) {
+  if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) {
     return true;
   }
 
   // Pattern: hash-like (long random strings with mixed case/numbers)
   // e.g., "css-1a2b3c4d", "sc-bdVaJa"
-  if (
-    /^[a-z]{1,3}[A-Za-z0-9]{8,}$/.test(id) &&
-    (/\d/.test(id) || /[A-Z]/.test(id))
-  ) {
+  if (/^[a-z]{1,3}[A-Za-z0-9]{8,}$/.test(id) && (/\d/.test(id) || /[A-Z]/.test(id))) {
     return true;
   }
 
@@ -74,7 +69,7 @@ export const ID_REFERENCE_ATTRIBUTES = new Set([
 export function hasDynamicIdReference(value: string): boolean {
   // Value may contain a list of IDs separated by spaces
   const ids = value.trim().split(/\s+/);
-  return ids.some(id => isDynamicId(id));
+  return ids.some((id) => isDynamicId(id));
 }
 
 /**

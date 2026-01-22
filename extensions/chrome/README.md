@@ -50,11 +50,13 @@ yarn extension:prepare
 ### Generating Selectors
 
 #### Generate All Elements
+
 1. Click the **"Generate for All Elements"** button in the toolbar
 2. Wait for selectors to be generated (status will show progress)
 3. Selectors appear in the tree view on the left
 
 #### Pick Single Element
+
 1. Click the **"Pick Element"** button
 2. Hover over elements on the page (they will be highlighted)
 3. Click an element to generate its SEQL selector
@@ -63,12 +65,14 @@ yarn extension:prepare
 ### Viewing Selectors
 
 #### Grouping Modes
+
 - **By Tag** - Groups selectors by element tag (button, a, input, etc.)
 - **By Structure** - Groups selectors by DOM hierarchy
 
 Toggle between modes using the grouping dropdown.
 
 #### Tree Navigation
+
 - Click group headers to expand/collapse
 - Click a selector to view its details
 - Use the tag filter dropdown to filter by element type
@@ -86,6 +90,7 @@ Toggle between modes using the grouping dropdown.
 ### Details Panel
 
 Click any selector to open the details panel showing:
+
 - Full SEQL selector (with copy button)
 - Element tag
 - Semantics (ARIA roles, labels, etc.)
@@ -93,6 +98,7 @@ Click any selector to open the details panel showing:
 - HTML preview
 
 #### Actions
+
 - **Copy Selector** - Copy the full SEQL selector to clipboard
 - **Scroll to Element** - Scroll the page to bring element into view
 - **Highlight Element** - Temporarily highlight the element on the page
@@ -102,6 +108,7 @@ Click any selector to open the details panel showing:
 Example: `v1: form :: div.container > button[type='submit']`
 
 Structure:
+
 - `v1:` - Version prefix
 - `form` - Anchor (semantic root element)
 - `::` - Anchor separator
@@ -148,15 +155,18 @@ extensions/chrome/
 ## Troubleshooting
 
 ### Extension Not Loading
+
 - Ensure all files exist (especially `lib/seql-js.umd.cjs`)
 - Check for JSON syntax errors in `manifest.json`
 - Look for errors in `chrome://extensions/`
 
 ### Selectors Not Generating
+
 - Make sure the seql-js library is injected (check for `window.seqljs` in page console)
 - Try refreshing the page and reopening DevTools
 
 ### Panel Not Appearing
+
 - Close and reopen DevTools
 - Try disabling and re-enabling the extension
 

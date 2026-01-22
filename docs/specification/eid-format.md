@@ -6,13 +6,13 @@ Element Identity Descriptor (EID) JSON structure specification v1.0 (with v1.1.0
 
 ```typescript
 interface ElementIdentity {
-  version: string;               // Format version (e1.0")
-  anchor: AnchorNode;           // Semantic root element
-  path: PathNode[];             // Semantic traversal
-  target: TargetNode;           // Element being identified
-  constraints?: Constraint[];    // Disambiguation rules
+  version: string; // Format version (e1.0")
+  anchor: AnchorNode; // Semantic root element
+  path: PathNode[]; // Semantic traversal
+  target: TargetNode; // Element being identified
+  constraints?: Constraint[]; // Disambiguation rules
   fallbackRules?: FallbackRules; // Fallback resolution rules
-  meta: EIDMeta;                // Metadata
+  meta: EIDMeta; // Metadata
 }
 ```
 
@@ -20,13 +20,14 @@ interface ElementIdentity {
 
 ```typescript
 interface AnchorNode {
-  tag: string;                   // Tag name (e.g., "form", "main")
-  semantics: ElementSemantics;   // Semantic features
-  nthChild?: number;             // Position among siblings (v1.1.0)
+  tag: string; // Tag name (e.g., "form", "main")
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position among siblings (v1.1.0)
 }
 ```
 
 **Example:**
+
 ```json
 {
   "tag": "form",
@@ -41,13 +42,14 @@ interface AnchorNode {
 
 ```typescript
 interface PathNode {
-  tag: string;                   // Tag name
-  semantics: ElementSemantics;   // Semantic features
-  nthChild?: number;             // Position (v1.1.0)
+  tag: string; // Tag name
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position (v1.1.0)
 }
 ```
 
 **Example:**
+
 ```json
 {
   "tag": "div",
@@ -61,13 +63,14 @@ interface PathNode {
 
 ```typescript
 interface TargetNode {
-  tag: string;                   // Tag name
-  semantics: ElementSemantics;   // Semantic features
-  nthChild?: number;             // Position (v1.1.0)
+  tag: string; // Tag name
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position (v1.1.0)
 }
 ```
 
 **Example:**
+
 ```json
 {
   "tag": "button",
@@ -83,11 +86,11 @@ interface TargetNode {
 
 ```typescript
 interface ElementSemantics {
-  id?: string;                   // Stable ID (if present)
-  classes?: string[];            // Semantic classes (filtered)
+  id?: string; // Stable ID (if present)
+  classes?: string[]; // Semantic classes (filtered)
   attributes?: Record<string, string>; // Identity attributes
-  role?: string;                 // ARIA role
-  text?: string;                 // Text content
+  role?: string; // ARIA role
+  text?: string; // Text content
   svgFingerprint?: SvgFingerprint; // SVG-specific
 }
 ```
@@ -96,10 +99,10 @@ interface ElementSemantics {
 
 ```typescript
 interface EIDMeta {
-  confidence: number;            // Quality score (0-1)
-  generatedAt: string;           // ISO timestamp
-  degraded: boolean;             // True if conditions not ideal
-  degradationReason?: string;    // Why degraded
+  confidence: number; // Quality score (0-1)
+  generatedAt: string; // ISO timestamp
+  degraded: boolean; // True if conditions not ideal
+  degradationReason?: string; // Why degraded
 }
 ```
 
@@ -144,16 +147,19 @@ interface EIDMeta {
 ## nth-child Property (v1.1.0)
 
 The `nthChild` property indicates an element's position among its siblings:
+
 - **1-based indexing** (matches CSS `:nth-child()`)
 - Optional - only included when needed for disambiguation
 - Helps identify elements in lists, tables, or with identical siblings
 
 **When included:**
+
 - Anchor: For forms, sections with multiple instances
 - Path: For disambiguating intermediate nodes
 - Target: For identical siblings (same tag + semantics)
 
 **Example - Table Cell:**
+
 ```json
 {
   "anchor": { "tag": "table", "nthChild": 1 },

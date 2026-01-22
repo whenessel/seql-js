@@ -1,4 +1,13 @@
-import type { ElementIdentity, AnchorNode, PathNode, TargetNode, ElementSemantics, GeneratorOptions, ResolverOptions } from '../types';
+import type {
+  ElementIdentity,
+  AnchorNode,
+  PathNode,
+  TargetNode,
+  ElementSemantics,
+  GeneratorOptions,
+  ResolverOptions,
+  Constraint,
+} from '../types';
 import { generateEID as generateEIDInternal } from '../generator';
 import { resolve as resolveInternal } from '../resolver';
 import { filterStableClasses } from './class-classifier';
@@ -110,9 +119,10 @@ export function stringifySEQL(eid: ElementIdentity, options?: StringifyOptions):
 
   const version = `v${eid.version}`;
   const anchor = stringifyNode(eid.anchor, false, opts);
-  const path = eid.path.length > 0
-    ? eid.path.map(node => stringifyNode(node, false, opts)).join(' > ') + ' > '
-    : '';
+  const path =
+    eid.path.length > 0
+      ? eid.path.map((node) => stringifyNode(node, false, opts)).join(' > ') + ' > '
+      : '';
   const target = stringifyNode(eid.target, true, opts); // Pass isTarget=true
 
   // Constraints are optional
@@ -172,7 +182,10 @@ export function parseSEQL(selector: string): ElementIdentity {
   }
 
   // Split by > to get path nodes and target
-  const nodes = remaining.split(/\s*>\s*/).map((n: string) => n.trim()).filter((n: string) => n);
+  const nodes = remaining
+    .split(/\s*>\s*/)
+    .map((n: string) => n.trim())
+    .filter((n: string) => n);
 
   if (nodes.length === 0) {
     throw new Error('Invalid SEQL Selector: missing target node');
@@ -219,7 +232,7 @@ export function parseSEQL(selector: string): ElementIdentity {
  */
 function stringifyNode(
   node: AnchorNode | PathNode | TargetNode,
-  isTarget: boolean = false,
+  isTarget = false,
   options: Required<StringifyOptions> = DEFAULT_STRINGIFY_OPTIONS
 ): string {
   const { tag, semantics } = node;
@@ -242,15 +255,15 @@ function stringifyNode(
   const processedAttrs = Object.entries(rawAttributes)
     .map(([name, value]) => {
       const priority = getAttributePriority(name);
-      const cleanedValue = (name === 'href' || name === 'src')
-        ? cleanAttributeValue(name, value)
-        : value;
+      const cleanedValue =
+        name === 'href' || name === 'src' ? cleanAttributeValue(name, value) : value;
       return { name, value: cleanedValue, priority };
     })
-    .filter(attr => {
-      // Filter out truly ignored attributes (style, xmlns, etc)
-      const trulyIgnored = ['style', 'xmlns', 'tabindex', 'contenteditable'];
-      if (trulyIgnored.includes(attr.name)) return false;
+    .filter((attr) => {
+      // Filter out attributes in IGNORED_ATTRIBUTES (excluding id and class which are handled separately)
+      if (attr.name !== 'id' && attr.name !== 'class' && IGNORED_ATTRIBUTES.has(attr.name)) {
+        return false;
+      }
 
       // Filter out ID-reference attributes with dynamic values
       if (ID_REFERENCE_ATTRIBUTES.has(attr.name) && hasDynamicIdReference(attr.value)) {
@@ -287,14 +300,14 @@ function stringifyNode(
   if (attrStrings.length > 0) {
     // Advanced simplification for target node
     if (isTarget && options.simplifyTarget && semantics.id) {
-       // If we have ID, we can afford to be more selective,
-       // but we MUST keep important semantic info like href, text, data-testid
-       finalAttrs = attrStrings.filter(s => {
-         const name = s.split('=')[0];
-         const priority = getAttributePriority(name);
-         // Keep high priority attributes (id, data-testid, href, src, role, text)
-         return priority >= 60 || name === 'text' || name === 'id' || name === 'role';
-       });
+      // If we have ID, we can afford to be more selective,
+      // but we MUST keep important semantic info like href, text, data-testid
+      finalAttrs = attrStrings.filter((s) => {
+        const name = s.split('=')[0];
+        const priority = getAttributePriority(name);
+        // Keep high priority attributes (id, data-testid, href, src, role, text)
+        return priority >= 60 || name === 'text' || name === 'id' || name === 'role';
+      });
     }
 
     if (finalAttrs.length > 0) {
@@ -308,8 +321,15 @@ function stringifyNode(
     const stableClasses = filterStableClasses(semantics.classes);
 
     // If simplifying target and we have strong identifiers, we can skip classes
-    const hasStrongIdentifier = !!semantics.id ||
-      attrStrings.some(s => s.startsWith('href=') || s.startsWith('data-testid=') || s.startsWith('text=') || s.startsWith('role='));
+    const hasStrongIdentifier =
+      !!semantics.id ||
+      attrStrings.some(
+        (s) =>
+          s.startsWith('href=') ||
+          s.startsWith('data-testid=') ||
+          s.startsWith('text=') ||
+          s.startsWith('role=')
+      );
     const skipClasses = isTarget && options.simplifyTarget && hasStrongIdentifier;
 
     if (!skipClasses && stableClasses.length > 0) {
@@ -317,7 +337,7 @@ function stringifyNode(
         .sort() // Alphabetical for determinism
         .slice(0, options.maxClasses);
 
-      result += limitedClasses.map(c => `.${c}`).join('');
+      result += limitedClasses.map((c) => `.${c}`).join('');
     }
   }
 
@@ -329,7 +349,8 @@ function stringifyNode(
   // 4. Add position (nth-child)
   if ('nthChild' in node && node.nthChild) {
     // SEQL Selector position is #N
-    const hasStrongIdentifier = !!semantics.id ||
+    const hasStrongIdentifier =
+      !!semantics.id ||
       (semantics.attributes && Object.keys(semantics.attributes).some(isUniqueAttribute));
 
     const skipPosition = isTarget && options.simplifyTarget && hasStrongIdentifier;
@@ -430,7 +451,7 @@ function parseNode(nodeStr: string, isAnchor: boolean): AnchorNode | PathNode {
       if (attributes.text) {
         semantics.text = {
           raw: attributes.text,
-          normalized: attributes.text
+          normalized: attributes.text,
         };
         delete attributes.text;
       }
@@ -487,16 +508,16 @@ function parseNode(nodeStr: string, isAnchor: boolean): AnchorNode | PathNode {
 /**
  * Parse constraints string
  */
-function parseConstraints(constraintsStr: string): any[] {
+function parseConstraints(constraintsStr: string): Constraint[] {
   if (!constraintsStr.trim()) {
     return [];
   }
 
-  const constraints: any[] = [];
-  const pairs = constraintsStr.split(',').map(p => p.trim());
+  const constraints: Constraint[] = [];
+  const pairs = constraintsStr.split(',').map((p) => p.trim());
 
   for (const pair of pairs) {
-    const [key, value] = pair.split('=').map(s => s.trim());
+    const [key, value] = pair.split('=').map((s) => s.trim());
 
     switch (key) {
       case 'unique':
@@ -519,7 +540,7 @@ function parseConstraints(constraintsStr: string): any[] {
           priority: 70,
         });
         break;
-      case 'text':
+      case 'text': {
         // Remove quotes
         const text = value.replace(/^"(.*)"$/, '$1');
         constraints.push({
@@ -531,6 +552,7 @@ function parseConstraints(constraintsStr: string): any[] {
           priority: 60,
         });
         break;
+      }
     }
   }
 
@@ -573,10 +595,10 @@ function splitAttributes(attrsStr: string): string[] {
  */
 function escapeAttributeValue(value: string): string {
   return value
-    .replace(/\\/g, '\\\\')  // Backslash
-    .replace(/"/g, '\\"')     // Quote
-    .replace(/>/g, '\\>')     // Greater-than
-    .replace(/:/g, '\\:');    // Colon
+    .replace(/\\/g, '\\\\') // Backslash
+    .replace(/"/g, '\\"') // Quote
+    .replace(/>/g, '\\>') // Greater-than
+    .replace(/:/g, '\\:'); // Colon
 }
 
 /**
@@ -584,12 +606,15 @@ function escapeAttributeValue(value: string): string {
  * Must process in reverse order to avoid double-unescaping
  */
 function unescapeAttributeValue(value: string): string {
-  return value
-    .replace(/\\\\/g, '\x00')   // Temporary placeholder for backslash
-    .replace(/\\"/g, '"')
-    .replace(/\\>/g, '>')
-    .replace(/\\:/g, ':')
-    .replace(/\x00/g, '\\');     // Restore backslash
+  return (
+    value
+      .replace(/\\\\/g, '\x00') // Temporary placeholder for backslash
+      .replace(/\\"/g, '"')
+      .replace(/\\>/g, '>')
+      .replace(/\\:/g, ':')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x00/g, '\\')
+  ); // Restore backslash
 }
 
 // ============================================================================
@@ -659,6 +684,7 @@ export function resolveSEQL(
     const result = resolveInternal(eid, root, options);
     return result.elements || [];
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to resolve SEQL Selector:', error);
     return [];
   }

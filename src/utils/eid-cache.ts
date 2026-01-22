@@ -14,9 +14,9 @@ class LRUCache<K, V> {
   }
 
   get(key: K): V | undefined {
-    if (!this.cache.has(key)) return undefined;
+    const value = this.cache.get(key);
+    if (value === undefined) return undefined;
     // Move to end (most recently used)
-    const value = this.cache.get(key)!;
     this.cache.delete(key);
     this.cache.set(key, value);
     return value;
@@ -104,7 +104,7 @@ export class EIDCache {
   constructor(options: EIDCacheOptions = {}) {
     this.eidCache = new WeakMap();
     this.selectorResultCache = new LRUCache<string, Element[]>(
-      options.maxSelectorCacheSize ?? 1000,
+      options.maxSelectorCacheSize ?? 1000
     );
     this.anchorCache = new WeakMap();
     this.semanticsCache = new WeakMap();

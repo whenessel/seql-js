@@ -40,8 +40,7 @@ generateSEQL(detailsTab);
 
 ```html
 <nav aria-label="Breadcrumb">
-  <a href="/">Home</a> >
-  <a href="/products">Products</a> >
+  <a href="/">Home</a> > <a href="/products">Products</a> >
   <span>Product A</span>
 </nav>
 ```

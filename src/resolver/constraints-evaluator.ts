@@ -16,14 +16,11 @@ export class ConstraintsEvaluator {
       case 'text-proximity':
         return this.applyTextProximity(
           candidates,
-          constraint.params as { reference: string; maxDistance: number },
+          constraint.params as { reference: string; maxDistance: number }
         );
 
       case 'position':
-        return this.applyPosition(
-          candidates,
-          constraint.params as { strategy: string },
-        );
+        return this.applyPosition(candidates, constraint.params as { strategy: string });
 
       case 'uniqueness':
       default:
@@ -37,7 +34,7 @@ export class ConstraintsEvaluator {
    */
   private applyTextProximity(
     candidates: Element[],
-    params: { reference: string; maxDistance: number },
+    params: { reference: string; maxDistance: number }
   ): Element[] {
     return candidates.filter((el) => {
       const text = el.textContent?.trim() ?? '';
@@ -49,10 +46,7 @@ export class ConstraintsEvaluator {
   /**
    * Applies position constraint
    */
-  private applyPosition(
-    candidates: Element[],
-    params: { strategy: string },
-  ): Element[] {
+  private applyPosition(candidates: Element[], params: { strategy: string }): Element[] {
     if (candidates.length <= 1) return candidates;
 
     switch (params.strategy) {
@@ -117,10 +111,7 @@ export class ConstraintsEvaluator {
     for (let i = 1; i <= a.length; i++) {
       let prev = i;
       for (let j = 1; j <= b.length; j++) {
-        const current =
-          a[i - 1] === b[j - 1]
-            ? row[j - 1]
-            : Math.min(row[j - 1], prev, row[j]) + 1;
+        const current = a[i - 1] === b[j - 1] ? row[j - 1] : Math.min(row[j - 1], prev, row[j]) + 1;
         row[j - 1] = prev;
         prev = current;
       }

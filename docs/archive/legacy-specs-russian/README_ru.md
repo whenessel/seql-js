@@ -66,33 +66,37 @@ if (result.status === 'success') {
 
 ### Основные документы
 
-| Документ | Описание | Для кого |
-|----------|----------|----------|
-| [**REQUIREMENTS.md**](./REQUIREMENTS.md) | Постановка задачи, контекст, цели | Product, Stakeholders |
-| [**SPECIFICATION.md**](./SPECIFICATION.md) | Полная спецификация DSL v1.0 | Разработчики, Архитекторы |
-| [**DECISIONS.md**](./DECISIONS.md) | Архитектурные решения с обоснованиями | Архитекторы, Tech Leads |
-| [**ARCHITECTURE.md**](./ARCHITECTURE.md) | Техническая архитектура системы | Разработчики |
-| [**AI_AGENT_INSTRUCTIONS.md**](./AI_AGENT_INSTRUCTIONS.md) | Инструкции для ИИ-ассистентов | AI Agents, LLMs |
+| Документ                                                   | Описание                              | Для кого                  |
+| ---------------------------------------------------------- | ------------------------------------- | ------------------------- |
+| [**REQUIREMENTS.md**](./REQUIREMENTS.md)                   | Постановка задачи, контекст, цели     | Product, Stakeholders     |
+| [**SPECIFICATION.md**](./SPECIFICATION.md)                 | Полная спецификация DSL v1.0          | Разработчики, Архитекторы |
+| [**DECISIONS.md**](./DECISIONS.md)                         | Архитектурные решения с обоснованиями | Архитекторы, Tech Leads   |
+| [**ARCHITECTURE.md**](./ARCHITECTURE.md)                   | Техническая архитектура системы       | Разработчики              |
+| [**AI_AGENT_INSTRUCTIONS.md**](./AI_AGENT_INSTRUCTIONS.md) | Инструкции для ИИ-ассистентов         | AI Agents, LLMs           |
 
 ### Рекомендуемый порядок чтения
 
 **Для Product Managers**:
+
 1. README.md (этот файл)
 2. REQUIREMENTS.md
 
 **Для Разработчиков**:
+
 1. README.md
 2. REQUIREMENTS.md
 3. SPECIFICATION.md
 4. ARCHITECTURE.md
 
 **Для Архитекторов**:
+
 1. REQUIREMENTS.md
 2. SPECIFICATION.md
 3. DECISIONS.md
 4. ARCHITECTURE.md
 
 **Для AI Agents**:
+
 1. AI_AGENT_INSTRUCTIONS.md
 2. SPECIFICATION.md
 3. DECISIONS.md
@@ -126,7 +130,7 @@ form > div > button
 </form>
 
 <!-- CSS селектор сломался ❌ -->
-form > div > button  // не работает
+form > div > button // не работает
 ```
 
 ### Решение: DSL Identity
@@ -211,9 +215,10 @@ DSL использует **семантический anchor** — корень 
 
 ```html
 <main>
-  <form id="contact">  ← Anchor
-    <input name="email">
-    <button>Submit</button>  ← Target
+  <form id="contact">
+    ← Anchor
+    <input name="email" />
+    <button>Submit</button> ← Target
   </form>
 </main>
 ```
@@ -221,6 +226,7 @@ DSL использует **семантический anchor** — корень 
 DSL: `anchor: <form> → target: <button>`
 
 **Приоритеты anchor**:
+
 1. **Tier A**: `<form>`, `<main>`, `<nav>`, `<section>` + semantic attributes
 2. **Tier B**: `<div role="form">`, `<div role="navigation">`
 3. **Tier C**: `<div data-testid="checkout">`
@@ -231,10 +237,14 @@ Path содержит только **смысловые узлы**, пропус
 
 ```html
 <form>
-  <div class="flex">       ← пропускается (layout)
-    <div class="wrapper">  ← пропускается (layout)
-      <ul class="items">   ← включается (semantic)
-        <li>               ← включается (semantic)
+  <div class="flex">
+    ← пропускается (layout)
+    <div class="wrapper">
+      ← пропускается (layout)
+      <ul class="items">
+        ← включается (semantic)
+        <li>
+          ← включается (semantic)
           <button>Click</button>
         </li>
       </ul>
@@ -279,13 +289,13 @@ Resolver использует `normalized` для matching.
 
 ## 📊 Метрики успешности
 
-| Метрика | Target | Status |
-|---------|--------|--------|
-| Стабильность DSL между сессиями | ≥ 95% | 🎯 Spec |
-| Успешность резолва в replay | ≥ 99% | 🎯 Spec |
-| Устойчивость к layout changes | 100% | 🎯 Spec |
-| Время генерации DSL | ≤ 5ms | 🎯 Spec |
-| Время резолва DSL | ≤ 50ms | 🎯 Spec |
+| Метрика                         | Target | Status  |
+| ------------------------------- | ------ | ------- |
+| Стабильность DSL между сессиями | ≥ 95%  | 🎯 Spec |
+| Успешность резолва в replay     | ≥ 99%  | 🎯 Spec |
+| Устойчивость к layout changes   | 100%   | 🎯 Spec |
+| Время генерации DSL             | ≤ 5ms  | 🎯 Spec |
+| Время резолва DSL               | ≤ 50ms | 🎯 Spec |
 
 ---
 
@@ -302,16 +312,18 @@ rrweb.record({
       analytics.track(event.data.dslIdentity);
     }
   },
-  plugins: [new RrwebDslPlugin()]
+  plugins: [new RrwebDslPlugin()],
 });
 
 // Replay
 const replayer = new rrweb.Replayer(events, {
-  plugins: [new RrwebDslResolverPlugin({
-    onResolve(result) {
-      highlightElement(result.elements[0]);
-    }
-  })]
+  plugins: [
+    new RrwebDslResolverPlugin({
+      onResolve(result) {
+        highlightElement(result.elements[0]);
+      },
+    }),
+  ],
 });
 ```
 
@@ -419,7 +431,7 @@ Expertise: TypeScript, rrweb, browser automation, WebDriver
 
 ## 📞 Контакты
 
-- GitHub Issues: [создать issue](#)
+- GitHub Issues: [создать issue](https://github.com/your-repo/issues)
 - Email: TBD
 
 ---
@@ -434,6 +446,7 @@ Expertise: TypeScript, rrweb, browser automation, WebDriver
 ## 📝 Changelog
 
 ### v1.0 (2025-01-15) — Specification Phase
+
 - ✅ Requirements defined
 - ✅ Specification complete
 - ✅ Architecture designed

@@ -238,14 +238,7 @@ describe('ClassClassifier', () => {
 
   describe('filterStableClasses', () => {
     it('should filter out utility and dynamic classes', () => {
-      const classes = [
-        'nav-item',
-        'flex',
-        'mt-4',
-        'button-primary',
-        'css-abc123',
-        'animate-spin',
-      ];
+      const classes = ['nav-item', 'flex', 'mt-4', 'button-primary', 'css-abc123', 'animate-spin'];
       const result = filterStableClasses(classes);
       expect(result).toEqual(['nav-item', 'button-primary']);
     });
@@ -265,13 +258,7 @@ describe('ClassClassifier', () => {
 
   describe('filterSemanticClasses', () => {
     it('should filter to only semantic classes', () => {
-      const classes = [
-        'nav-item',
-        'flex',
-        'button-primary',
-        'css-abc123',
-        'form-input',
-      ];
+      const classes = ['nav-item', 'flex', 'button-primary', 'css-abc123', 'form-input'];
       const result = filterSemanticClasses(classes);
       expect(result).toEqual(['nav-item', 'button-primary', 'form-input']);
     });

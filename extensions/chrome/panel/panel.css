@@ -510,9 +510,15 @@ body {
 
 /* Animation for highlighting */
 @keyframes highlight-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(26, 115, 232, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(26, 115, 232, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
+  }
 }
 
 .seql-highlight-pulse {

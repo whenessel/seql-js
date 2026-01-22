@@ -46,16 +46,13 @@ function isDynamicHash(hash: string): boolean {
  * @param options - Cleaning options
  * @returns Cleaned URL value
  */
-function cleanUrlValue(
-  value: string,
-  options: Required<CleanAttributeOptions>,
-): string {
+function cleanUrlValue(value: string, options: Required<CleanAttributeOptions>): string {
   if (!value) return value;
 
   const isAbsolute = value.startsWith('http://') || value.startsWith('https://');
 
   // Split into parts: base, query, hash
-  let [baseWithQuery, hash] = value.split('#');
+  const [baseWithQuery, hash] = value.split('#');
   const [base, query] = baseWithQuery.split('?');
 
   let cleaned = base;
@@ -93,7 +90,7 @@ function cleanUrlValue(
 export function cleanAttributeValue(
   attrName: string,
   value: string,
-  options: CleanAttributeOptions = {},
+  options: CleanAttributeOptions = {}
 ): string {
   if (!value) return value;
 

@@ -8,7 +8,10 @@ chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     console.log('[SEQL Inspector] Extension installed');
   } else if (details.reason === 'update') {
-    console.log('[SEQL Inspector] Extension updated to version', chrome.runtime.getManifest().version);
+    console.log(
+      '[SEQL Inspector] Extension updated to version',
+      chrome.runtime.getManifest().version
+    );
   }
 });
 

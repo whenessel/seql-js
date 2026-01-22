@@ -3,7 +3,7 @@
  * Main panel functionality for the Chrome DevTools extension
  */
 
-(function() {
+(function () {
   'use strict';
 
   // State
@@ -13,7 +13,7 @@
     groupingMode: 'tag', // 'tag' | 'structure'
     expandedGroups: new Set(),
     tagFilter: '',
-    searchDebounceTimer: null
+    searchDebounceTimer: null,
   };
 
   // DOM Elements
@@ -37,7 +37,7 @@
     detailConfidence: document.getElementById('detail-confidence'),
     detailSemantics: document.getElementById('detail-semantics'),
     detailPreview: document.getElementById('detail-preview'),
-    elementRefLink: document.getElementById('element-ref-link')
+    elementRefLink: document.getElementById('element-ref-link'),
   };
 
   // Initialize
@@ -349,42 +349,45 @@
 
       // Poll for result
       const checkResult = setInterval(() => {
-        evalInPage('window.__seqlPickerResult || (window.__seqlPicker ? null : { cancelled: true })', (res, err) => {
-          if (res) {
-            clearInterval(checkResult);
-            elements.btnPickElement.disabled = false;
+        evalInPage(
+          'window.__seqlPickerResult || (window.__seqlPicker ? null : { cancelled: true })',
+          (res, err) => {
+            if (res) {
+              clearInterval(checkResult);
+              elements.btnPickElement.disabled = false;
 
-            if (res.cancelled) {
-              setStatus('Picker cancelled');
-              return;
+              if (res.cancelled) {
+                setStatus('Picker cancelled');
+                return;
+              }
+
+              // Add to selectors
+              state.selectors.push(res);
+              setStatus(`Picked: ${res.tag}`);
+
+              // Clean up
+              evalInPage('delete window.__seqlPickerResult');
+
+              updateTagFilter();
+              renderTree();
+
+              // Select the new item
+              selectItem(res.elementId);
             }
-
-            // Add to selectors
-            state.selectors.push(res);
-            setStatus(`Picked: ${res.tag}`);
-
-            // Clean up
-            evalInPage('delete window.__seqlPickerResult');
-
-            updateTagFilter();
-            renderTree();
-
-            // Select the new item
-            selectItem(res.elementId);
           }
-        });
+        );
       }, 200);
     });
   }
 
   // Update tag filter dropdown
   function updateTagFilter() {
-    const tags = new Set(state.selectors.map(s => s.tag));
+    const tags = new Set(state.selectors.map((s) => s.tag));
     const sortedTags = Array.from(tags).sort();
 
     elements.tagFilter.innerHTML = '<option value="">All Tags</option>';
-    sortedTags.forEach(tag => {
-      const count = state.selectors.filter(s => s.tag === tag).length;
+    sortedTags.forEach((tag) => {
+      const count = state.selectors.filter((s) => s.tag === tag).length;
       const option = document.createElement('option');
       option.value = tag;
       option.textContent = `${tag} (${count})`;
@@ -409,7 +412,7 @@
     if (!state.tagFilter) {
       return state.selectors;
     }
-    return state.selectors.filter(s => s.tag === state.tagFilter);
+    return state.selectors.filter((s) => s.tag === state.tagFilter);
   }
 
   // Render tree view
@@ -436,7 +439,7 @@
   // Render tree grouped by tag
   function renderTreeByTag(selectors) {
     const groups = {};
-    selectors.forEach(s => {
+    selectors.forEach((s) => {
       if (!groups[s.tag]) {
         groups[s.tag] = [];
       }
@@ -446,7 +449,7 @@
     const sortedTags = Object.keys(groups).sort();
     let html = '';
 
-    sortedTags.forEach(tag => {
+    sortedTags.forEach((tag) => {
       const items = groups[tag];
       const isExpanded = state.expandedGroups.has(tag);
       const headerClass = isExpanded ? '' : 'collapsed';
@@ -460,7 +463,7 @@
             <span class="group-count">${items.length}</span>
           </div>
           <div class="tree-group-items ${itemsClass}">
-            ${items.map(item => renderTreeItem(item)).join('')}
+            ${items.map((item) => renderTreeItem(item)).join('')}
           </div>
         </div>
       `;
@@ -474,7 +477,7 @@
   function renderTreeByStructure(selectors) {
     // Group by anchor element from EID
     const groups = {};
-    selectors.forEach(s => {
+    selectors.forEach((s) => {
       const anchor = s.eid?.anchor?.tag || 'unknown';
       if (!groups[anchor]) {
         groups[anchor] = [];
@@ -485,7 +488,7 @@
     const sortedAnchors = Object.keys(groups).sort();
     let html = '';
 
-    sortedAnchors.forEach(anchor => {
+    sortedAnchors.forEach((anchor) => {
       const items = groups[anchor];
       const isExpanded = state.expandedGroups.has(anchor);
       const headerClass = isExpanded ? '' : 'collapsed';
@@ -499,7 +502,7 @@
             <span class="group-count">${items.length}</span>
           </div>
           <div class="tree-group-items ${itemsClass}">
-            ${items.map(item => renderTreeItem(item)).join('')}
+            ${items.map((item) => renderTreeItem(item)).join('')}
           </div>
         </div>
       `;
@@ -525,7 +528,7 @@
   // Bind tree event listeners
   function bindTreeEvents() {
     // Group header clicks (expand/collapse)
-    elements.selectorTree.querySelectorAll('.tree-group-header').forEach(header => {
+    elements.selectorTree.querySelectorAll('.tree-group-header').forEach((header) => {
       header.addEventListener('click', () => {
         const group = header.dataset.group;
         const items = header.nextElementSibling;
@@ -543,7 +546,7 @@
     });
 
     // Tree item clicks
-    elements.selectorTree.querySelectorAll('.tree-item').forEach(item => {
+    elements.selectorTree.querySelectorAll('.tree-item').forEach((item) => {
       item.addEventListener('click', () => {
         selectItem(item.dataset.id);
       });
@@ -558,12 +561,12 @@
     clearSearchResultsState();
 
     // Update selection visual
-    elements.selectorTree.querySelectorAll('.tree-item').forEach(item => {
+    elements.selectorTree.querySelectorAll('.tree-item').forEach((item) => {
       item.classList.toggle('selected', item.dataset.id === elementId);
     });
 
     // Find selector data
-    const selectorData = state.selectors.find(s => s.elementId === elementId);
+    const selectorData = state.selectors.find((s) => s.elementId === elementId);
     if (selectorData) {
       showDetails(selectorData);
     }
@@ -574,7 +577,11 @@
     elements.detailSelector.textContent = data.selector;
     elements.detailTag.textContent = data.tag;
     elements.detailConfidence.textContent = (data.confidence * 100).toFixed(1) + '%';
-    elements.detailSemantics.textContent = JSON.stringify(data.eid?.target?.semantics || {}, null, 2);
+    elements.detailSemantics.textContent = JSON.stringify(
+      data.eid?.target?.semantics || {},
+      null,
+      2
+    );
     elements.detailPreview.textContent = data.preview;
 
     // Update element reference link text
@@ -588,7 +595,7 @@
   function showDetailsFromSearch(data, totalCount = 1) {
     // Clear selection in tree (this is a search result, not a list item)
     state.selectedId = null;
-    elements.selectorTree.querySelectorAll('.tree-item.selected').forEach(item => {
+    elements.selectorTree.querySelectorAll('.tree-item.selected').forEach((item) => {
       item.classList.remove('selected');
     });
 
@@ -636,7 +643,7 @@
     elements.detailsPanel.classList.add('hidden');
     state.selectedId = null;
 
-    elements.selectorTree.querySelectorAll('.tree-item.selected').forEach(item => {
+    elements.selectorTree.querySelectorAll('.tree-item.selected').forEach((item) => {
       item.classList.remove('selected');
     });
   }
@@ -659,7 +666,7 @@
       const btn = elements.btnCopySelector;
       const original = btn.textContent;
       btn.textContent = '✓';
-      setTimeout(() => btn.textContent = original, 1500);
+      setTimeout(() => (btn.textContent = original), 1500);
     } catch (err) {
       console.error('Failed to copy:', err);
       setStatus('Failed to copy to clipboard');

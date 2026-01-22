@@ -38,6 +38,7 @@ todos:
 ## Файл-за-файлом ревью
 
 ### README.md
+
 **Статус**: OK
 
 - Определяет scope, priority, conflict resolution
@@ -49,6 +50,7 @@ todos:
 **Замечания**: Нет.
 
 ### files.md
+
 **Статус**: OK
 
 - kebab-case для файлов
@@ -60,6 +62,7 @@ todos:
 **Замечания**: Нет.
 
 ### directories.md
+
 **Статус**: WARNING
 
 - kebab-case и плюрализация корректны
@@ -70,6 +73,7 @@ todos:
 **Рекомендация**: Добавить явное предупреждение о том, что generic buckets допустимы только для legacy кода, а новые директории должны отражать domain concepts.
 
 ### classes.md
+
 **Статус**: ISSUE
 
 - PascalCase и noun-based naming корректны
@@ -83,6 +87,7 @@ todos:
 **Рекомендация**: Унифицировать правила - либо явно разрешить определенные суффиксы с обоснованием, либо запретить все технические суффиксы. Если разрешаются Service/Processor/Client/Handler, это должно быть обосновано domain-спецификой, а не технической ролью.
 
 ### functions.md
+
 **Статус**: WARNING
 
 - camelCase и verb-based naming корректны
@@ -93,6 +98,7 @@ todos:
 **Рекомендация**: Уточнить, что `handle*` допустим только для event handlers (специфический паттерн), а `process*` должен быть заменен на более конкретные глаголы (transform, validate, parse и т.д.).
 
 ### variables.md
+
 **Статус**: OK
 
 - camelCase, value-based naming, no type encoding - все корректно
@@ -103,6 +109,7 @@ todos:
 **Замечания**: Нет.
 
 ### constants.md
+
 **Статус**: ISSUE
 
 - UPPER_SNAKE_CASE для примитивов корректно
@@ -114,6 +121,7 @@ todos:
 **Рекомендация**: Либо использовать `ERROR_MESSAGES`, `API_ENDPOINTS` (UPPER_SNAKE_CASE), либо явно документировать исключение для object constants с обоснованием. Текущее состояние создает противоречие.
 
 ### types.md
+
 **Статус**: OK
 
 - PascalCase, no I/T prefixes - корректно
@@ -124,6 +132,7 @@ todos:
 **Замечания**: Нет.
 
 ### enums.md
+
 **Статус**: OK
 
 - Enum name PascalCase, members UPPER_SNAKE_CASE - корректно
@@ -133,6 +142,7 @@ todos:
 **Замечания**: Нет.
 
 ### public-api.md
+
 **Статус**: OK
 
 - No abbreviations, no internal jargon, stability requirements - все корректно
@@ -142,6 +152,7 @@ todos:
 **Замечания**: Нет.
 
 ### internals.md
+
 **Статус**: WARNING
 
 - Разрешение коротких имен в малых scope корректно
@@ -156,30 +167,35 @@ todos:
 ## Отклонения от best practices
 
 ### 1. Противоречие: Object Constants Naming
+
 **Файл**: `constants.md`
 **Best practice**: UPPER_SNAKE_CASE для всех констант
 **Отклонение**: PascalCase для object constants (`ErrorMessages`, `ApiEndpoints`)
 **Обоснование**: Не предоставлено. TypeScript community использует оба подхода, но для консистентности нужно выбрать один.
 
 ### 2. Противоречие: Technical Suffixes в Classes
+
 **Файл**: `classes.md`
 **Best practice**: "no technical suffixes (Manager, Helper, Service)"
 **Отклонение**: Разрешает Service, Processor, Client, Handler
 **Обоснование**: Частично обосновано domain-спецификой, но создает противоречие с заявленным правилом "No suffixes".
 
 ### 3. Противоречие: Generic Verbs в Functions
+
 **Файл**: `functions.md`
 **Best practice**: "avoid vague verbs (handle, process, do)"
 **Отклонение**: Разрешает `handle*` и `process*` в определенных контекстах
 **Обоснование**: `handle*` для event handlers - устоявшийся паттерн, но `process*` должен быть более конкретным.
 
 ### 4. Противоречие: Generic Buckets в Directories
+
 **Файл**: `directories.md`
 **Best practice**: "avoid generic buckets (utils, helpers, common)"
 **Отклонение**: Использует `utils/` в примерах
 **Обоснование**: Не предоставлено. Baseline явно запрещает это.
 
 ### 5. Противоречие: Temporary Variables между файлами
+
 **Файлы**: `internals.md` vs `variables.md`
 **Best practice**: "avoid vague names" и "represent value, not type"
 **Отклонение**: `internals.md` разрешает `temp`, `result`, `value`, а `variables.md` их запрещает
@@ -229,7 +245,7 @@ todos:
 
 ## Консистентность между файлами
 
-### Обнаруженные противоречия:
+### Обнаруженные противоречия
 
 1. **constants.md vs baseline**: Object constants используют PascalCase вместо UPPER_SNAKE_CASE
 2. **classes.md внутреннее**: Строка 9 запрещает суффиксы, но строки 55-94 их разрешают
@@ -237,7 +253,7 @@ todos:
 4. **directories.md vs baseline**: Разрешает generic buckets, которые baseline запрещает
 5. **functions.md внутреннее**: Строки 199-204 запрещают generic verbs, но строки 68-80 их разрешают
 
-### Консистентные области:
+### Консистентные области
 
 - Базовые конвенции (camelCase, PascalCase, kebab-case) согласованы
 - Public API правила строгие и последовательные

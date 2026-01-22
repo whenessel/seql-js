@@ -15,16 +15,16 @@ describe('CssGenerator Selector Generation', () => {
   ): DslIdentity => ({
     anchor: {
       tag: anchorTag,
-      semantics: anchorSemantics
+      semantics: anchorSemantics,
     },
     target: {
       tag: targetTag,
-      semantics: targetSemantics
+      semantics: targetSemantics,
     },
-    path: pathTags.map(tag => ({
+    path: pathTags.map((tag) => ({
       tag,
-      semantics: {}
-    }))
+      semantics: {},
+    })),
   });
 
   // Create a virtual DOM for testing
@@ -62,16 +62,13 @@ describe('CssGenerator Selector Generation', () => {
       const secondListItem = listItems[1] as HTMLLIElement;
       const anchor = secondListItem.querySelector('a')!;
 
-      const dslIdentity = createDslIdentity(
-        'footer',
-        { classes: ['text-card-foreground'] },
-        'a',
-        { attributes: { href: '/apartments' } }
-      );
+      const dslIdentity = createDslIdentity('footer', { classes: ['text-card-foreground'] }, 'a', {
+        attributes: { href: '/apartments' },
+      });
 
       const selector = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: dom
+        root: dom,
       });
 
       console.log('Generated Selector Full Object:', JSON.stringify(selector, null, 2));
@@ -84,7 +81,7 @@ describe('CssGenerator Selector Generation', () => {
         'footer div div div ul li:nth-of-type(2) a',
         'footer.text-card-foreground a[href="/apartments"]',
         'footer div div div ul a[href="/apartments"]',
-        'footer a[href="/apartments"]' // Descendant combinator with unique href
+        'footer a[href="/apartments"]', // Descendant combinator with unique href
       ];
 
       expect(expectedSelectors).toContain(generatedSelector);
@@ -112,19 +109,19 @@ describe('CssGenerator Selector Generation', () => {
       const secondListItem = listItems[1] as HTMLLIElement;
       const anchor = secondListItem.querySelector('a')!;
 
-      const dslIdentity = createDslIdentity(
-        'footer',
-        { classes: ['text-card-foreground'] },
-        'a',
-        { attributes: { href: '/apartments' } }
-      );
+      const dslIdentity = createDslIdentity('footer', { classes: ['text-card-foreground'] }, 'a', {
+        attributes: { href: '/apartments' },
+      });
 
       const selector = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: dom
+        root: dom,
       });
 
-      console.log('Generated Selector Full Object (multiple tags):', JSON.stringify(selector, null, 2));
+      console.log(
+        'Generated Selector Full Object (multiple tags):',
+        JSON.stringify(selector, null, 2)
+      );
       const { selector: generatedSelector } = selector;
 
       // Expect selectors that use nth-of-type for disambiguation
@@ -135,7 +132,7 @@ describe('CssGenerator Selector Generation', () => {
         'footer ul li:nth-of-type(2) a[href="/apartments"]',
         'footer div div div ul li:nth-of-type(2) a[href="/apartments"]',
         'footer.text-card-foreground a[href="/apartments"]',
-        'footer div div div ul a[href="/apartments"]'
+        'footer div div div ul a[href="/apartments"]',
       ];
 
       expect(expectedSelectors).toContain(generatedSelector);
@@ -164,17 +161,20 @@ describe('CssGenerator Selector Generation', () => {
         'a',
         {
           attributes: { href: '/apartments' },
-          text: { normalized: 'Apartments' }
+          text: { normalized: 'Apartments' },
         },
-        ['div', 'div', 'ul']  // Simulating intermediate path
+        ['div', 'div', 'ul'] // Simulating intermediate path
       );
 
       const selector = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: dom
+        root: dom,
       });
 
-      console.log('Generated Selector Full Object (nested structures):', JSON.stringify(selector, null, 2));
+      console.log(
+        'Generated Selector Full Object (nested structures):',
+        JSON.stringify(selector, null, 2)
+      );
       const { selector: generatedSelector } = selector;
 
       // After FIX 3: selectors use child combinator (>)
@@ -230,29 +230,29 @@ describe('CssGenerator Selector Generation', () => {
       const dslIdentity: DslIdentity = {
         anchor: {
           tag: 'footer',
-          semantics: { classes: ['text-card-foreground'] }
+          semantics: { classes: ['text-card-foreground'] },
         },
         path: [
           { tag: 'ul', semantics: {} },
           {
             tag: 'li',
             semantics: {
-              text: { normalized: '+39 123 4567 890' }
-            }
-          }
+              text: { normalized: '+39 123 4567 890' },
+            },
+          },
         ],
         target: {
           tag: 'span',
           semantics: {
             classes: ['text-muted-foreground'],
-            text: { normalized: '+39 123 4567 890' }
-          }
-        }
+            text: { normalized: '+39 123 4567 890' },
+          },
+        },
       };
 
       const result = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Generated Selector (multiple sections):', JSON.stringify(result, null, 2));
@@ -341,7 +341,9 @@ describe('CssGenerator Selector Generation', () => {
 
     try {
       // Target the Gallery link
-      const galleryLink = div.querySelector('a[href="/modern-seaside-stay/gallery"]') as HTMLAnchorElement;
+      const galleryLink = div.querySelector(
+        'a[href="/modern-seaside-stay/gallery"]'
+      ) as HTMLAnchorElement;
       expect(galleryLink).not.toBeNull();
 
       const dslIdentity: DslIdentity = {
@@ -350,17 +352,15 @@ describe('CssGenerator Selector Generation', () => {
           tag: 'footer',
           semantics: { classes: ['text-card-foreground'] },
           score: 0.8,
-          degraded: false
+          degraded: false,
         },
-        path: [
-          { tag: 'ul', semantics: {}, score: 0.7 }
-        ],
+        path: [{ tag: 'ul', semantics: {}, score: 0.7 }],
         target: {
           tag: 'a',
           semantics: {
-            attributes: { href: '/modern-seaside-stay/gallery' }
+            attributes: { href: '/modern-seaside-stay/gallery' },
           },
-          score: 0.9
+          score: 0.9,
         },
         constraints: [],
         fallback: { onMultiple: 'first', onMissing: 'none', maxDepth: 3 },
@@ -369,13 +369,13 @@ describe('CssGenerator Selector Generation', () => {
           generatedAt: '',
           generator: '',
           source: '',
-          degraded: false
-        }
+          degraded: false,
+        },
       };
 
       const result = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Generated Selector (Gallery link):', JSON.stringify(result, null, 2));
@@ -387,14 +387,14 @@ describe('CssGenerator Selector Generation', () => {
       const expectedSelectors = [
         'footer.text-card-foreground ul li a[href="/modern-seaside-stay/gallery"]',
         'footer.text-card-foreground ul li:nth-of-type(4) a[href="/modern-seaside-stay/gallery"]',
-        'footer.text-card-foreground > div.container > div > div > ul:nth-of-type(1) > li:nth-of-type(4) > a[href="/modern-seaside-stay/gallery"]'
+        'footer.text-card-foreground > div.container > div > div > ul:nth-of-type(1) > li:nth-of-type(4) > a[href="/modern-seaside-stay/gallery"]',
       ];
 
       // Check if selector matches one of expected formats
-      const matchesExpected = expectedSelectors.some(expected => 
-        result.selector === expected || result.selector.includes('gallery')
+      const matchesExpected = expectedSelectors.some(
+        (expected) => result.selector === expected || result.selector.includes('gallery')
       );
-      
+
       // Verify the selector finds exactly one element
       const matchedElements = div.querySelectorAll(result.selector);
       expect(matchedElements.length).toBe(1);
@@ -450,11 +450,11 @@ describe('CssGenerator Selector Generation', () => {
       // Target the phone number span
       const phoneSpan = div.querySelector('span.text-muted-foreground') as HTMLSpanElement;
       const phoneText = phoneSpan?.textContent?.trim();
-      
+
       // Find the span with phone number
       const allSpans = Array.from(div.querySelectorAll('span.text-muted-foreground'));
-      const targetSpan = allSpans.find(span => span.textContent?.includes('+39 123 4567 890'));
-      
+      const targetSpan = allSpans.find((span) => span.textContent?.includes('+39 123 4567 890'));
+
       expect(targetSpan).not.toBeUndefined();
 
       const dslIdentity: DslIdentity = {
@@ -463,21 +463,21 @@ describe('CssGenerator Selector Generation', () => {
           tag: 'footer',
           semantics: { classes: ['text-card-foreground'] },
           score: 0.8,
-          degraded: false
+          degraded: false,
         },
         path: [
           { tag: 'div', semantics: {}, score: 0.7 },
           { tag: 'div', semantics: {}, score: 0.7 },
           { tag: 'ul', semantics: {}, score: 0.7 },
-          { tag: 'li', semantics: {}, score: 0.7 }
+          { tag: 'li', semantics: {}, score: 0.7 },
         ],
         target: {
           tag: 'span',
           semantics: {
             classes: ['text-muted-foreground'],
-            text: { normalized: '+39 123 4567 890' }
+            text: { normalized: '+39 123 4567 890' },
           },
-          score: 0.9
+          score: 0.9,
         },
         constraints: [],
         fallback: { onMultiple: 'first', onMissing: 'none', maxDepth: 3 },
@@ -486,13 +486,13 @@ describe('CssGenerator Selector Generation', () => {
           generatedAt: '',
           generator: '',
           source: '',
-          degraded: false
-        }
+          degraded: false,
+        },
       };
 
       const result = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Generated Selector (phone number):', JSON.stringify(result, null, 2));
@@ -503,7 +503,7 @@ describe('CssGenerator Selector Generation', () => {
       // Verify the selector finds exactly one element
       const matchedElements = div.querySelectorAll(result.selector);
       expect(matchedElements.length).toBe(1);
-      
+
       // The matched element should contain the phone number
       const matchedText = matchedElements[0].textContent?.trim();
       expect(matchedText).toContain('+39 123 4567 890');
@@ -538,17 +538,15 @@ describe('CssGenerator Selector Generation', () => {
           tag: 'footer',
           semantics: { classes: ['text-card-foreground'] },
           score: 0.8,
-          degraded: false
+          degraded: false,
         },
-        path: [
-          { tag: 'ul', semantics: {}, score: 0.7 }
-        ],
+        path: [{ tag: 'ul', semantics: {}, score: 0.7 }],
         target: {
           tag: 'a',
           semantics: {
-            attributes: { href: '/about' }
+            attributes: { href: '/about' },
           },
-          score: 0.9
+          score: 0.9,
         },
         constraints: [],
         fallback: { onMultiple: 'first', onMissing: 'none', maxDepth: 3 },
@@ -557,13 +555,13 @@ describe('CssGenerator Selector Generation', () => {
           generatedAt: '',
           generator: '',
           source: '',
-          degraded: false
-        }
+          degraded: false,
+        },
       };
 
       const result = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Generated Selector (Strategy 0 test):', JSON.stringify(result, null, 2));
@@ -574,10 +572,10 @@ describe('CssGenerator Selector Generation', () => {
       // Strategy 0 should produce a simple path without nth-of-type
       // Since there's only one ul and the href is unique, it should use simple path
       const expectedSimplePath = 'footer.text-card-foreground ul li a[href="/about"]';
-      
+
       // The selector should either be the simple path or contain the href attribute
       expect(result.selector).toContain('href="/about"');
-      
+
       // If Strategy 0 worked, it should not have nth-of-type (unless needed)
       // But since href is unique, it should prefer simple path
       if (result.selector === expectedSimplePath) {
@@ -617,21 +615,21 @@ describe('CssGenerator Selector Generation', () => {
       const dslIdentity: DslIdentity = {
         anchor: {
           tag: 'section',
-          semantics: {}
+          semantics: {},
         },
         path: [],
         target: {
           tag: 'a',
           semantics: {
             attributes: { href: '/booking' },
-            classes: ['btn']
-          }
-        }
+            classes: ['btn'],
+          },
+        },
       };
 
       const result = generator.buildSelector(dslIdentity, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Generated Selector (href priority test):', JSON.stringify(result, null, 2));
@@ -680,20 +678,20 @@ describe('CssGenerator Selector Generation', () => {
         anchor: { tag: 'section', semantics: {} },
         path: [
           { tag: 'ul', semantics: {} },
-          { tag: 'li', semantics: {} }
+          { tag: 'li', semantics: {} },
         ],
         target: {
           tag: 'a',
           semantics: {
             attributes: { href: '/booking' },
-            classes: ['inline-flex', 'items-centers', 'btn-primary'] // Utility classes!
-          }
-        }
+            classes: ['inline-flex', 'items-centers', 'btn-primary'], // Utility classes!
+          },
+        },
       };
 
       const result = generator.buildSelector(dsl, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Strategy 0 test - Generated:', result);
@@ -732,21 +730,21 @@ describe('CssGenerator Selector Generation', () => {
           {
             tag: 'div',
             semantics: {
-              attributes: { role: 'navigation' }
-            }
-          }
+              attributes: { role: 'navigation' },
+            },
+          },
         ],
         target: {
           tag: 'a',
           semantics: {
-            attributes: { href: '/booking' }
-          }
-        }
+            attributes: { href: '/booking' },
+          },
+        },
       };
 
       const result = generator.buildSelector(dsl, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Parent attrs test - Generated:', result);
@@ -783,22 +781,22 @@ describe('CssGenerator Selector Generation', () => {
           {
             tag: 'div',
             semantics: {
-              classes: ['sidebar'] // Stable class
-            }
-          }
+              classes: ['sidebar'], // Stable class
+            },
+          },
         ],
         target: {
           tag: 'a',
           semantics: {
             attributes: { href: '/booking' },
-            text: { normalized: 'Book 2' } // Disambiguate between Book 1 and Book 2
-          }
-        }
+            text: { normalized: 'Book 2' }, // Disambiguate between Book 1 and Book 2
+          },
+        },
       };
 
       const result = generator.buildSelector(dsl, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Parent stable class test - Generated:', result);
@@ -841,21 +839,21 @@ describe('CssGenerator Selector Generation', () => {
           {
             tag: 'div',
             semantics: {
-              classes: ['flex', 'items-center'] // Utility classes!
-            }
-          }
+              classes: ['flex', 'items-center'], // Utility classes!
+            },
+          },
         ],
         target: {
           tag: 'a',
           semantics: {
-            attributes: { href: '/booking' }
-          }
-        }
+            attributes: { href: '/booking' },
+          },
+        },
       };
 
       const result = generator.buildSelector(dsl, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('NO utility class test - Generated:', result);
@@ -892,14 +890,14 @@ describe('CssGenerator Selector Generation', () => {
           semantics: {
             attributes: { href: '/booking' },
             // Mix: utility + stable classes
-            classes: ['inline-flex', 'items-center', 'btn-primary', 'mt-4']
-          }
-        }
+            classes: ['inline-flex', 'items-center', 'btn-primary', 'mt-4'],
+          },
+        },
       };
 
       const result = generator.buildSelector(dsl, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Strategy 3 test - Generated:', result);
@@ -937,14 +935,14 @@ describe('CssGenerator Selector Generation', () => {
           tag: 'a',
           semantics: {
             attributes: { href: '/booking' },
-            classes: ['flex'] // Utility class (not stable)
-          }
-        }
+            classes: ['flex'], // Utility class (not stable)
+          },
+        },
       };
 
       const result = generator.buildSelector(dsl, {
         ensureUnique: true,
-        root: div
+        root: div,
       });
 
       console.log('Strategy 4 test - Generated:', result);
@@ -972,7 +970,7 @@ describe('CssGenerator Selector Generation', () => {
         const dsl: DslIdentity = {
           anchor: { tag: 'body', semantics: {} },
           path: [],
-          target: { tag: 'body', semantics: {} }
+          target: { tag: 'body', semantics: {} },
         };
 
         const result = generator.buildSelector(dsl);
@@ -1004,7 +1002,7 @@ describe('CssGenerator Selector Generation', () => {
         const dsl: DslIdentity = {
           anchor: { tag: 'main', semantics: { classes: ['container', 'content'] } },
           path: [],
-          target: { tag: 'main', semantics: { classes: ['container', 'content'] } }
+          target: { tag: 'main', semantics: { classes: ['container', 'content'] } },
         };
 
         const result = generator.buildSelector(dsl);
@@ -1044,10 +1042,10 @@ describe('CssGenerator Selector Generation', () => {
         const dsl: DslIdentity = {
           anchor: {
             tag: 'section',
-            semantics: { classes: ['relative', 'h-screen', 'overflow-hidden'] }
+            semantics: { classes: ['relative', 'h-screen', 'overflow-hidden'] },
           },
           path: [],
-          target: { tag: 'div', semantics: { classes: ['bottom-0'] } }
+          target: { tag: 'div', semantics: { classes: ['bottom-0'] } },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1060,7 +1058,9 @@ describe('CssGenerator Selector Generation', () => {
         // Should find at least the target element
         expect(matched.length).toBeGreaterThanOrEqual(1);
         // First match should be the target or contain target text
-        const foundTarget = Array.from(matched).some(el => el.textContent?.includes('Target div'));
+        const foundTarget = Array.from(matched).some((el) =>
+          el.textContent?.includes('Target div')
+        );
         expect(foundTarget).toBe(true);
       } finally {
         document.body.removeChild(div);
@@ -1082,7 +1082,7 @@ describe('CssGenerator Selector Generation', () => {
         const dsl: DslIdentity = {
           anchor: { tag: 'section', semantics: { classes: ['section'] } },
           path: [],
-          target: { tag: 'div', semantics: { classes: ['target'] } }
+          target: { tag: 'div', semantics: { classes: ['target'] } },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1121,7 +1121,7 @@ describe('CssGenerator Selector Generation', () => {
         const dsl: DslIdentity = {
           anchor: { tag: 'section', semantics: {} },
           path: [],
-          target: { tag: 'div', semantics: { classes: ['target'] } }
+          target: { tag: 'div', semantics: { classes: ['target'] } },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1155,7 +1155,7 @@ describe('CssGenerator Selector Generation', () => {
         const dsl: DslIdentity = {
           anchor: { tag: 'section', semantics: {} },
           path: [],
-          target: { tag: 'div', semantics: { classes: ['inset-0', 'bg-gradient'] } }
+          target: { tag: 'div', semantics: { classes: ['inset-0', 'bg-gradient'] } },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1194,9 +1194,9 @@ describe('CssGenerator Selector Generation', () => {
           anchor: { tag: 'table', semantics: {} },
           path: [
             { tag: 'tbody', semantics: {} },
-            { tag: 'tr', semantics: {} }
+            { tag: 'tr', semantics: {} },
           ],
-          target: { tag: 'td', semantics: {} }
+          target: { tag: 'td', semantics: {} },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1239,17 +1239,17 @@ describe('CssGenerator Selector Generation', () => {
           anchor: { tag: 'table', semantics: {} },
           path: [
             { tag: 'tbody', semantics: { classes: ['rdp-tbody'] } },
-            { tag: 'tr', semantics: {} }
+            { tag: 'tr', semantics: {} },
           ],
           target: {
             tag: 'td',
             semantics: {
               attributes: { role: 'presentation' },
-              text: { normalized: '2' }
-            }
+              text: { normalized: '2' },
+            },
           },
           constraints: [],
-          meta: { confidence: 1.0 }
+          meta: { confidence: 1.0 },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1287,10 +1287,13 @@ describe('CssGenerator Selector Generation', () => {
 
         const dsl: DslIdentity = {
           anchor: { tag: 'table', semantics: {} },
-          path: [{ tag: 'tbody', semantics: {} }, { tag: 'tr', semantics: {} }],
+          path: [
+            { tag: 'tbody', semantics: {} },
+            { tag: 'tr', semantics: {} },
+          ],
           target: { tag: 'td', semantics: { text: { normalized: 'B2' } } },
           constraints: [],
-          meta: { confidence: 1.0 }
+          meta: { confidence: 1.0 },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1328,7 +1331,7 @@ describe('CssGenerator Selector Generation', () => {
           path: [],
           target: { tag: 'div', semantics: { text: { normalized: 'Second' } } },
           constraints: [],
-          meta: { confidence: 1.0 }
+          meta: { confidence: 1.0 },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1368,9 +1371,9 @@ describe('CssGenerator Selector Generation', () => {
             tag: 'a',
             semantics: {
               attributes: { href: '/link1' },
-              classes: ['[&:has([aria-selected])]:bg-accent', 'btn-primary']
-            }
-          }
+              classes: ['[&:has([aria-selected])]:bg-accent', 'btn-primary'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1407,9 +1410,9 @@ describe('CssGenerator Selector Generation', () => {
           target: {
             tag: 'button',
             semantics: {
-              classes: ['hover:bg-blue-500', 'first:rounded-l', 'btn-primary']
-            }
-          }
+              classes: ['hover:bg-blue-500', 'first:rounded-l', 'btn-primary'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1447,9 +1450,9 @@ describe('CssGenerator Selector Generation', () => {
           target: {
             tag: 'div',
             semantics: {
-              classes: ['md:flex', 'lg:grid', 'sidebar']
-            }
-          }
+              classes: ['md:flex', 'lg:grid', 'sidebar'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1461,7 +1464,8 @@ describe('CssGenerator Selector Generation', () => {
         // Should include stable class OR use nth-of-type for disambiguation
         // Current logic may use nth-of-type when buildFullDomPathSelector is called
         const hasClass = result.selector.includes('sidebar');
-        const hasNth = result.selector.includes(':nth-of-type(') || result.selector.includes(':nth-child(');
+        const hasNth =
+          result.selector.includes(':nth-of-type(') || result.selector.includes(':nth-child(');
         expect(hasClass || hasNth).toBe(true);
 
         // Verify uniqueness
@@ -1495,9 +1499,9 @@ describe('CssGenerator Selector Generation', () => {
           target: {
             tag: 'div',
             semantics: {
-              classes: ['dark:bg-gray-800', 'card']
-            }
-          }
+              classes: ['dark:bg-gray-800', 'card'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1533,9 +1537,9 @@ describe('CssGenerator Selector Generation', () => {
           target: {
             tag: 'div',
             semantics: {
-              classes: ['bg-accent/50', 'w-full', 'card-one']
-            }
-          }
+              classes: ['bg-accent/50', 'w-full', 'card-one'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1572,9 +1576,9 @@ describe('CssGenerator Selector Generation', () => {
           target: {
             tag: 'div',
             semantics: {
-              classes: ['absolute', 'inset-0', 'bg-gradient', 'layer-two']
-            }
-          }
+              classes: ['absolute', 'inset-0', 'bg-gradient', 'layer-two'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1617,12 +1621,17 @@ describe('CssGenerator Selector Generation', () => {
 
       try {
         const dsl: DslIdentity = {
-          anchor: { tag: 'footer', semantics: { classes: ['text-card-foreground'] }, score: 0.9, degraded: false },
+          anchor: {
+            tag: 'footer',
+            semantics: { classes: ['text-card-foreground'] },
+            score: 0.9,
+            degraded: false,
+          },
           path: [
             { tag: 'div', semantics: { classes: ['container'] }, nthChild: 1, score: 0.8 },
             { tag: 'ul', semantics: {}, nthChild: 1, score: 0.7 },
             { tag: 'li', semantics: {}, nthChild: 1, score: 0.7 },
-            { tag: 'svg', semantics: { classes: ['lucide-mail'] }, nthChild: 1, score: 0.8 }
+            { tag: 'svg', semantics: { classes: ['lucide-mail'] }, nthChild: 1, score: 0.8 },
           ],
           target: { tag: 'rect', semantics: {}, nthChild: 1, score: 0.7 },
           constraints: [],
@@ -1633,8 +1642,8 @@ describe('CssGenerator Selector Generation', () => {
             generatedAt: new Date().toISOString(),
             generator: 'test',
             source: 'test',
-            degraded: false
-          }
+            degraded: false,
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1664,9 +1673,7 @@ describe('CssGenerator Selector Generation', () => {
       try {
         const dsl: DslIdentity = {
           anchor: { tag: 'footer', semantics: {}, score: 0.9, degraded: false },
-          path: [
-            { tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1, score: 0.8 }
-          ],
+          path: [{ tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1, score: 0.8 }],
           target: { tag: 'rect', semantics: {}, nthChild: 1, score: 0.7 },
           constraints: [],
           fallback: { onMultiple: 'first', onMissing: 'anchor-only', maxDepth: 10 },
@@ -1676,8 +1683,8 @@ describe('CssGenerator Selector Generation', () => {
             generatedAt: new Date().toISOString(),
             generator: 'test',
             source: 'test',
-            degraded: false
-          }
+            degraded: false,
+          },
         };
 
         const selector = generator.buildSelector(dsl);
@@ -1707,9 +1714,7 @@ describe('CssGenerator Selector Generation', () => {
       try {
         const dsl: DslIdentity = {
           anchor: { tag: 'footer', semantics: {}, score: 0.9, degraded: false },
-          path: [
-            { tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1, score: 0.8 }
-          ],
+          path: [{ tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1, score: 0.8 }],
           target: { tag: 'path', semantics: {}, nthChild: 2, score: 0.7 },
           constraints: [],
           fallback: { onMultiple: 'first', onMissing: 'anchor-only', maxDepth: 10 },
@@ -1719,8 +1724,8 @@ describe('CssGenerator Selector Generation', () => {
             generatedAt: new Date().toISOString(),
             generator: 'test',
             source: 'test',
-            degraded: false
-          }
+            degraded: false,
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1751,10 +1756,13 @@ describe('CssGenerator Selector Generation', () => {
 
       try {
         const dsl: DslIdentity = {
-          anchor: { tag: 'div', semantics: { classes: ['container'] }, score: 0.9, degraded: false },
-          path: [
-            { tag: 'ul', semantics: {}, nthChild: 1, score: 0.7 }
-          ],
+          anchor: {
+            tag: 'div',
+            semantics: { classes: ['container'] },
+            score: 0.9,
+            degraded: false,
+          },
+          path: [{ tag: 'ul', semantics: {}, nthChild: 1, score: 0.7 }],
           target: { tag: 'li', semantics: { classes: ['item'] }, nthChild: 1, score: 0.7 },
           constraints: [],
           fallback: { onMultiple: 'first', onMissing: 'anchor-only', maxDepth: 10 },
@@ -1764,8 +1772,8 @@ describe('CssGenerator Selector Generation', () => {
             generatedAt: new Date().toISOString(),
             generator: 'test',
             source: 'test',
-            degraded: false
-          }
+            degraded: false,
+          },
         };
 
         const result = generator.buildSelector(dsl);
@@ -1798,9 +1806,7 @@ describe('CssGenerator Selector Generation', () => {
       try {
         const dsl: DslIdentity = {
           anchor: { tag: 'footer', semantics: {}, score: 0.9, degraded: false },
-          path: [
-            { tag: 'svg', semantics: { classes: ['icon-2'] }, nthChild: 2, score: 0.8 }
-          ],
+          path: [{ tag: 'svg', semantics: { classes: ['icon-2'] }, nthChild: 2, score: 0.8 }],
           target: { tag: 'rect', semantics: {}, nthChild: 1, score: 0.7 },
           constraints: [],
           fallback: { onMultiple: 'first', onMissing: 'anchor-only', maxDepth: 10 },
@@ -1810,8 +1816,8 @@ describe('CssGenerator Selector Generation', () => {
             generatedAt: new Date().toISOString(),
             generator: 'test',
             source: 'test',
-            degraded: false
-          }
+            degraded: false,
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1829,7 +1835,7 @@ describe('CssGenerator Selector Generation', () => {
     it('should handle all SVG child element types', () => {
       const svgChildTypes = ['circle', 'line', 'ellipse', 'polygon', 'polyline', 'g'];
 
-      svgChildTypes.forEach(childType => {
+      svgChildTypes.forEach((childType) => {
         const div = document.createElement('div');
         div.innerHTML = `
           <footer>
@@ -1843,10 +1849,13 @@ describe('CssGenerator Selector Generation', () => {
         try {
           const dsl: DslIdentity = {
             anchor: { tag: 'footer', semantics: {}, score: 0.9, degraded: false },
-            path: [
-              { tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1, score: 0.8 }
-            ],
-            target: { tag: childType, semantics: { classes: ['test-element'] }, nthChild: 1, score: 0.7 },
+            path: [{ tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1, score: 0.8 }],
+            target: {
+              tag: childType,
+              semantics: { classes: ['test-element'] },
+              nthChild: 1,
+              score: 0.7,
+            },
             constraints: [],
             fallback: { onMultiple: 'first', onMissing: 'anchor-only', maxDepth: 10 },
             version: '1.0',
@@ -1855,8 +1864,8 @@ describe('CssGenerator Selector Generation', () => {
               generatedAt: new Date().toISOString(),
               generator: 'test',
               source: 'test',
-              degraded: false
-            }
+              degraded: false,
+            },
           };
 
           const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1908,22 +1917,20 @@ describe('CssGenerator Selector Generation', () => {
             tag: 'section',
             semantics: {
               id: 'welcome',
-              classes: ['section']
+              classes: ['section'],
             },
             score: 0.9,
-            degraded: false
+            degraded: false,
           },
-          path: [
-            { tag: 'div', semantics: { classes: ['container'] }, nthChild: 1, score: 0.8 }
-          ],
+          path: [{ tag: 'div', semantics: { classes: ['container'] }, nthChild: 1, score: 0.8 }],
           target: {
             tag: 'div',
             semantics: {
               // Note: Utility classes are filtered out during EID generation
-              classes: []
+              classes: [],
             },
             nthChild: 2,
-            score: 0.7
+            score: 0.7,
           },
           constraints: [],
           fallback: { onMultiple: 'first', onMissing: 'none', maxDepth: 3 },
@@ -1932,8 +1939,8 @@ describe('CssGenerator Selector Generation', () => {
             generatedAt: new Date().toISOString(),
             generator: 'test',
             source: 'test',
-            degraded: false
-          }
+            degraded: false,
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1981,9 +1988,9 @@ describe('CssGenerator Selector Generation', () => {
           target: {
             tag: 'div',
             semantics: {
-              classes: ['-mt-4', '-mx-2', '-z-10', 'card']
-            }
-          }
+              classes: ['-mt-4', '-mx-2', '-z-10', 'card'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -1992,13 +1999,13 @@ describe('CssGenerator Selector Generation', () => {
 
         // All leading dashes should be escaped
         if (result.selector.includes('-mt-4')) {
-          expect(result.selector).toMatch(/\\\-mt-4/);
+          expect(result.selector).toMatch(/\\-mt-4/);
         }
         if (result.selector.includes('-mx-2')) {
-          expect(result.selector).toMatch(/\\\-mx-2/);
+          expect(result.selector).toMatch(/\\-mx-2/);
         }
         if (result.selector.includes('-z-10')) {
-          expect(result.selector).toMatch(/\\\-z-10/);
+          expect(result.selector).toMatch(/\\-z-10/);
         }
 
         // Verify selector works
@@ -2030,9 +2037,9 @@ describe('CssGenerator Selector Generation', () => {
           target: {
             tag: 'div',
             semantics: {
-              classes: ['my-class', '-top-4', 'text-gray-500']
-            }
-          }
+              classes: ['my-class', '-top-4', 'text-gray-500'],
+            },
+          },
         };
 
         const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
@@ -2047,8 +2054,8 @@ describe('CssGenerator Selector Generation', () => {
 
         // -top-4 should have escaped LEADING dash only
         if (result.selector.includes('-top-4')) {
-          expect(result.selector).toMatch(/\\\-top-4/);
-          expect(result.selector).not.toMatch(/\\\-top\\\-4/); // Should not escape internal dash
+          expect(result.selector).toMatch(/\\-top-4/);
+          expect(result.selector).not.toMatch(/\\-top\\-4/); // Should not escape internal dash
         }
 
         // text-gray-500 should NOT have escaped dashes

@@ -9,6 +9,7 @@ Troubleshooting element resolution problems.
 **Causes & Solutions**:
 
 1. **Element removed from DOM**
+
    ```typescript
    // Check if element still exists
    const selector = 'v1: form :: button[type="submit"]';
@@ -20,6 +21,7 @@ Troubleshooting element resolution problems.
    ```
 
 2. **Wrong root context**
+
    ```typescript
    // Bad: Wrong container
    resolveSEQL(selector, wrongContainer);
@@ -30,6 +32,7 @@ Troubleshooting element resolution problems.
    ```
 
 3. **DOM structure changed**
+
    ```typescript
    // Regenerate selector for current DOM
    const newSelector = generateSEQL(element);
@@ -42,16 +45,18 @@ Troubleshooting element resolution problems.
 **Solutions**:
 
 1. **Use first match**
+
    ```typescript
    if (result.status === 'ambiguous') {
-     const element = result.elements[0];  // Use first
+     const element = result.elements[0]; // Use first
    }
    ```
 
 2. **Require uniqueness**
+
    ```typescript
    const result = resolve(eid, document, {
-     requireUniqueness: true
+     requireUniqueness: true,
    });
    // Fails if multiple matches
    ```
@@ -65,6 +70,7 @@ Troubleshooting element resolution problems.
 **Problem**: Parse error or invalid CSS
 
 **Check**:
+
 ```typescript
 try {
   const eid = parseSEQL(selector);
@@ -75,6 +81,7 @@ try {
 ```
 
 **Solutions**:
+
 - Verify SEQL selector format
 - Check for proper escaping
 - Regenerate selector from element

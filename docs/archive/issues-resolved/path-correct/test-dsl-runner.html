@@ -1,79 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>DSL Test Runner</title>
-  <style>
-    body { font-family: monospace; padding: 20px; }
-    #output { white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px; }
-    .success { color: green; }
-    .error { color: red; }
-    .info { color: blue; }
-  </style>
-</head>
-<body>
-  <h1>DOM-DSL Date Picker Test Runner</h1>
-  <button onclick="runTest()">Run Test</button>
-  <div id="output"></div>
-
-  <script>
-    async function runTest() {
-      const output = document.getElementById('output');
-      output.innerHTML = '';
-
-      function log(msg, type = 'info') {
-        const span = document.createElement('div');
-        span.className = type;
-        span.textContent = msg;
-        output.appendChild(span);
-        console.log(msg);
+  <head>
+    <title>DSL Test Runner</title>
+    <style>
+      body {
+        font-family: monospace;
+        padding: 20px;
       }
+      #output {
+        white-space: pre-wrap;
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .info {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>DOM-DSL Date Picker Test Runner</h1>
+    <button onclick="runTest()">Run Test</button>
+    <div id="output"></div>
 
-      try {
-        // Load the UMD library
-        log('Loading DOM-DSL library...');
-        const script = document.createElement('script');
-        script.src = './packages/dom-dsl/dist/dom-dsl.umd.min.cjs';
+    <script>
+      async function runTest() {
+        const output = document.getElementById('output');
+        output.innerHTML = '';
 
-        await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-
-        log('✅ Library loaded', 'success');
-        log(`Available: ${Object.keys(window.domDsl).join(', ')}`, 'info');
-
-        // Open test page in new window
-        log('\n📋 Instructions:');
-        log('1. A new window will open with the test site');
-        log('2. Click on the "Check-out Date" field to open the date picker');
-        log('3. Come back to this window');
-        log('4. The test will run automatically in 5 seconds');
-
-        const testWindow = window.open('https://appsurify.github.io/modern-seaside-stay/', 'testWindow', 'width=1200,height=800');
-
-        if (!testWindow) {
-          log('❌ Failed to open test window. Please allow popups.', 'error');
-          return;
+        function log(msg, type = 'info') {
+          const span = document.createElement('div');
+          span.className = type;
+          span.textContent = msg;
+          output.appendChild(span);
+          console.log(msg);
         }
 
-        log('\n⏳ Waiting 5 seconds for page to load...');
-
-        await new Promise(resolve => setTimeout(resolve, 5000));
-
-        log('\n🔍 Attempting to run tests in target window...');
-
-        // Try to access the window
         try {
-          // Inject our library into the test window
-          const targetScript = testWindow.document.createElement('script');
-          targetScript.textContent = document.querySelector('script[src*="dom-dsl"]').textContent;
-          testWindow.document.head.appendChild(targetScript);
+          // Load the UMD library
+          log('Loading DOM-DSL library...');
+          const script = document.createElement('script');
+          script.src = './packages/dom-dsl/dist/dom-dsl.umd.min.cjs';
 
-          log('✅ Library injected into test window', 'success');
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
 
-          // Run the test
-          testWindow.eval(`
+          log('✅ Library loaded', 'success');
+          log(`Available: ${Object.keys(window.domDsl).join(', ')}`, 'info');
+
+          // Open test page in new window
+          log('\n📋 Instructions:');
+          log('1. A new window will open with the test site');
+          log('2. Click on the "Check-out Date" field to open the date picker');
+          log('3. Come back to this window');
+          log('4. The test will run automatically in 5 seconds');
+
+          const testWindow = window.open(
+            'https://appsurify.github.io/modern-seaside-stay/',
+            'testWindow',
+            'width=1200,height=800'
+          );
+
+          if (!testWindow) {
+            log('❌ Failed to open test window. Please allow popups.', 'error');
+            return;
+          }
+
+          log('\n⏳ Waiting 5 seconds for page to load...');
+
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+
+          log('\n🔍 Attempting to run tests in target window...');
+
+          // Try to access the window
+          try {
+            // Inject our library into the test window
+            const targetScript = testWindow.document.createElement('script');
+            targetScript.textContent = document.querySelector('script[src*="dom-dsl"]').textContent;
+            testWindow.document.head.appendChild(targetScript);
+
+            log('✅ Library injected into test window', 'success');
+
+            // Run the test
+            testWindow.eval(`
             const { generateDsl, CssGenerator } = window.domDsl;
 
             // Find date 18
@@ -102,23 +120,21 @@
             }
           `);
 
-          log('\n✅ Tests executed. Check the other window console for results.', 'success');
-          log('(Right-click in the test window -> Inspect -> Console)', 'info');
-
-        } catch (e) {
-          log(`\n❌ Cross-origin error: ${e.message}`, 'error');
-          log('\nAlternative: Copy and run this code in the test page console:', 'info');
-          log(getTestCode(), 'info');
+            log('\n✅ Tests executed. Check the other window console for results.', 'success');
+            log('(Right-click in the test window -> Inspect -> Console)', 'info');
+          } catch (e) {
+            log(`\n❌ Cross-origin error: ${e.message}`, 'error');
+            log('\nAlternative: Copy and run this code in the test page console:', 'info');
+            log(getTestCode(), 'info');
+          }
+        } catch (error) {
+          log(`\n❌ Error: ${error.message}`, 'error');
+          console.error(error);
         }
-
-      } catch (error) {
-        log(`\n❌ Error: ${error.message}`, 'error');
-        console.error(error);
       }
-    }
 
-    function getTestCode() {
-      return `
+      function getTestCode() {
+        return `
 // Paste this entire block into the console of https://appsurify.github.io/modern-seaside-stay/
 
 // 1. Load the library (you'll need to host it or use fetch)
@@ -152,7 +168,7 @@ const testDateCell = (dateText) => {
 testDateCell('18');
 testDateCell('31');
 `;
-    }
-  </script>
-</body>
+      }
+    </script>
+  </body>
 </html>

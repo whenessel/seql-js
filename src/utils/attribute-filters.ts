@@ -129,7 +129,7 @@ export const GENERATED_ID_PATTERNS = [
   /^radix-/,
   /^headlessui-/,
   /^mui-/,
-  /:\w+:/,  // matches :ru:, :r1:, etc.
+  /:\w+:/, // matches :ru:, :r1:, etc.
 ] as const;
 
 /**
@@ -140,38 +140,38 @@ export const GENERATED_ID_PATTERNS = [
  */
 export function isStableAttribute(name: string, value: string): boolean {
   // Whitelist stable ARIA attributes
-  if (ARIA_STABLE_ATTRIBUTES.includes(name as any)) return true;
+  if ((ARIA_STABLE_ATTRIBUTES as readonly string[]).includes(name)) return true;
 
   // Blacklist ARIA state attributes
-  if (ARIA_STATE_ATTRIBUTES.includes(name as any)) return false;
+  if ((ARIA_STATE_ATTRIBUTES as readonly string[]).includes(name)) return false;
 
   // Blacklist data-* state attributes
-  if (DATA_STATE_ATTRIBUTES.includes(name as any)) return false;
+  if ((DATA_STATE_ATTRIBUTES as readonly string[]).includes(name)) return false;
 
   // Blacklist library-specific data-* prefixes
-  if (LIBRARY_DATA_PREFIXES.some(prefix => name.startsWith(prefix))) {
+  if (LIBRARY_DATA_PREFIXES.some((prefix) => name.startsWith(prefix))) {
     return false;
   }
 
   // Whitelist data-* ID patterns (exact match)
-  if (DATA_ID_PATTERNS.includes(name as any)) return true;
+  if ((DATA_ID_PATTERNS as readonly string[]).includes(name)) return true;
 
   // Whitelist data-* ending with -id
   if (name.startsWith('data-') && name.endsWith('-id')) return true;
 
   // Filter generated IDs by pattern
   if (name === 'id') {
-    if (GENERATED_ID_PATTERNS.some(pattern => pattern.test(value))) {
+    if (GENERATED_ID_PATTERNS.some((pattern) => pattern.test(value))) {
       return false;
     }
     return true;
   }
 
   // Whitelist stable HTML attributes
-  if (HTML_STABLE_ATTRIBUTES.includes(name as any)) return true;
+  if ((HTML_STABLE_ATTRIBUTES as readonly string[]).includes(name)) return true;
 
   // Blacklist HTML state attributes
-  if (HTML_STATE_ATTRIBUTES.includes(name as any)) return false;
+  if ((HTML_STATE_ATTRIBUTES as readonly string[]).includes(name)) return false;
 
   // Allow other data-* attributes by default (blacklist approach)
   if (name.startsWith('data-')) return true;

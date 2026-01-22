@@ -18,6 +18,7 @@ To enable automatic publishing to npm, you need to add your npm authentication t
 ### 2. Workflows
 
 #### publish.yml
+
 - **Trigger:** Push of git tag matching `v*` (e.g., `v0.1.0`, `v1.0.0`)
 - **Steps:**
   1. Checkout code
@@ -27,6 +28,7 @@ To enable automatic publishing to npm, you need to add your npm authentication t
   5. Publish to npm
 
 #### test.yml
+
 - **Trigger:** Pull requests to `main` branch
 - **Steps:**
   1. Checkout code
@@ -36,7 +38,7 @@ To enable automatic publishing to npm, you need to add your npm authentication t
 
 ## Release Workflow
 
-### Step-by-step:
+### Step-by-step
 
 ```bash
 # 1. Make sure you're on main and everything is committed
@@ -65,19 +67,23 @@ git push origin v0.1.1
 ## Monitoring
 
 Check the workflow status in your GitHub repository:
+
 - Go to **Actions** tab to see workflow runs
 - Click on a workflow run to see detailed logs
 
 ## Troubleshooting
 
 ### Publish workflow fails with "ERR! 401 Unauthorized"
+
 - Verify `NPM_TOKEN` is set correctly in GitHub Secrets
 - Ensure the token has publish permissions
 
 ### Type check fails in PR
+
 - Run `yarn types:check` locally to debug type issues
 - Fix TypeScript errors before pushing
 
 ### Build fails
+
 - Run `yarn build` locally to debug
 - Ensure all dependencies are installed with `yarn install`

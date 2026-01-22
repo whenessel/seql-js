@@ -69,9 +69,7 @@ interface ProcessResult {
   error?: Error;
 }
 
-type ValidationResult = 
-  | { valid: true; value: unknown }
-  | { valid: false; errors: string[] };
+type ValidationResult = { valid: true; value: unknown } | { valid: false; errors: string[] };
 ```
 
 ### Config
@@ -111,6 +109,7 @@ interface QueryParams {
 ### Use Interfaces For
 
 - Object shapes that may be extended:
+
 ```typescript
 interface User {
   id: string;
@@ -125,6 +124,7 @@ interface AdminUser extends User {
 ### Use Type Aliases For
 
 - Unions and intersections:
+
 ```typescript
 type Status = 'active' | 'inactive';
 type UserOrAdmin = User | AdminUser;
@@ -132,6 +132,7 @@ type UserWithTimestamp = User & { timestamp: number };
 ```
 
 - Complex types:
+
 ```typescript
 type EventHandler = (event: Event) => void;
 type StringOrNumber = string | number;
@@ -180,9 +181,7 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 Use a discriminator property:
 
 ```typescript
-type Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+type Result<T> = { success: true; data: T } | { success: false; error: string };
 
 type Event =
   | { type: 'click'; target: Element }
@@ -217,9 +216,7 @@ interface ApiOptions {
   retries?: number;
 }
 
-type ProcessResult = 
-  | { success: true; data: Data }
-  | { success: false; error: Error };
+type ProcessResult = { success: true; data: Data } | { success: false; error: Error };
 
 interface CreateUserParams {
   name: string;

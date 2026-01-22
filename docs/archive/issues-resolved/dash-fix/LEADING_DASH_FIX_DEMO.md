@@ -4,19 +4,19 @@
 
 Tailwind CSS classes starting with a dash (negative margin/positioning classes like `-bottom-6`, `-left-6`, `-mt-4`, etc.) were not being properly escaped in CSS selectors, causing `querySelectorAll()` to fail.
 
-### Example of Problematic DOM:
+### Example of Problematic DOM
 
 ```html
 <section id="welcome">
   <div class="container">
     <div class="absolute -bottom-6 -left-6">
-      <img src="..." alt="Luxury apartment interior">
+      <img src="..." alt="Luxury apartment interior" />
     </div>
   </div>
 </section>
 ```
 
-### Original Problem:
+### Original Problem
 
 SEQL Selector: `v1.0: section[id="welcome"] :: div.container#1 > div.-bottom-6.-left-6#2`
 
@@ -28,7 +28,7 @@ This was being converted to invalid CSS: `section#welcome div.-bottom-6`
 
 Updated the `escapeCSS()` method in [src/resolver/css-generator.ts:1241-1254](src/resolver/css-generator.ts#L1241-L1254) to properly escape leading dashes according to CSS specification.
 
-### Before:
+### Before
 
 ```typescript
 private escapeCSS(str: string): string {
@@ -36,22 +36,22 @@ private escapeCSS(str: string): string {
 }
 ```
 
-### After:
+### After
 
 ```typescript
 private escapeCSS(str: string): string {
   // Экранируем ведущий дефис для классов, начинающихся с дефиса (например, -bottom-6)
   // Согласно CSS спецификации, класс -bottom-6 должен быть записан как \-bottom-6
   let escaped = str;
-  
+
   // Если строка начинается с дефиса, экранируем его
   if (escaped.startsWith('-')) {
     escaped = '\\-' + escaped.slice(1);
   }
-  
+
   // Экранируем другие специальные символы (дефис внутри имен классов валиден, только ведущий требует экранирования)
   escaped = escaped.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
-  
+
   return escaped;
 }
 ```
@@ -120,12 +120,12 @@ const generator = new CssGenerator();
 const dsl = {
   anchor: { tag: 'section', semantics: { id: 'welcome' } },
   path: [{ tag: 'div', semantics: { classes: ['container'] } }],
-  target: { tag: 'div', semantics: { classes: ['-bottom-6', '-left-6'] } }
+  target: { tag: 'div', semantics: { classes: ['-bottom-6', '-left-6'] } },
 };
 
 const result = generator.buildSelector(dsl, { ensureUnique: true, root: document });
 
-console.log(result.selector); 
+console.log(result.selector);
 // Output: "section#welcome div.\-bottom-6"
 
 // Now works correctly:
@@ -156,6 +156,7 @@ All of these classes are now properly escaped and work with `querySelectorAll()`
 ## Compliance
 
 This fix follows the CSS specification for identifier escaping:
+
 - [CSS Syntax Module Level 3 - Identifiers](https://www.w3.org/TR/css-syntax-3/#ident-token-diagram)
 - Leading dash requires escaping: `.\-class` instead of `.-class`
 - Internal dashes are valid and don't require escaping: `.my-class` is valid

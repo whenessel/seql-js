@@ -8,6 +8,7 @@
 
 **Симптом:**  
 Парсинг SEQL строки падает с ошибкой:
+
 ```
 Invalid node: unexpected content ".glass-card#2" in "form[data-seql-id="seql-el-17"].glass-card#2"
 ```
@@ -15,24 +16,49 @@ Invalid node: unexpected content ".glass-card#2" in "form[data-seql-id="seql-el-
 **Root Cause:**  
 Несоответствие порядка компонентов между генератором (`stringifyNode`) и парсером (`parseNode`):
 
-### Текущий порядок в `stringifyNode` (❌ НЕПРАВИЛЬНЫЙ):
+### Текущий порядок в `stringifyNode` (❌ НЕПРАВИЛЬНЫЙ)
+
 ```
 tag → [attributes] → .classes → #position
 ```
+
 Пример: `form[data-seql-id="seql-el-17"].glass-card#2`
 
-### Ожидаемый порядок в `parseNode` (✅ ПРАВИЛЬНЫЙ):
+### Ожидаемый порядок в `parseNode` (✅ ПРАВИЛЬНЫЙ)
+
 ```
 tag → .classes → [attributes] → #position
 ```
+
 Пример: `form.glass-card[data-seql-id="seql-el-17"]#2`
 
 ## Test Case
 
 **Элемент:**
+
 ```html
-<button class="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full justify-start text-left font-normal text-muted-foreground" id="check-out" type="button" aria-haspopup="dialog" aria-expanded="true" aria-controls="radix-:r1:" data-state="open" data-seql-id="seql-el-19">
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar mr-2 h-4 w-4">
+<button
+  class="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full justify-start text-left font-normal text-muted-foreground"
+  id="check-out"
+  type="button"
+  aria-haspopup="dialog"
+  aria-expanded="true"
+  aria-controls="radix-:r1:"
+  data-state="open"
+  data-seql-id="seql-el-19"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-calendar mr-2 h-4 w-4"
+  >
     <path d="M8 2v4"></path>
     <path d="M16 2v4"></path>
     <rect width="18" height="18" x="3" y="4" rx="2"></rect>
@@ -43,11 +69,13 @@ tag → .classes → [attributes] → #position
 ```
 
 **Сгенерированная SEQL строка (❌ BREAKING):**
+
 ```
 v1.0: form[data-seql-id="seql-el-17"].glass-card#2 :: button[id="check-out",text="Select date",type="button"]
 ```
 
 **Ошибка парсинга:**
+
 ```
 Error: Invalid node: unexpected content ".glass-card#2" in "form[data-seql-id="seql-el-17"].glass-card#2"
     at parseNode (seql-parser.ts:432)
@@ -56,12 +84,13 @@ Error: Invalid node: unexpected content ".glass-card#2" in "form[data-seql-id="s
 
 ## Solution
 
-### Файл: `/src/utils/seql-parser.ts`  
+### Файл: `/src/utils/seql-parser.ts`
+
 ### Функция: `stringifyNode()` (строки ~221-339)
 
 **Требуется:** Изменить порядок добавления компонентов чтобы соответствовать парсеру.
 
-### ДО (текущая реализация):
+### ДО (текущая реализация)
 
 ```typescript
 function stringifyNode(
@@ -75,7 +104,7 @@ function stringifyNode(
   // 1. Prepare Attributes (including ID and Role)
   const attrStrings: string[] = [];
   // ... код подготовки атрибутов ...
-  
+
   if (attrStrings.length > 0) {
     // ... код ...
     if (finalAttrs.length > 0) {
@@ -89,10 +118,8 @@ function stringifyNode(
     const stableClasses = filterStableClasses(semantics.classes);
     // ... код ...
     if (!skipClasses && stableClasses.length > 0) {
-      const limitedClasses = stableClasses
-        .sort()
-        .slice(0, options.maxClasses);
-      result += limitedClasses.map(c => `.${c}`).join(''); // ❌ КЛАССЫ ПОСЛЕ АТРИБУТОВ
+      const limitedClasses = stableClasses.sort().slice(0, options.maxClasses);
+      result += limitedClasses.map((c) => `.${c}`).join(''); // ❌ КЛАССЫ ПОСЛЕ АТРИБУТОВ
     }
   }
 
@@ -108,7 +135,7 @@ function stringifyNode(
 }
 ```
 
-### ПОСЛЕ (исправленная реализация):
+### ПОСЛЕ (исправленная реализация)
 
 ```typescript
 function stringifyNode(
@@ -136,12 +163,11 @@ function stringifyNode(
   const processedAttrs = Object.entries(rawAttributes)
     .map(([name, value]) => {
       const priority = getAttributePriority(name);
-      const cleanedValue = (name === 'href' || name === 'src')
-        ? cleanAttributeValue(name, value)
-        : value;
+      const cleanedValue =
+        name === 'href' || name === 'src' ? cleanAttributeValue(name, value) : value;
       return { name, value: cleanedValue, priority };
     })
-    .filter(attr => {
+    .filter((attr) => {
       // Filter out truly ignored attributes (style, xmlns, etc)
       const trulyIgnored = ['style', 'xmlns', 'tabindex', 'contenteditable'];
       if (trulyIgnored.includes(attr.name)) return false;
@@ -179,14 +205,14 @@ function stringifyNode(
   // Determine final attributes list for target simplification
   let finalAttrs = attrStrings;
   if (isTarget && options.simplifyTarget && semantics.id) {
-     // If we have ID, we can afford to be more selective,
-     // but we MUST keep important semantic info like href, text, data-testid
-     finalAttrs = attrStrings.filter(s => {
-       const name = s.split('=')[0];
-       const priority = getAttributePriority(name);
-       // Keep high priority attributes (id, data-testid, href, src, role, text)
-       return priority >= 60 || name === 'text' || name === 'id' || name === 'role';
-     });
+    // If we have ID, we can afford to be more selective,
+    // but we MUST keep important semantic info like href, text, data-testid
+    finalAttrs = attrStrings.filter((s) => {
+      const name = s.split('=')[0];
+      const priority = getAttributePriority(name);
+      // Keep high priority attributes (id, data-testid, href, src, role, text)
+      return priority >= 60 || name === 'text' || name === 'id' || name === 'role';
+    });
   }
 
   // Final alphabetical sort for the attributes in the bracket
@@ -199,8 +225,15 @@ function stringifyNode(
     const stableClasses = filterStableClasses(semantics.classes);
 
     // If simplifying target and we have strong identifiers, we can skip classes
-    const hasStrongIdentifier = !!semantics.id ||
-      attrStrings.some(s => s.startsWith('href=') || s.startsWith('data-testid=') || s.startsWith('text=') || s.startsWith('role='));
+    const hasStrongIdentifier =
+      !!semantics.id ||
+      attrStrings.some(
+        (s) =>
+          s.startsWith('href=') ||
+          s.startsWith('data-testid=') ||
+          s.startsWith('text=') ||
+          s.startsWith('role=')
+      );
     const skipClasses = isTarget && options.simplifyTarget && hasStrongIdentifier;
 
     if (!skipClasses && stableClasses.length > 0) {
@@ -208,7 +241,7 @@ function stringifyNode(
         .sort() // Alphabetical for determinism
         .slice(0, options.maxClasses);
 
-      result += limitedClasses.map(c => `.${c}`).join(''); // ✅ КЛАССЫ ПЕРЕД АТРИБУТАМИ
+      result += limitedClasses.map((c) => `.${c}`).join(''); // ✅ КЛАССЫ ПЕРЕД АТРИБУТАМИ
     }
   }
 
@@ -220,7 +253,8 @@ function stringifyNode(
   // 4. Add position (nth-child) LAST
   if ('nthChild' in node && node.nthChild) {
     // SEQL Selector position is #N
-    const hasStrongIdentifier = !!semantics.id ||
+    const hasStrongIdentifier =
+      !!semantics.id ||
       (semantics.attributes && Object.keys(semantics.attributes).some(isUniqueAttribute));
 
     const skipPosition = isTarget && options.simplifyTarget && hasStrongIdentifier;
@@ -243,6 +277,7 @@ function stringifyNode(
 ## Expected Output After Fix
 
 **Сгенерированная SEQL строка (✅ ПРАВИЛЬНО):**
+
 ```
 v1.0: form.glass-card[data-seql-id="seql-el-17"]#2 :: button[id="check-out",text="Select date",type="button"]
 ```
@@ -253,13 +288,14 @@ v1.0: form.glass-card[data-seql-id="seql-el-17"]#2 :: button[id="check-out",text
 ## Verification Steps
 
 1. Запустить тестовый скрипт:
+
 ```bash
 # В браузере на https://appsurify.github.io/modern-seaside-stay/
 # Загрузить файл /Users/whenessel/Development/WebstormProjects/seql-js/SEQLJsBrowserTestSuite.js
 window.testSeqlJs()
 ```
 
-2. Проверить что:
+1. Проверить что:
    - ✅ Генерация EID проходит успешно
    - ✅ Stringify создает SEQL строку с порядком `.class[attrs]#pos`
    - ✅ Парсинг SEQL строки проходит без ошибок

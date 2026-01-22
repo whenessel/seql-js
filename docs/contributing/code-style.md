@@ -39,10 +39,7 @@ Coding conventions for seql-js.
  * @param options - Generation options
  * @returns Element identity or null
  */
-export function generateEID(
-  target: Element,
-  options?: GeneratorOptions
-): ElementIdentity | null {
+export function generateEID(target: Element, options?: GeneratorOptions): ElementIdentity | null {
   // Implementation
 }
 ```

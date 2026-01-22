@@ -12,15 +12,15 @@ Generates Element Identity Descriptors for multiple elements in a single optimiz
 function generateEIDBatch(
   elements: Element[],
   options?: GeneratorOptions
-): (ElementIdentity | null)[]
+): (ElementIdentity | null)[];
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `elements` | `Element[]` | Yes | Array of DOM elements to process |
-| `options` | `GeneratorOptions` | No | Shared options for all generations |
+| Parameter  | Type               | Required | Description                        |
+| ---------- | ------------------ | -------- | ---------------------------------- |
+| `elements` | `Element[]`        | Yes      | Array of DOM elements to process   |
+| `options`  | `GeneratorOptions` | No       | Shared options for all generations |
 
 ### Returns
 
@@ -51,7 +51,7 @@ const buttons = Array.from(document.querySelectorAll('button'));
 const eids = generateEIDBatch(buttons);
 
 // Filter out failed generations
-const validEIDs = eids.filter(eid => eid !== null);
+const validEIDs = eids.filter((eid) => eid !== null);
 
 console.log(`Generated ${validEIDs.length}/${buttons.length} EIDs`);
 ```
@@ -68,9 +68,7 @@ const interactiveElements = Array.from(
 const eids = generateEIDBatch(interactiveElements);
 
 // Convert all to SEQL selectors
-const selectors = eids
-  .filter(eid => eid !== null)
-  .map(eid => stringifySEQL(eid!));
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
 
 console.log(`Generated ${selectors.length} selectors`);
 ```
@@ -82,25 +80,21 @@ import { generateEIDBatch, stringifySEQL } from 'seql-js';
 
 async function trackPageElements() {
   // Get all trackable elements
-  const elements = Array.from(
-    document.querySelectorAll('[data-track]')
-  );
+  const elements = Array.from(document.querySelectorAll('[data-track]'));
 
   // Generate EIDs in batch
   const eids = generateEIDBatch(elements);
 
   // Convert to selectors and send to backend
-  const selectors = eids
-    .filter(eid => eid !== null)
-    .map(eid => stringifySEQL(eid!));
+  const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
 
   await fetch('/api/analytics/page-elements', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       url: window.location.href,
-      selectors
-    })
+      selectors,
+    }),
   });
 }
 
@@ -116,9 +110,9 @@ import { generateEIDBatch } from 'seql-js';
 const forms = Array.from(document.querySelectorAll('form'));
 
 const eids = generateEIDBatch(forms, {
-  maxPathDepth: 5,              // Shorter paths
-  enableSvgFingerprint: false,  // No SVG processing needed
-  confidenceThreshold: 0.3      // Higher quality threshold
+  maxPathDepth: 5, // Shorter paths
+  enableSvgFingerprint: false, // No SVG processing needed
+  confidenceThreshold: 0.3, // Higher quality threshold
 });
 ```
 
@@ -133,9 +127,7 @@ const sections = Array.from(document.querySelectorAll('section'));
 const sectionEIDs = generateEIDBatch(sections);
 
 // Create a map of section → EID
-const sectionMap = new Map(
-  sections.map((section, index) => [section, sectionEIDs[index]])
-);
+const sectionMap = new Map(sections.map((section, index) => [section, sectionEIDs[index]]));
 
 // Later, look up EID for a specific section
 const targetSection = document.querySelector('#products');
@@ -157,15 +149,13 @@ function capturePageSnapshot() {
   );
 
   const eids = generateEIDBatch(interactive);
-  const selectors = eids
-    .filter(eid => eid !== null)
-    .map(eid => stringifySEQL(eid!));
+  const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
 
   return {
     url: window.location.href,
     timestamp: Date.now(),
     elementCount: interactive.length,
-    selectors
+    selectors,
   };
 }
 
@@ -182,19 +172,12 @@ Create identifiers for all form fields:
 import { generateEIDBatch } from 'seql-js';
 
 function mapFormFields(form: HTMLFormElement) {
-  const fields = Array.from(
-    form.querySelectorAll('input, select, textarea')
-  ) as HTMLInputElement[];
+  const fields = Array.from(form.querySelectorAll('input, select, textarea')) as HTMLInputElement[];
 
   const eids = generateEIDBatch(fields);
 
   // Create field name → EID mapping
-  const fieldMap = new Map(
-    fields.map((field, index) => [
-      field.name || field.id,
-      eids[index]
-    ])
-  );
+  const fieldMap = new Map(fields.map((field, index) => [field.name || field.id, eids[index]]));
 
   return fieldMap;
 }
@@ -223,7 +206,7 @@ async function processLargeDOM(selector: string, chunkSize = 100) {
     allEIDs.push(...chunkEIDs);
 
     // Yield to browser between chunks
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     console.log(`Processed ${Math.min(i + chunkSize, allElements.length)}/${allElements.length}`);
   }
@@ -243,27 +226,19 @@ Generate and compare element sets:
 import { generateEIDBatch, stringifySEQL } from 'seql-js';
 
 function comparePageElements() {
-  const currentElements = Array.from(
-    document.querySelectorAll('[data-important]')
-  );
+  const currentElements = Array.from(document.querySelectorAll('[data-important]'));
 
   const currentEIDs = generateEIDBatch(currentElements);
   const currentSelectors = currentEIDs
-    .filter(eid => eid !== null)
-    .map(eid => stringifySEQL(eid!));
+    .filter((eid) => eid !== null)
+    .map((eid) => stringifySEQL(eid!));
 
   // Load previous session
-  const previousSelectors = JSON.parse(
-    localStorage.getItem('previousSelectors') || '[]'
-  );
+  const previousSelectors = JSON.parse(localStorage.getItem('previousSelectors') || '[]');
 
   // Find added/removed elements
-  const added = currentSelectors.filter(
-    sel => !previousSelectors.includes(sel)
-  );
-  const removed = previousSelectors.filter(
-    sel => !currentSelectors.includes(sel)
-  );
+  const added = currentSelectors.filter((sel) => !previousSelectors.includes(sel));
+  const removed = previousSelectors.filter((sel) => !currentSelectors.includes(sel));
 
   console.log(`Added: ${added.length}, Removed: ${removed.length}`);
 
@@ -278,20 +253,22 @@ function comparePageElements() {
 
 Typical performance characteristics (1000 elements):
 
-| Method | Time | Memory |
-|--------|------|--------|
-| Individual `generateEID()` calls | ~2500ms | ~15MB |
-| `generateEIDBatch()` | ~1500ms | ~10MB |
-| **Improvement** | **40% faster** | **33% less memory** |
+| Method                           | Time           | Memory              |
+| -------------------------------- | -------------- | ------------------- |
+| Individual `generateEID()` calls | ~2500ms        | ~15MB               |
+| `generateEIDBatch()`             | ~1500ms        | ~10MB               |
+| **Improvement**                  | **40% faster** | **33% less memory** |
 
 ### Optimization Tips
 
 **✅ Do:**
+
 - Use batch processing for 10+ elements
 - Process similar elements together (all buttons, all inputs)
 - Reuse the same options object for all batches
 
 **❌ Don't:**
+
 - Batch drastically different element types (forms + tiny divs)
 - Process 10,000+ elements in a single batch (use chunking)
 - Generate batch EIDs in tight loops (batch the loop instead)
@@ -304,28 +281,30 @@ Individual element failures don't stop batch processing:
 import { generateEIDBatch } from 'seql-js';
 
 const elements = [
-  document.createElement('div'),  // Not connected to DOM
-  document.querySelector('button'),  // Valid
-  null,  // Invalid input
-  document.querySelector('input')   // Valid
+  document.createElement('div'), // Not connected to DOM
+  document.querySelector('button'), // Valid
+  null, // Invalid input
+  document.querySelector('input'), // Valid
 ];
 
-const eids = generateEIDBatch(elements.filter(el => el !== null) as Element[]);
+const eids = generateEIDBatch(elements.filter((el) => el !== null) as Element[]);
 
 // Result: [null, ElementIdentity, null, ElementIdentity]
-console.log('Successful:', eids.filter(eid => eid !== null).length);
-console.log('Failed:', eids.filter(eid => eid === null).length);
+console.log('Successful:', eids.filter((eid) => eid !== null).length);
+console.log('Failed:', eids.filter((eid) => eid === null).length);
 ```
 
 ## When to Use Batch vs Individual
 
-### Use `generateEIDBatch()` when:
+### Use `generateEIDBatch()` when
+
 - Processing 10+ elements at once
 - Capturing page snapshots
 - Initial page load analytics
 - Bulk export/import operations
 
-### Use `generateEID()` when:
+### Use `generateEID()` when
+
 - Processing single elements on-demand
 - Event handlers (click, input)
 - Real-time user interaction tracking
@@ -343,9 +322,7 @@ const buttons = Array.from(document.querySelectorAll('button'));
 const buttonEIDs = generateEIDBatch(buttons);
 
 // Store in WeakMap for later lookup
-const eidMap = new WeakMap(
-  buttons.map((btn, i) => [btn, buttonEIDs[i]])
-);
+const eidMap = new WeakMap(buttons.map((btn, i) => [btn, buttonEIDs[i]]));
 
 // Later, resolve individual elements
 document.addEventListener('click', (event) => {
@@ -372,7 +349,7 @@ const batchCache = createEIDCache({ maxSize: 1000 });
 
 const elements = Array.from(document.querySelectorAll('div'));
 const eids = generateEIDBatch(elements, {
-  cache: batchCache
+  cache: batchCache,
 });
 
 // Cache is warm for future operations

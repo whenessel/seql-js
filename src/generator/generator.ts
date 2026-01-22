@@ -1,9 +1,4 @@
-import type {
-  ElementIdentity,
-  GeneratorOptions,
-  Constraint,
-  FallbackRules,
-} from '../types';
+import type { ElementIdentity, GeneratorOptions, Constraint, FallbackRules } from '../types';
 import { AnchorFinder } from './anchor-finder';
 import { PathBuilder } from './path-builder';
 import { SemanticExtractor } from './semantic-extractor';
@@ -22,7 +17,7 @@ import { getGlobalCache } from '../utils/eid-cache';
  */
 export function generateEID(
   target: Element,
-  options: GeneratorOptions = {},
+  options: GeneratorOptions = {}
 ): ElementIdentity | null {
   // Input validation
   if (!target || !target.ownerDocument) {
@@ -57,8 +52,7 @@ export function generateEID(
   }
 
   // Use found anchor or fallback to body
-  const anchorElement =
-    anchorResult?.element ?? target.ownerDocument?.body ?? null;
+  const anchorElement = anchorResult?.element ?? target.ownerDocument?.body ?? null;
   if (!anchorElement) return null;
 
   // Determine if anchor is degraded
@@ -88,11 +82,7 @@ export function generateEID(
   };
 
   // 3. Build path (now returns PathBuildResult with degradation info)
-  const pathResult = pathBuilder.buildPath(
-    anchorElement,
-    target,
-    semanticExtractor,
-  );
+  const pathResult = pathBuilder.buildPath(anchorElement, target, semanticExtractor);
 
   // 4. Build target node
   const targetSemantics = semanticExtractor.extract(target);
@@ -182,7 +172,7 @@ function isSvgElement(el: Element): boolean {
  */
 function getDegradationReason(
   anchorDegraded: boolean,
-  pathResult: { degraded: boolean; degradationReason?: string },
+  pathResult: { degraded: boolean; degradationReason?: string }
 ): string | undefined {
   if (anchorDegraded && pathResult.degraded) {
     return 'anchor-and-path-degraded';

@@ -22,11 +22,11 @@ const MIN_PASSWORD_LENGTH = 8;
 ### Forbidden
 
 ```typescript
-const maxRetryCount = 3;              // camelCase
-const MaxRetryCount = 3;               // PascalCase
-const max_retry_count = 3;             // snake_case (lowercase)
-const MAX_RETRY_CNT = 3;               // Abbreviation
-const MR = 3;                          // Too abbreviated
+const maxRetryCount = 3; // camelCase
+const MaxRetryCount = 3; // PascalCase
+const max_retry_count = 3; // snake_case (lowercase)
+const MAX_RETRY_CNT = 3; // Abbreviation
+const MR = 3; // Too abbreviated
 ```
 
 ## Constant Types
@@ -47,7 +47,7 @@ const CACHE_TTL = 3600000;
 Numeric limits and bounds:
 
 ```typescript
-const MAX_FILE_SIZE = 10 * 1024 * 1024;  // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_ITEMS_PER_PAGE = 100;
 const MIN_AGE = 18;
@@ -165,16 +165,17 @@ const ERROR_MESSAGES = {
 ### Bad
 
 ```typescript
-const maxRetryCount = 3;              // Wrong case
-const MAX_RETRY_CNT = 3;               // Abbreviation
-const max_retry_count = 3;             // Wrong case
-const MR = 3;                          // Too abbreviated
-const retries = 3;                     // Not a constant name
+const maxRetryCount = 3; // Wrong case
+const MAX_RETRY_CNT = 3; // Abbreviation
+const max_retry_count = 3; // Wrong case
+const MR = 3; // Too abbreviated
+const retries = 3; // Not a constant name
 ```
 
 ## When to Use Constants
 
 Use constants for:
+
 - Configuration values
 - Magic numbers/strings
 - Fixed sets of values
@@ -182,6 +183,7 @@ Use constants for:
 - Computed values that don't change
 
 Don't use constants for:
+
 - Values that change at runtime
 - Function parameters
 - Local variables
@@ -191,12 +193,12 @@ Don't use constants for:
 Prefer `const` for primitives, `as const` for objects/arrays:
 
 ```typescript
-const MAX_COUNT = 10;                 // Primitive
+const MAX_COUNT = 10; // Primitive
 
 const CONFIG = {
   timeout: 5000,
   retries: 3,
-} as const;                            // Object
+} as const; // Object
 
 const ITEMS = ['a', 'b', 'c'] as const; // Array
 ```

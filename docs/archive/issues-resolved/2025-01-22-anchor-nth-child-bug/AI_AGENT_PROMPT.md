@@ -9,12 +9,15 @@
 ## 📍 КОНТЕКСТ
 
 ### Текущая проблема
+
 CSS селектор генерируется с неправильным `nth-of-type` для anchor элемента:
+
 - **Факт:** `section:nth-of-type(1)` (неправильно)
 - **Ожидание:** `section:nth-of-type(2)` или `section:nth-child(2)` (правильно)
 - **Результат:** Селектор находит 0 элементов вместо 1
 
 ### Корневая причина
+
 1. Anchor node НЕ сохраняет nthChild при генерации EID
 2. CSS генератор пытается вычислить nth-of-type заново, что даёт неправильный индекс
 
@@ -28,6 +31,7 @@ CSS селектор генерируется с неправильным `nth-o
 **Строка:** После 71, перед созданием anchorNode
 
 **Текущий код:**
+
 ```typescript
 // 2. Build anchor node
 const anchorSemantics = semanticExtractor.extract(anchorElement);
@@ -40,6 +44,7 @@ const anchorNode = {
 ```
 
 **Новый код:**
+
 ```typescript
 // Calculate nth-child position for anchor (same logic as for target)
 const anchorParent = anchorElement.parentElement;
@@ -59,7 +64,7 @@ const anchorNode = {
   semantics: anchorSemantics,
   score: anchorResult?.score ?? ANCHOR_SCORE.DEGRADED_SCORE,
   degraded: anchorDegraded,
-  nthChild: anchorNthChild,  // ADD THIS
+  nthChild: anchorNthChild, // ADD THIS
 };
 ```
 
@@ -70,6 +75,7 @@ const anchorNode = {
 **Строка:** После 650
 
 **Текущий код:**
+
 ```typescript
 // Step 4: Try tag with nth-of-type
 // Find all elements with this tag in root
@@ -78,7 +84,7 @@ const allAnchors = Array.from(root.querySelectorAll(tag));
 if (allAnchors.length > 1) {
   // Need to match by semantics to find the correct anchor
   const matchingAnchor = this.findElementBySemantics(allAnchors, semantics);
-  
+
   if (matchingAnchor) {
     const nthIndex = this.getNthOfTypeIndex(matchingAnchor, tag);
     if (nthIndex) {
@@ -89,6 +95,7 @@ if (allAnchors.length > 1) {
 ```
 
 **Новый код (добавить ПЕРЕД Step 4):**
+
 ```typescript
 // Step 3.5: Use nth-child from EID if available (most reliable)
 if (eid.anchor.nthChild !== undefined) {
@@ -109,6 +116,7 @@ if (eid.anchor.nthChild !== undefined) {
 **Интерфейс:** `AnchorNode`
 
 **Найти:**
+
 ```typescript
 export interface AnchorNode {
   tag: string;
@@ -119,13 +127,14 @@ export interface AnchorNode {
 ```
 
 **Изменить на:**
+
 ```typescript
 export interface AnchorNode {
   tag: string;
   semantics: ElementSemantics;
   score: number;
   degraded: boolean;
-  nthChild?: number;  // ADD THIS - Position among siblings (1-based)
+  nthChild?: number; // ADD THIS - Position among siblings (1-based)
 }
 ```
 
@@ -134,6 +143,7 @@ export interface AnchorNode {
 ## ✅ КРИТЕРИИ УСПЕХА
 
 После исправления:
+
 1. ✅ EID для anchor должен содержать `nthChild` (если anchor имеет родителя)
 2. ✅ CSS селектор должен использовать `nth-child(2)` для второго section
 3. ✅ CSS селектор должен находить ровно 1 элемент
@@ -145,28 +155,35 @@ export interface AnchorNode {
 ## 🧪 КАК ПРОТЕСТИРОВАТЬ
 
 ### Автоматический тест
+
 ```bash
 npm test -- --grep "Anchor with nth-of-type"
 ```
 
 ### Ручное тестирование в браузере
-1. Открыть: https://appsurify.github.io/modern-seaside-stay/
+
+1. Открыть: <https://appsurify.github.io/modern-seaside-stay/>
 2. Найти элемент: `$x('/html/body/div/div[2]/main/section[2]/div/div/div[2]/div[2]')[0]`
 3. Сгенерировать EID:
+
 ```javascript
 const element = $x('/html/body/div/div[2]/main/section[2]/div/div/div[2]/div[2]')[0];
 const eid = seqljs.generateEID(element);
 console.log('Anchor nthChild:', eid.anchor.nthChild); // Должно быть 2
 ```
 
-4. Построить селектор:
+Дополнительные проверки:
+
+1. Построить селектор:
+
 ```javascript
 const result = seqljs.buildSelector(eid, { ensureUnique: true });
 console.log('Selector:', result.selector);
 // Должен содержать: section:nth-child(2) или section:nth-of-type(2)
 ```
 
-5. Проверить уникальность:
+1. Проверить уникальность:
+
 ```javascript
 const elements = document.querySelectorAll(result.selector);
 console.log('Found elements:', elements.length); // Должно быть 1
@@ -236,6 +253,6 @@ console.log('Correct element:', elements[0] === element); // Должно быт
 
 Файлы для изменения:
 - src/generator/generator.ts
-- src/resolver/css-generator.ts  
+- src/resolver/css-generator.ts
 - src/types/index.ts
 ```

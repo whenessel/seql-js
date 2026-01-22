@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { isDynamicId, hasDynamicIdReference, ID_REFERENCE_ATTRIBUTES } from '../../src/utils/id-validator';
+import {
+  isDynamicId,
+  hasDynamicIdReference,
+  ID_REFERENCE_ATTRIBUTES,
+} from '../../src/utils/id-validator';
 
 describe('isDynamicId - multi-word patterns', () => {
   it('should detect react-day-picker-1 as dynamic', () => {

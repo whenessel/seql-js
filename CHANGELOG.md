@@ -41,11 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Attribute Stability Filtering**: New `attribute-filters.ts` module to separate stable identity attributes from temporary state attributes
-
-### Added
-- **Attribute Stability Filtering**: New `attribute-filters.ts` module to separate stable identity attributes from temporary state attributes
   - Filters ARIA state attributes (`aria-selected`, `aria-expanded`, `aria-hidden`)
-  - Filters data-* state attributes (`data-state`, `data-active`, `data-orientation`)
+  - Filters data-\* state attributes (`data-state`, `data-active`, `data-orientation`)
   - Filters library-specific prefixes (`data-radix-*`, `data-headlessui-*`, `data-mui-*`)
   - Filters generated IDs (Radix UI, Headless UI, Material UI patterns)
   - Preserves test IDs (`data-testid`, `data-cy`, `data-qa`)

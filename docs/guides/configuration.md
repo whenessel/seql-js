@@ -6,11 +6,11 @@ Customizing SEQL behavior.
 
 ```typescript
 interface GeneratorOptions {
-  maxPathDepth?: number;          // Default: 10
+  maxPathDepth?: number; // Default: 10
   enableSvgFingerprint?: boolean; // Default: true
-  confidenceThreshold?: number;   // Default: 0.1
-  fallbackToBody?: boolean;       // Default: true
-  cache?: EIDCache;              // Default: global cache
+  confidenceThreshold?: number; // Default: 0.1
+  fallbackToBody?: boolean; // Default: true
+  cache?: EIDCache; // Default: global cache
 }
 ```
 
@@ -18,10 +18,10 @@ interface GeneratorOptions {
 
 ```typescript
 interface ResolverOptions {
-  strictMode?: boolean;         // Default: false
-  requireUniqueness?: boolean;  // Default: false
-  enableFallback?: boolean;     // Default: true
-  maxCandidates?: number;       // Default: 100
+  strictMode?: boolean; // Default: false
+  requireUniqueness?: boolean; // Default: false
+  enableFallback?: boolean; // Default: true
+  maxCandidates?: number; // Default: 100
 }
 ```
 
@@ -29,7 +29,7 @@ interface ResolverOptions {
 
 ```typescript
 interface StringifyOptions {
-  verbose?: boolean;        // Default: false
+  verbose?: boolean; // Default: false
   includeNthChild?: boolean; // Default: true
 }
 ```
@@ -41,7 +41,7 @@ interface StringifyOptions {
 ```typescript
 generateEID(element, {
   maxPathDepth: 15,
-  confidenceThreshold: 0.5
+  confidenceThreshold: 0.5,
 });
 ```
 
@@ -50,7 +50,7 @@ generateEID(element, {
 ```typescript
 generateEID(element, {
   maxPathDepth: 5,
-  enableSvgFingerprint: false
+  enableSvgFingerprint: false,
 });
 ```
 
@@ -60,6 +60,6 @@ generateEID(element, {
 resolve(eid, document, {
   strictMode: true,
   requireUniqueness: true,
-  enableFallback: false
+  enableFallback: false,
 });
 ```

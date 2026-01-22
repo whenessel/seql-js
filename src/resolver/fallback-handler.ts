@@ -50,10 +50,7 @@ export class FallbackHandler {
   /**
    * Attempts to find and return the anchor element as fallback
    */
-  private fallbackToAnchor(
-    eid: ElementIdentity,
-    dom: Document | Element,
-  ): ResolveResult {
+  private fallbackToAnchor(eid: ElementIdentity, dom: Document | Element): ResolveResult {
     const anchorSelector = this.cssGenerator.buildAnchorSelector(eid);
     const root = dom instanceof Document ? dom : (dom.ownerDocument ?? dom);
 
@@ -71,8 +68,7 @@ export class FallbackHandler {
       }
     } catch (error) {
       // Log selector error for debugging
-      const message =
-        error instanceof Error ? error.message : 'Unknown selector error';
+      const message = error instanceof Error ? error.message : 'Unknown selector error';
       return {
         status: 'error',
         elements: [],
@@ -129,10 +125,7 @@ export class FallbackHandler {
    * Selects the best-scoring element from candidates
    * Re-scores each element based on semantic match quality
    */
-  private selectBestScoring(
-    elements: Element[],
-    eid: ElementIdentity,
-  ): ResolveResult {
+  private selectBestScoring(elements: Element[], eid: ElementIdentity): ResolveResult {
     const targetSemantics = eid.target.semantics;
     let bestElement = elements[0];
     let bestScore = -1;
@@ -148,9 +141,7 @@ export class FallbackHandler {
     return {
       status: 'success',
       elements: [bestElement],
-      warnings: [
-        `Multiple matches (${elements.length}), selected best-scoring element`,
-      ],
+      warnings: [`Multiple matches (${elements.length}), selected best-scoring element`],
       confidence: eid.meta.confidence * (0.7 + bestScore * 0.2),
       meta: { degraded: true, degradationReason: 'best-of-multiple' },
     };
@@ -160,10 +151,7 @@ export class FallbackHandler {
    * Scores how well an element matches the target semantics
    * @returns Score from 0 to 1
    */
-  private scoreElementMatch(
-    element: Element,
-    targetSemantics: ElementSemantics,
-  ): number {
+  private scoreElementMatch(element: Element, targetSemantics: ElementSemantics): number {
     let score = 0;
     let maxScore = 0;
 
@@ -180,7 +168,7 @@ export class FallbackHandler {
       maxScore += 0.25;
       const elementClasses = Array.from(element.classList);
       const matchCount = targetSemantics.classes.filter((cls) =>
-        elementClasses.includes(cls),
+        elementClasses.includes(cls)
       ).length;
       score += (matchCount / targetSemantics.classes.length) * 0.25;
     }

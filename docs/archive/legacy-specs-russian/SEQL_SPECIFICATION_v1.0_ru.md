@@ -5,6 +5,7 @@
 **EIQ (SEQL Selector)** — канонический строковый формат для передачи и хранения идентификаторов элементов между системами.
 
 **Ключевой принцип**:
+
 ```
 EIQ описывает идентичность элемента,
 а не инструкцию, как его найти.
@@ -16,14 +17,14 @@ EIQ является **transport format** для EID (Element Identity Descripto
 
 ## 📋 Основные характеристики
 
-| Характеристика | Описание |
-|----------------|----------|
-| **Формат** | Однострочная строка |
-| **Направление** | Слева направо: anchor → path → target |
-| **Детерминированность** | Один EID → всегда один EIQ |
-| **Каноничность** | Нет альтернативных представлений |
-| **Версионирование** | Обязательно для обратной совместимости |
-| **PII-safe** | Не содержит персональных данных |
+| Характеристика          | Описание                               |
+| ----------------------- | -------------------------------------- |
+| **Формат**              | Однострочная строка                    |
+| **Направление**         | Слева направо: anchor → path → target  |
+| **Детерминированность** | Один EID → всегда один EIQ             |
+| **Каноничность**        | Нет альтернативных представлений       |
+| **Версионирование**     | Обязательно для обратной совместимости |
+| **PII-safe**            | Не содержит персональных данных        |
 
 ---
 
@@ -76,18 +77,18 @@ ConstraintPair ::= ConstraintKey "=" ConstraintValue
 
 ## 🔧 Разделители (строго фиксированы)
 
-| Разделитель | Назначение | Пример |
-|-------------|------------|--------|
-| `:` | Версия | `v1:` |
-| `::` | Граница anchor | `footer ::` |
-| `>` | Иерархия path | `ul > li` |
-| `.` | Semantic class | `.space-y-3` |
-| `[]` | Атрибуты | `[type="submit"]` |
-| `{}` | Constraints | `{pos=3}` |
-| `=` | Точное совпадение | `text="Click"` |
-| `~=` | Contains / normalized | `text~="subscribe"` |
-| `#` | Позиция (nth-child) | `li#3` |
-| `,` | Разделитель в списках | `[role="button",type="submit"]` |
+| Разделитель | Назначение            | Пример                          |
+| ----------- | --------------------- | ------------------------------- |
+| `:`         | Версия                | `v1:`                           |
+| `::`        | Граница anchor        | `footer ::`                     |
+| `>`         | Иерархия path         | `ul > li`                       |
+| `.`         | Semantic class        | `.space-y-3`                    |
+| `[]`        | Атрибуты              | `[type="submit"]`               |
+| `{}`        | Constraints           | `{pos=3}`                       |
+| `=`         | Точное совпадение     | `text="Click"`                  |
+| `~=`        | Contains / normalized | `text~="subscribe"`             |
+| `#`         | Позиция (nth-child)   | `li#3`                          |
+| `,`         | Разделитель в списках | `[role="button",type="submit"]` |
 
 **Никаких альтернатив или вариаций не допускается.**
 
@@ -104,29 +105,34 @@ tag(.class)*[attr=value,attr~=value]#position
 ### Компоненты узла
 
 1. **Tag** (обязательно):
+
    ```
    div, ul, li, button, svg, path
    ```
 
 2. **Classes** (опционально, только semantic):
+
    ```
    .btn-primary
    .space-y-3
    .Card
    ```
-   
+
    ❌ **Запрещены utility classes**:
+
    ```
    .flex, .mt-4, .bg-blue-500, .hover:bg-red
    ```
 
 3. **Attributes** (опционально, сортированы):
+
    ```
    [role="button",type="submit"]
    [aria-label="Close",id="modal-1"]
    ```
 
 4. **Position** (опционально, для точного позиционирования):
+
    ```
    #1    — первый ребенок
    #3    — третий ребенок
@@ -135,18 +141,21 @@ tag(.class)*[attr=value,attr~=value]#position
 ### Правила для узлов
 
 1. **Порядок атрибутов**: Строго алфавитный (для каноничности)
+
    ```
    ✅ [aria-label="Close",id="modal",role="button"]
    ❌ [id="modal",role="button",aria-label="Close"]
    ```
 
 2. **Только semantic classes**: Фильтрация утилитарных классов
+
    ```
    ✅ .btn-primary, .Card, .sidebar
    ❌ .flex, .mt-4, .inline-flex
    ```
 
 3. **Нормализация текста**: trim, collapse whitespace
+
    ```
    ✅ text="Subscribe to Newsletter"
    ❌ text="  Subscribe  to   Newsletter  "
@@ -204,7 +213,7 @@ v1: body :: main > section
 
 1. **Только semantic узлы**: Layout div без классов/атрибутов пропускаются
 2. **Минимально достаточный**: Только узлы, нужные для идентификации
-3. **Разделитель**: Всегда ` > ` (пробел-greater-пробел)
+3. **Разделитель**: Всегда `>` (пробел-greater-пробел)
 
 ### Примеры
 
@@ -266,12 +275,12 @@ v1: footer :: svg.lucide-mail > rect[dHash="7bf591b2"]
 
 ### Типы constraints
 
-| Constraint | Описание | Пример |
-|------------|----------|--------|
-| `pos` | Позиция среди siblings | `{pos=3}` |
-| `unique` | Требование уникальности | `{unique=true}` |
-| `visible` | Требование видимости | `{visible=true}` |
-| `fallback` | Стратегия fallback | `{fallback="anchor"}` |
+| Constraint | Описание                | Пример                |
+| ---------- | ----------------------- | --------------------- |
+| `pos`      | Позиция среди siblings  | `{pos=3}`             |
+| `unique`   | Требование уникальности | `{unique=true}`       |
+| `visible`  | Требование видимости    | `{visible=true}`      |
+| `fallback` | Стратегия fallback      | `{fallback="anchor"}` |
 
 ### Правила
 
@@ -296,6 +305,7 @@ v1: nav :: a[href="/"] {pos=1}
 ### Правила
 
 1. **Всегда в двойных кавычках**:
+
    ```
    text="Subscribe"
    ```
@@ -306,12 +316,14 @@ v1: nav :: a[href="/"] {pos=1}
    - Lowercase для сравнения (при `~=`)
 
 3. **Без переносов строк**:
+
    ```
    ✅ text="Click here to subscribe"
    ❌ text="Click here\nto subscribe"
    ```
 
 4. **PII-safe** (критично):
+
    ```
    ❌ text="john.doe@example.com"
    ✅ text~="contact" или text-hash="7bf591b2"
@@ -319,10 +331,10 @@ v1: nav :: a[href="/"] {pos=1}
 
 ### Операторы сравнения
 
-| Оператор | Назначение | Пример |
-|----------|------------|--------|
-| `=` | Точное совпадение | `text="Subscribe"` |
-| `~=` | Contains / normalized | `text~="subscribe now"` |
+| Оператор | Назначение            | Пример                  |
+| -------- | --------------------- | ----------------------- |
+| `=`      | Точное совпадение     | `text="Subscribe"`      |
+| `~=`     | Contains / normalized | `text~="subscribe now"` |
 
 ### Примеры
 
@@ -346,11 +358,13 @@ svg(.class)* > svgChild[dHash="..."]
 ### Правила
 
 1. **SVG как обычный узел**:
+
    ```
    svg.lucide-mail
    ```
 
 2. **SVG дочерние элементы**:
+
    ```
    path[dHash="abc123"]
    rect[dHash="7bf591b2"]
@@ -417,24 +431,28 @@ EIQ должен быть **строго детерминированным**. �
 ### Обязательные правила
 
 1. **Одинаковый порядок узлов**:
+
    ```
    ✅ footer :: ul > li > svg
    ❌ footer :: svg > li > ul
    ```
 
 2. **Алфавитный порядок атрибутов**:
+
    ```
    ✅ [aria-label="Close",id="modal",role="button"]
    ❌ [id="modal",role="button",aria-label="Close"]
    ```
 
 3. **Одинаковые кавычки** (всегда двойные):
+
    ```
    ✅ text="Subscribe"
    ❌ text='Subscribe'
    ```
 
 4. **Нет лишних пробелов**:
+
    ```
    ✅ ul > li
    ❌ ul  >  li
@@ -442,6 +460,7 @@ EIQ должен быть **строго детерминированным**. �
    ```
 
 5. **Stable-sort для классов**:
+
    ```
    ✅ .btn-primary.large
    ❌ .large.btn-primary
@@ -465,6 +484,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
 ### Запрещенные конструкции
 
 1. **CSS псевдоселекторы**:
+
    ```
    ❌ li:nth-child(3)
    ❌ li:first-child
@@ -474,6 +494,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
    ```
 
 2. **CSS комбинаторы** (кроме `>`):
+
    ```
    ❌ ul ~ li          (general sibling)
    ❌ ul + li          (adjacent sibling)
@@ -482,6 +503,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
    ```
 
 3. **XPath конструкции**:
+
    ```
    ❌ //footer//ul/li
    ❌ /html/body/footer
@@ -489,6 +511,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
    ```
 
 4. **CSS attribute selectors** (расширенные):
+
    ```
    ❌ [class^="btn-"]   (starts-with)
    ❌ [class$="-primary"] (ends-with)
@@ -497,6 +520,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
    ```
 
 5. **Невалидный CSS синтаксис**:
+
    ```
    ❌ div:has(> ul)
    ❌ div:is(.class1, .class2)
@@ -504,6 +528,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
    ```
 
 6. **Dynamic/generated значения**:
+
    ```
    ❌ [data-reactid="123"]
    ❌ [data-v-abc123="xyz"]
@@ -517,6 +542,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
 ### Правила обработки PII
 
 1. **Email**: Удалять или хешировать
+
    ```
    ❌ text="john.doe@example.com"
    ✅ text-hash="7bf591b2"
@@ -524,6 +550,7 @@ assert(eiq1 === eiq2); // ✅ Всегда true
    ```
 
 2. **Телефоны**: Паттерн, не полный номер
+
    ```
    ❌ text="+39 123 4567 890"
    ✅ text~="+39"
@@ -531,12 +558,14 @@ assert(eiq1 === eiq2); // ✅ Всегда true
    ```
 
 3. **Имена**: Только если структурные, не персональные
+
    ```
    ❌ text="John Doe"
    ✅ text="Full Name" (placeholder)
    ```
 
 4. **Адреса**: Только общие признаки
+
    ```
    ❌ text="123 Main Street, NY"
    ✅ text-pattern="address"
@@ -551,6 +580,7 @@ text-hash="7bf591b2"
 ```
 
 Хеш должен быть:
+
 - Короткий (8 символов hex)
 - Детерминированный
 - Не обратимый
@@ -561,12 +591,12 @@ text-hash="7bf591b2"
 
 ### Специальные символы
 
-| Символ | Escape | Пример |
-|--------|--------|--------|
-| `"` | `\"` | `text="Say \"Hello\""` |
-| `\` | `\\` | `text="C:\\Users"` |
-| `>` | `\>` | `text="A \> B"` (в значениях) |
-| `:` | `\:` | `text="Time\: 12:00"` |
+| Символ | Escape | Пример                        |
+| ------ | ------ | ----------------------------- |
+| `"`    | `\"`   | `text="Say \"Hello\""`        |
+| `\`    | `\\`   | `text="C:\\Users"`            |
+| `>`    | `\>`   | `text="A \> B"` (в значениях) |
+| `:`    | `\:`   | `text="Time\: 12:00"`         |
 
 ### Правила
 
@@ -631,41 +661,36 @@ v1: form[id="login"] :: fieldset > input[name="password",type="password"]
 ```typescript
 function stringifySEQL(eid: ElementIdentityDescriptor): ElementIdentityQuery {
   const version = `v${eid.version.split('.')[0]}`;
-  
+
   // Anchor
   const anchor = buildNode(eid.anchor);
-  
+
   // Path
-  const path = eid.path.map(node => buildNode(node)).join(' > ');
-  
+  const path = eid.path.map((node) => buildNode(node)).join(' > ');
+
   // Target
   const target = buildNode(eid.target);
-  
+
   // Constraints (optional)
   const constraints = buildConstraints(eid.constraints, eid.fallback);
-  
+
   // Assemble
-  const eiq = [
-    version + ':',
-    anchor,
-    '::',
-    path ? path + ' > ' : '',
-    target,
-    constraints
-  ].filter(Boolean).join(' ');
-  
+  const eiq = [version + ':', anchor, '::', path ? path + ' > ' : '', target, constraints]
+    .filter(Boolean)
+    .join(' ');
+
   return eiq.trim();
 }
 
 function buildNode(node: NodeDescriptor): string {
   let result = node.tag;
-  
+
   // Classes (sorted, semantic only)
   if (node.semantics.classes) {
     const semantic = filterStableClasses(node.semantics.classes).sort();
-    result += semantic.map(c => `.${escapeClass(c)}`).join('');
+    result += semantic.map((c) => `.${escapeClass(c)}`).join('');
   }
-  
+
   // Attributes (sorted alphabetically)
   if (node.semantics.attributes) {
     const attrs = Object.entries(node.semantics.attributes)
@@ -673,17 +698,17 @@ function buildNode(node: NodeDescriptor): string {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}="${escapeAttr(v)}"`)
       .join(',');
-    
+
     if (attrs) {
       result += `[${attrs}]`;
     }
   }
-  
+
   // Position (if available)
   if (node.nthChild) {
     result += `#${node.nthChild}`;
   }
-  
+
   return result;
 }
 ```
@@ -697,27 +722,27 @@ function parseSEQL(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
   if (!version.startsWith('v')) {
     throw new Error('Invalid EIQ: missing version');
   }
-  
+
   // 2. Split anchor and path+target
   const [anchorPart, pathTargetPart] = rest.split('::', 2);
-  
+
   // 3. Parse anchor
   const anchor = parseNode(anchorPart.trim());
-  
+
   // 4. Split path and target+constraints
-  const parts = pathTargetPart.split('>').map(p => p.trim());
+  const parts = pathTargetPart.split('>').map((p) => p.trim());
   const targetWithConstraints = parts.pop()!;
-  
+
   // 5. Parse target and constraints
   const [targetPart, constraintsPart] = splitTargetConstraints(targetWithConstraints);
   const target = parseNode(targetPart);
-  
+
   // 6. Parse path
   const path = parts.map(parseNode);
-  
+
   // 7. Parse constraints
   const constraints = parseConstraints(constraintsPart);
-  
+
   // 8. Assemble EID
   return {
     version: version.replace('v', '') + '.0',
@@ -728,8 +753,8 @@ function parseSEQL(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
     fallback: extractFallback(constraints),
     meta: {
       generatedAt: new Date().toISOString(),
-      source: 'seql-parser'
-    }
+      source: 'seql-parser',
+    },
   };
 }
 ```
@@ -743,40 +768,40 @@ function parseSEQL(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
 ```typescript
 function validateEIQ(eiq: string): ValidationResult {
   const errors: string[] = [];
-  
+
   // 1. Version
   if (!eiq.match(/^v\d+:/)) {
     errors.push('Missing or invalid version');
   }
-  
+
   // 2. Anchor separator
   if (!eiq.includes('::')) {
     errors.push('Missing anchor separator (::)');
   }
-  
+
   // 3. Valid syntax
   if (!eiq.match(/^v\d+:\s*\w+.*::.*/)) {
     errors.push('Invalid syntax');
   }
-  
+
   // 4. No forbidden constructs
   if (eiq.match(/:(nth-child|first-child|hover|focus)/)) {
     errors.push('Forbidden CSS pseudoselectors');
   }
-  
+
   // 5. No double spaces
   if (eiq.match(/\s{2,}/)) {
     errors.push('Multiple consecutive spaces');
   }
-  
+
   // 6. Proper quotes
   if (eiq.match(/='/)) {
     errors.push('Use double quotes, not single');
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 ```
@@ -785,17 +810,18 @@ function validateEIQ(eiq: string): ValidationResult {
 
 ## 📚 Сравнение с CSS
 
-| Аспект | CSS Selector | EIQ |
-|--------|--------------|-----|
-| **Назначение** | Найти элементы | Описать идентичность |
-| **Комбинаторы** | ` `, `>`, `+`, `~` | Только `>` |
-| **Псевдоклассы** | `:hover`, `:nth-child()` | Нет (есть `#N`) |
-| **Атрибуты** | `[attr^=val]`, `[attr*=val]` | Только `=` и `~=` |
-| **Детерминированность** | Нет требования | Обязательна |
-| **Версионирование** | Нет | Обязательно |
-| **PII-safe** | Нет требования | Обязательно |
+| Аспект                  | CSS Selector                 | EIQ                  |
+| ----------------------- | ---------------------------- | -------------------- |
+| **Назначение**          | Найти элементы               | Описать идентичность |
+| **Комбинаторы**         | ``, `>`, `+`, `~`           | Только `>`           |
+| **Псевдоклассы**        | `:hover`, `:nth-child()`     | Нет (есть `#N`)      |
+| **Атрибуты**            | `[attr^=val]`, `[attr*=val]` | Только `=` и `~=`    |
+| **Детерминированность** | Нет требования               | Обязательна          |
+| **Версионирование**     | Нет                          | Обязательно          |
+| **PII-safe**            | Нет требования               | Обязательно          |
 
 **Ключевое отличие**:
+
 ```
 CSS:  "Как найти элемент" (query instruction)
 EIQ:  "Что представляет элемент" (identity description)
@@ -809,7 +835,7 @@ EIQ:  "Что представляет элемент" (identity description)
 
 - [ ] Версия указана: `v1:`
 - [ ] Anchor separator присутствует: `::`
-- [ ] Path separator корректен: ` > ` (с пробелами)
+- [ ] Path separator корректен: `>` (с пробелами)
 - [ ] Атрибуты отсортированы алфавитно
 - [ ] Классы отсортированы алфавитно
 - [ ] Используются только semantic классы
@@ -830,21 +856,25 @@ EIQ:  "Что представляет элемент" (identity description)
 Возможные улучшения в следующих версиях:
 
 1. **Extended constraints**:
+
    ```
    v2: section :: button @shadow-root @iframe-nested
    ```
 
 2. **Compression hints**:
+
    ```
    v2: footer :: ul > li @compress
    ```
 
 3. **Context markers**:
+
    ```
    v2: form @inside(modal) :: button
    ```
 
 4. **Relation operators**:
+
    ```
    v2: ul > li @following(div.active)
    ```

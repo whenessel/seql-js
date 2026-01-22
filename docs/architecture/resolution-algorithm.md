@@ -15,6 +15,7 @@ Phase 5: Handle Ambiguity    → ResolveResult
 ## Detailed Phases
 
 ### Phase 1: CSS Narrowing
+
 Build CSS selector and query DOM.
 
 ```typescript
@@ -26,21 +27,23 @@ const candidates = root.querySelectorAll(selector);
 ```
 
 ### Phase 2: Semantic Filtering
+
 Score candidates by semantic similarity.
 
 ```typescript
-const scored = candidates.map(el => ({
+const scored = candidates.map((el) => ({
   element: el,
-  score: calculateSemanticScore(el, eid.target.semantics)
+  score: calculateSemanticScore(el, eid.target.semantics),
 }));
 
 const filtered = scored
-  .filter(s => s.score > 0.5)
+  .filter((s) => s.score > 0.5)
   .sort((a, b) => b.score - a.score)
-  .map(s => s.element);
+  .map((s) => s.element);
 ```
 
 ### Phase 3: Uniqueness Check
+
 Early exit for single match.
 
 ```typescript
@@ -48,12 +51,13 @@ if (filtered.length === 1) {
   return {
     status: 'success',
     elements: filtered,
-    confidence: eid.meta.confidence
+    confidence: eid.meta.confidence,
   };
 }
 ```
 
 ### Phase 4: Constraints Evaluation
+
 Apply disambiguation rules.
 
 ```typescript
@@ -65,6 +69,7 @@ for (const constraint of eid.constraints || []) {
 ```
 
 ### Phase 5: Handle Ambiguity
+
 Return appropriate result.
 
 ```typescript
@@ -86,14 +91,15 @@ return { status: 'success', elements: final };
 ## Performance Characteristics
 
 | Phase | Complexity | Typical Time |
-|-------|-----------|--------------|
-| 1 | O(n) | 5ms |
-| 2 | O(m log m) | 8ms |
-| 3 | O(1) | <1ms |
-| 4 | O(m × c) | 3ms |
-| 5 | O(m) | 2ms |
+| ----- | ---------- | ------------ |
+| 1     | O(n)       | 5ms          |
+| 2     | O(m log m) | 8ms          |
+| 3     | O(1)       | <1ms         |
+| 4     | O(m × c)   | 3ms          |
+| 5     | O(m)       | 2ms          |
 
 Where:
+
 - n = DOM size
 - m = candidate count
 - c = constraint count

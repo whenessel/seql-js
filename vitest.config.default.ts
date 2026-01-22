@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -7,19 +7,19 @@ export default defineConfig({
     passWithNoTests: true,
     mockReset: true,
     restoreMocks: true,
-    include: ["tests/**/*.test.ts"],
+    include: ['tests/**/*.test.ts'],
     reporters: [
-      "default",
+      'default',
       // "verbose",
       // ["junit", { outputFile: "test-results/junit/results.xml" }],
       // ["json", { outputFile: "test-results/json/results.json" }],
       // ["html", { outputFile: "test-results/html/index.html" }],
     ],
     coverage: {
-      provider: "v8",
+      provider: 'v8',
       reporter: [
         // "lcov",
-        "text",
+        'text',
         // "text-summary",
         // "text-lcov",
         // "json",
@@ -30,15 +30,15 @@ export default defineConfig({
         // "cobertura",
         // "lcovonly",
       ],
-      include: ["src/**/*.ts"],
+      include: ['src/**/*.ts'],
       exclude: [
-        "**/node_modules/**",
-        "**/dist/**",
-        "**/tests/**",
-        "**/src/index.ts",
-        "**/src/types/**",
-        "**/*.config.ts",
-        "**/*.d.ts",
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/tests/**',
+        '**/src/index.ts',
+        '**/src/types/**',
+        '**/*.config.ts',
+        '**/*.d.ts',
       ],
       thresholds: {
         statements: 95,
@@ -50,7 +50,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": "./src",
+      '@': './src',
     },
   },
 });

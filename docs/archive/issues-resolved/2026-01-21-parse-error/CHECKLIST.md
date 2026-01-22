@@ -5,11 +5,13 @@ Use this checklist to verify the fix has been applied correctly.
 ## Pre-Fix Verification
 
 - [ ] Confirmed error appears in browser console:
+
   ```
   Error: Invalid node: unexpected content ".glass-card#2"
   ```
 
 - [ ] Generated SEQL string has wrong order:
+
   ```
   v1.0: form[data-seql-id="..."].glass-card#2
                                  ↑ Classes after attributes (wrong)
@@ -30,22 +32,26 @@ Use this checklist to verify the fix has been applied correctly.
   - [ ] This section stays in place - NO CHANGES
 
 - [ ] Found attributes addition block (lines ~298-304):
+
   ```typescript
   if (finalAttrs.length > 0) {
     finalAttrs.sort((a, b) => a.localeCompare(b));
     result += `[${finalAttrs.join(',')}]`;
   }
   ```
+
   - [ ] Marked for moving DOWN
 
 - [ ] Found classes addition block (lines ~306-320):
+
   ```typescript
   if (semantics.classes && semantics.classes.length > 0) {
     const stableClasses = filterStableClasses(semantics.classes);
     // ... filtering logic ...
-    result += limitedClasses.map(c => `.${c}`).join('');
+    result += limitedClasses.map((c) => `.${c}`).join('');
   }
   ```
+
   - [ ] Marked for moving UP
 
 - [ ] Swapped the two blocks
@@ -62,6 +68,7 @@ Use this checklist to verify the fix has been applied correctly.
 - [ ] Saved changes to `/src/utils/seql-parser.ts`
 
 - [ ] Ran build command:
+
   ```bash
   npm run build
   # or
@@ -71,6 +78,7 @@ Use this checklist to verify the fix has been applied correctly.
 - [ ] Build completed successfully (no errors)
 
 - [ ] Check dist files were updated:
+
   ```bash
   ls -la dist/
   ```
@@ -79,21 +87,24 @@ Use this checklist to verify the fix has been applied correctly.
 
 ### Browser Console Test
 
-- [ ] Opened browser at: https://appsurify.github.io/modern-seaside-stay/
+- [ ] Opened browser at: <https://appsurify.github.io/modern-seaside-stay/>
 
 - [ ] Loaded test script:
+
   ```javascript
   // Load: /Users/whenessel/Development/WebstormProjects/seql-js/SEQLJsBrowserTestSuite.js
   ```
 
 - [ ] Ran test:
+
   ```javascript
-  window.testSeqlJs()
+  window.testSeqlJs();
   ```
 
 ### Expected Output Verification
 
 - [ ] **Step 1 - EID Generation:**
+
   ```
   ✅ EID успешно сгенерирован
   📊 Структура EID: {...}
@@ -103,6 +114,7 @@ Use this checklist to verify the fix has been applied correctly.
   ```
 
 - [ ] **Step 2 - SEQL String Generation:**
+
   ```
   ✅ SEQL string сгенерирован
   v1.0: form.glass-card[data-seql-id="seql-el-17"]#2 :: button[id="check-out",text="Select date",type="button"]
@@ -111,13 +123,16 @@ Use this checklist to verify the fix has been applied correctly.
   ```
 
 - [ ] **Step 3 - Parsing:**
+
   ```
   ✅ SEQL успешно распарсен
   ```
+
   - [ ] NO ERROR about "unexpected content"
   - [ ] Parsed EID matches original structure
 
 - [ ] **Step 4 - Comparison:**
+
   ```
   ✅ EID восстановлен корректно
   ✅ Anchor совпадает
@@ -128,12 +143,13 @@ Use this checklist to verify the fix has been applied correctly.
 ### Manual Inspection
 
 - [ ] Inspected generated SEQL string format:
+
   ```javascript
   const el = document.querySelector('#check-out');
   const eid = window.seqlJs.generateEID(el);
   const seql = window.seqlJs.stringifySEQL(eid);
   console.log('SEQL:', seql);
-  
+
   // Should show: form.glass-card[...]#2
   // NOT: form[...].glass-card#2
   ```
@@ -147,13 +163,14 @@ Use this checklist to verify the fix has been applied correctly.
 ### Round-trip Test
 
 - [ ] Element → EID → SEQL → EID → Element:
+
   ```javascript
   const el = document.querySelector('#check-out');
   const eid1 = window.seqlJs.generateEID(el);
   const seql = window.seqlJs.stringifySEQL(eid1);
   const eid2 = window.seqlJs.parseSEQL(seql);
   const resolved = window.seqlJs.resolve(eid2, document);
-  
+
   console.log('Original element:', el);
   console.log('Resolved elements:', resolved.elements);
   console.log('Match:', resolved.elements[0] === el); // Should be true
@@ -167,6 +184,7 @@ Use this checklist to verify the fix has been applied correctly.
 ### Test Other Elements
 
 - [ ] SVG elements:
+
   ```javascript
   const svg = document.querySelector('svg');
   const eid = window.seqlJs.generateEID(svg);
@@ -175,18 +193,21 @@ Use this checklist to verify the fix has been applied correctly.
   ```
 
 - [ ] Elements with multiple classes:
+
   ```javascript
   const multiClass = document.querySelector('.inline-flex.items-center');
   // Test generation and parsing
   ```
 
 - [ ] Elements without classes:
+
   ```javascript
   const noClass = document.querySelector('button:not([class])');
   // Test generation and parsing
   ```
 
 - [ ] Elements without attributes:
+
   ```javascript
   const noAttrs = document.createElement('div');
   document.body.appendChild(noAttrs);
@@ -198,6 +219,7 @@ Use this checklist to verify the fix has been applied correctly.
 - [ ] Updated any examples in docs that show SEQL format
 
 - [ ] Checked that spec matches new format:
+
   ```
   /docs/specs/SEQL_SPECIFICATION_v1.0.md
   ```
@@ -207,24 +229,28 @@ Use this checklist to verify the fix has been applied correctly.
 ## Edge Cases
 
 - [ ] Element with ID only (no classes or other attributes):
+
   ```javascript
   <button id="test-btn">Test</button>
   // Should generate: button[id="test-btn"]
   ```
 
 - [ ] Element with classes only (no attributes):
+
   ```javascript
   <div class="container wrapper">Container</div>
   // Should generate: div.container.wrapper
   ```
 
 - [ ] Anchor node (no position):
+
   ```javascript
   // Anchor nodes don't have nthChild
   // Should generate: tag.class[attrs] (no #N)
   ```
 
 - [ ] Path nodes:
+
   ```javascript
   // Path nodes between anchor and target
   // Should also follow: tag.class[attrs]#N order
@@ -235,6 +261,7 @@ Use this checklist to verify the fix has been applied correctly.
 - [ ] No console errors during any tests
 
 - [ ] All existing unit tests still pass:
+
   ```bash
   npm test
   # or
@@ -247,11 +274,12 @@ Use this checklist to verify the fix has been applied correctly.
 
 ## Sign-off
 
-**Date:** _____________  
-**Tester:** _____________  
+**Date:** ******\_******  
+**Tester:** ******\_******  
 **All checks passed:** ☐ YES ☐ NO
 
 **Notes:**
+
 ```
 _______________________________________________________________
 _______________________________________________________________
@@ -259,6 +287,7 @@ _______________________________________________________________
 ```
 
 **Status:**
+
 - [ ] ✅ FIX VERIFIED - Ready to deploy
 - [ ] ❌ ISSUES FOUND - See notes above
 - [ ] 🔄 PARTIALLY WORKING - Needs more investigation
@@ -268,6 +297,7 @@ _______________________________________________________________
 If issues are found:
 
 1. **Revert changes:**
+
    ```bash
    git checkout HEAD -- src/utils/seql-parser.ts
    npm run build

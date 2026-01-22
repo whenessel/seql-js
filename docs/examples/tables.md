@@ -68,7 +68,7 @@ generateSEQL(editBtn);
 ```typescript
 import { generateSEQL } from 'seql-js';
 
-document.querySelectorAll('td').forEach(cell => {
+document.querySelectorAll('td').forEach((cell) => {
   cell.addEventListener('click', () => {
     const selector = generateSEQL(cell);
     console.log('Cell clicked:', selector);

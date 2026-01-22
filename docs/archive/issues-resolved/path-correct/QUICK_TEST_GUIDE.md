@@ -1,7 +1,8 @@
 # Быстрая инструкция по тестированию
 
 ## Текущий статус
-✅ Браузер открыт на https://appsurify.github.io/modern-seaside-stay/
+
+✅ Браузер открыт на <https://appsurify.github.io/modern-seaside-stay/>
 ✅ Date picker открыт (видны даты 18 и 31)
 ✅ Библиотека `window.domDsl` загружена
 
@@ -13,9 +14,10 @@
 
 ```javascript
 // Быстрый тест для дат 18 и 31
-['18', '31'].forEach(date => {
-  const cell = Array.from(document.querySelectorAll('.rdp-day'))
-    .find(el => el.textContent.trim() === date);
+['18', '31'].forEach((date) => {
+  const cell = Array.from(document.querySelectorAll('.rdp-day')).find(
+    (el) => el.textContent.trim() === date
+  );
 
   if (!cell) {
     console.error(`❌ Date ${date} not found`);

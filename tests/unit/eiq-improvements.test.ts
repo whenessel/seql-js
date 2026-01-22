@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { JSDOM } from 'jsdom';
-import {
-  generateSEQL,
-  stringifySEQL,
-  type ElementIdentity,
-} from '../../src';
+import { stringifySEQL, type ElementIdentity } from '../../src';
 
 describe('EIQ Improvements', () => {
   it('should generate human-readable EIQ for links with ID and href', () => {
@@ -23,17 +18,17 @@ describe('EIQ Improvements', () => {
           text: {
             raw: 'Book Your Stay',
             normalized: 'Book Your Stay',
-          }
+          },
         },
         score: 1,
       },
       constraints: [],
       fallback: { onMultiple: 'best-score', onMissing: 'anchor-only', maxDepth: 10 },
-      meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false }
+      meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false },
     };
 
     const eiq = stringifySEQL(eid);
-    
+
     // CURRENT BEHAVIOR: v1.0: body :: a#booking-btn-123
     // DESIRED BEHAVIOR: should include href (cleaned) and text, because they are semantic
     expect(eiq).toContain('href="/modern-seaside-stay/booking"');
@@ -56,11 +51,11 @@ describe('EIQ Improvements', () => {
       },
       constraints: [],
       fallback: { onMultiple: 'best-score', onMissing: 'anchor-only', maxDepth: 10 },
-      meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false }
+      meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false },
     };
 
     const eiq = stringifySEQL(eid);
-    
+
     // mt-4, flex, items-center are utility classes and should be filtered
     expect(eiq).toContain('.btn-primary');
     expect(eiq).toContain('.js-submit-order');
@@ -78,7 +73,7 @@ describe('EIQ Improvements', () => {
         semantics: {
           attributes: {
             'z-index': '10', // low priority
-            'name': 'email', // high priority
+            name: 'email', // high priority
             'data-testid': 'login-email', // very high priority
             'aria-label': 'Email Address', // high priority
           },
@@ -87,13 +82,13 @@ describe('EIQ Improvements', () => {
       },
       constraints: [],
       fallback: { onMultiple: 'best-score', onMissing: 'anchor-only', maxDepth: 10 },
-      meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false }
+      meta: { confidence: 1, generatedAt: '', generator: '', source: '', degraded: false },
     };
 
     // If maxAttributes is 2, it should pick data-testid and aria-label (highest priority),
     // then sort them alphabetically: aria-label, data-testid
     const eiq = stringifySEQL(eid, { maxAttributes: 2 });
-    
+
     expect(eiq).toContain('aria-label="Email Address"');
     expect(eiq).toContain('data-testid="login-email"');
     expect(eiq).not.toContain('name="email"');

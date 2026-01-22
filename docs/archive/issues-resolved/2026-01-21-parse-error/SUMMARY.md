@@ -14,6 +14,7 @@
 **Функция:** `stringifyNode` (строки ~221-339)
 
 **Что делать:**
+
 1. Найти блок "Add stable classes" (~строки 306-320)
 2. Найти блок добавления атрибутов `result += [...]` (~строка 304)
 3. Поменять их местами: классы должны добавляться ПЕРЕД атрибутами
@@ -31,12 +32,14 @@
 ## Expected Before/After
 
 **Before (broken):**
+
 ```
 v1.0: form[data-seql-id="seql-el-17"].glass-card#2 :: button[id="check-out"]
                                       ↑ Wrong order
 ```
 
 **After (working):**
+
 ```
 v1.0: form.glass-card[data-seql-id="seql-el-17"]#2 :: button[id="check-out"]
            ↑ Correct order
@@ -68,6 +71,6 @@ window.testSeqlJs()
 
 ## References
 
-- Test element: `#check-out` button at https://appsurify.github.io/modern-seaside-stay/
+- Test element: `#check-out` button at <https://appsurify.github.io/modern-seaside-stay/>
 - Test script: `/SEQLJsBrowserTestSuite.js`
 - Spec: `/docs/specs/SEQL_SPECIFICATION_v1.0.md`

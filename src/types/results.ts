@@ -2,11 +2,7 @@
  * Resolution status
  * Following SPECIFICATION.md §13.5
  */
-export type ResolveStatus =
-  | 'success'
-  | 'ambiguous'
-  | 'error'
-  | 'degraded-fallback';
+export type ResolveStatus = 'success' | 'ambiguous' | 'error' | 'degraded-fallback';
 
 /**
  * Resolve result

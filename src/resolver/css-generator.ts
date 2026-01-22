@@ -59,7 +59,6 @@ export interface BuildSelectorResult {
  * 10. nth-of-type (last resort, added when ensureUnique=true)
  */
 export class CssGenerator {
-
   /**
    * Builds CSS selector from Element Identity
    * @param eid - Element Identity to convert
@@ -147,13 +146,13 @@ export class CssGenerator {
 
     // ENHANCED FIX: Use appropriate combinator based on element type and context
     const isSvgChild = this.isSvgChildElement(eid.target.tag);
-    const hasSvgInPath = eid.path.some(node => node.tag === 'svg');
+    const hasSvgInPath = eid.path.some((node) => node.tag === 'svg');
 
     let baseSelector: string;
 
     // For SVG children with svg in path: use descendant until svg, then child
     if (isSvgChild && hasSvgInPath) {
-      const svgIndexInPath = eid.path.findIndex(node => node.tag === 'svg');
+      const svgIndexInPath = eid.path.findIndex((node) => node.tag === 'svg');
       if (svgIndexInPath !== -1) {
         // parts structure: [anchor, ...path nodes, target]
         // svgIndex in parts is svgIndexInPath + 1 (because anchor is at index 0)
@@ -168,7 +167,12 @@ export class CssGenerator {
 
         // Build selector: descendant to svg, then child for everything inside svg
         if (afterSvgBeforeTarget.length > 0) {
-          baseSelector = beforeAndIncludingSvg.join(' ') + ' > ' + afterSvgBeforeTarget.join(' > ') + ' > ' + target;
+          baseSelector =
+            beforeAndIncludingSvg.join(' ') +
+            ' > ' +
+            afterSvgBeforeTarget.join(' > ') +
+            ' > ' +
+            target;
         } else {
           // Direct child of svg
           baseSelector = beforeAndIncludingSvg.join(' ') + ' > ' + target;
@@ -219,11 +223,7 @@ export class CssGenerator {
     }
 
     // Fallback: use regular ensureUniqueSelector logic with baseSelector
-    return this.ensureUniqueSelector(
-      baseSelector,
-      eid,
-      options
-    );
+    return this.ensureUniqueSelector(baseSelector, eid, options);
   }
 
   /**
@@ -318,7 +318,7 @@ export class CssGenerator {
     const targetElement = this.findNthElementByText(currentSelector, targetSemantics, root);
     if (targetElement) {
       currentSelector += this.getNthSelector(targetElement, targetTag);
-      usedNthOfType = true;  // Note: might be nth-child for table elements
+      usedNthOfType = true; // Note: might be nth-child for table elements
     }
 
     return {
@@ -347,17 +347,13 @@ export class CssGenerator {
     // For each anchor, try to find the target within it
     for (const anchor of anchors) {
       // Find target candidates within this anchor
-      const targetCandidates = this.findTargetWithinAnchor(
-        anchor,
-        eid.target.tag,
-        targetSemantics
-      );
+      const targetCandidates = this.findTargetWithinAnchor(anchor, eid.target.tag, targetSemantics);
 
       if (targetCandidates.length === 0) continue;
 
       // FIX: Score each candidate by how well its path matches EID path
       // This handles cases where multiple elements have same text (e.g., calendar dates)
-      const scoredCandidates = targetCandidates.map(candidate => {
+      const scoredCandidates = targetCandidates.map((candidate) => {
         const score = this.scorePathMatch(candidate, anchor, eid.path);
         return { element: candidate, score };
       });
@@ -367,12 +363,7 @@ export class CssGenerator {
 
       // Try candidates in order of best match
       for (const { element } of scoredCandidates) {
-        const pathSelector = this.buildPathFromAnchorToTarget(
-          anchor,
-          element,
-          eid,
-          root
-        );
+        const pathSelector = this.buildPathFromAnchorToTarget(anchor, element, eid, root);
 
         if (pathSelector && this.isUnique(pathSelector, root)) {
           return pathSelector;
@@ -391,11 +382,7 @@ export class CssGenerator {
    * @param eidPath - EID path nodes
    * @returns Score (higher = better match)
    */
-  private scorePathMatch(
-    candidate: Element,
-    anchor: Element,
-    eidPath: PathNode[]
-  ): number {
+  private scorePathMatch(candidate: Element, anchor: Element, eidPath: PathNode[]): number {
     // Build actual DOM path from anchor to candidate
     const domPath: Element[] = [];
     let el: Element | null = candidate.parentElement;
@@ -436,8 +423,8 @@ export class CssGenerator {
 
       // Match classes if present in EID
       if (eidNode.semantics.classes && eidNode.semantics.classes.length > 0) {
-        const matchingClasses = eidNode.semantics.classes.filter(
-          (cls: string) => domEl.classList.contains(cls)
+        const matchingClasses = eidNode.semantics.classes.filter((cls: string) =>
+          domEl.classList.contains(cls)
         );
         score += matchingClasses.length * 2;
       }
@@ -469,7 +456,7 @@ export class CssGenerator {
     const candidates = Array.from(anchor.querySelectorAll(targetTag));
 
     // Filter by semantics
-    return candidates.filter(el => {
+    return candidates.filter((el) => {
       // Match by text if available
       if (targetSemantics.text) {
         const elText = el.textContent?.trim() || '';
@@ -481,24 +468,19 @@ export class CssGenerator {
 
       // Match by classes if available
       if (targetSemantics.classes && targetSemantics.classes.length > 0) {
-        const hasAllClasses = targetSemantics.classes.every(
-          cls => el.classList.contains(cls)
-        );
+        const hasAllClasses = targetSemantics.classes.every((cls) => el.classList.contains(cls));
         if (hasAllClasses) return true;
       }
 
       // Match by attributes if available
       if (targetSemantics.attributes) {
-        const matchesAttrs = Object.entries(targetSemantics.attributes).every(
-          ([name, value]) => {
-            const attrValue = el.getAttribute(name);
-            if (name === 'href' || name === 'src') {
-              return cleanAttributeValue(name, attrValue || '') ===
-                     cleanAttributeValue(name, value);
-            }
-            return attrValue === value;
+        const matchesAttrs = Object.entries(targetSemantics.attributes).every(([name, value]) => {
+          const attrValue = el.getAttribute(name);
+          if (name === 'href' || name === 'src') {
+            return cleanAttributeValue(name, attrValue || '') === cleanAttributeValue(name, value);
           }
-        );
+          return attrValue === value;
+        });
         if (matchesAttrs) return true;
       }
 
@@ -529,7 +511,7 @@ export class CssGenerator {
     // 1. Try with stable attributes from DSL (if available)
     if (pathNode?.semantics?.attributes) {
       const parentWithAttrs = this.buildNodeSelector(tag, pathNode.semantics, {
-        excludeClasses: true
+        excludeClasses: true,
       });
 
       // Check if adding attributes reduces ambiguity
@@ -567,9 +549,7 @@ export class CssGenerator {
     // 3. Fall back to nth-of-type
     const parent = element.parentElement;
     if (parent) {
-      const siblings = Array.from(parent.children).filter(
-        s => s.tagName.toLowerCase() === tag
-      );
+      const siblings = Array.from(parent.children).filter((s) => s.tagName.toLowerCase() === tag);
 
       if (siblings.length > 1) {
         return `${tag}${this.getNthSelector(element, tag)}`;
@@ -635,9 +615,13 @@ export class CssGenerator {
 
         // Try adding target semantics (ONLY attributes, NO classes)
         const targetSelector = this.buildNodeSelector(targetTag, targetSemantics, {
-          excludeClasses: true // KEY: no classes on target in Strategy 0
+          excludeClasses: true, // KEY: no classes on target in Strategy 0
         });
-        const simplePathWithSemantics = [anchorSelector, ...meaningfulTags.slice(0, -1), targetSelector].join(' ');
+        const simplePathWithSemantics = [
+          anchorSelector,
+          ...meaningfulTags.slice(0, -1),
+          targetSelector,
+        ].join(' ');
 
         if (this.isUnique(simplePathWithSemantics, root)) {
           return simplePathWithSemantics;
@@ -695,7 +679,7 @@ export class CssGenerator {
           const parent = el.parentElement;
           if (parent && ['td', 'th', 'tr', 'thead', 'tbody', 'tfoot'].includes(tag)) {
             const siblings = Array.from(parent.children).filter(
-              s => s.tagName.toLowerCase() === tag
+              (s) => s.tagName.toLowerCase() === tag
             );
             if (siblings.length > 1) {
               fullPath.push(`${targetSelector}${this.getNthSelector(el, tag)}`);
@@ -736,12 +720,14 @@ export class CssGenerator {
             // First try with attributes/class from disambiguateParent logic
             if (pathNode?.semantics?.attributes) {
               const parentWithAttrs = this.buildNodeSelector(tag, pathNode.semantics, {
-                excludeClasses: true
+                excludeClasses: true,
               });
               const testSelector = parts.join(' ') + ' ' + parentWithAttrs;
 
-              if (this.querySelectorSafe(testSelector, root).length === 1 ||
-                  this.querySelectorSafe(testSelector + ' ' + eid.target.tag, root).length === 1) {
+              if (
+                this.querySelectorSafe(testSelector, root).length === 1 ||
+                this.querySelectorSafe(testSelector + ' ' + eid.target.tag, root).length === 1
+              ) {
                 parts.push(parentWithAttrs);
                 continue;
               }
@@ -754,8 +740,10 @@ export class CssGenerator {
                 const parentWithClass = `${tag}.${this.escapeCSS(stableClasses[0])}`;
                 const testSelector = parts.join(' ') + ' ' + parentWithClass;
 
-                if (this.querySelectorSafe(testSelector, root).length === 1 ||
-                    this.querySelectorSafe(testSelector + ' ' + eid.target.tag, root).length === 1) {
+                if (
+                  this.querySelectorSafe(testSelector, root).length === 1 ||
+                  this.querySelectorSafe(testSelector + ' ' + eid.target.tag, root).length === 1
+                ) {
                   parts.push(parentWithClass);
                   continue;
                 }
@@ -768,7 +756,7 @@ export class CssGenerator {
             const parent = matchingPathEl.parentElement;
             if (parent) {
               const siblings = Array.from(parent.children).filter(
-                s => s.tagName.toLowerCase() === tag
+                (s) => s.tagName.toLowerCase() === tag
               );
               if (siblings.length > 1) {
                 parts.push(`${tag}${this.getNthSelector(matchingPathEl, tag)}`);
@@ -843,20 +831,21 @@ export class CssGenerator {
         if (!targetParent) return null;
 
         const targetSiblings = Array.from(targetParent.children).filter(
-          s => s.tagName.toLowerCase() === eid.target.tag
+          (s) => s.tagName.toLowerCase() === eid.target.tag
         );
 
         if (targetSiblings.length <= 1) return null;
 
-        const targetSelector = this.buildNodeSelector(
-          eid.target.tag,
-          eid.target.semantics,
-          { excludeClasses: true } // No classes, just attrs + nth
-        ) + this.getNthSelector(targetEl, eid.target.tag);
+        const targetSelector =
+          this.buildNodeSelector(
+            eid.target.tag,
+            eid.target.semantics,
+            { excludeClasses: true } // No classes, just attrs + nth
+          ) + this.getNthSelector(targetEl, eid.target.tag);
 
         const selector = [anchorSelector, ...meaningfulTags.slice(0, -1), targetSelector].join(' ');
         return this.isUnique(selector, root) ? selector : null;
-      }
+      },
     ];
 
     // Try each strategy in order
@@ -874,7 +863,6 @@ export class CssGenerator {
    * @param element The DOM element to create a selector for
    * @returns A minimal CSS selector for the element
    */
-  // @ts-ignore: Method is used dynamically in buildPathFromAnchorToTarget
   private buildElementSelector(element: Element): string {
     const tag = element.tagName.toLowerCase();
     let selector = tag;
@@ -888,7 +876,10 @@ export class CssGenerator {
     const classes = Array.from(element.classList);
     const stableClasses = filterStableClasses(classes);
     if (stableClasses.length > 0) {
-      selector += stableClasses.slice(0, 2).map(c => `.${this.escapeCSS(c)}`).join('');
+      selector += stableClasses
+        .slice(0, 2)
+        .map((c) => `.${this.escapeCSS(c)}`)
+        .join('');
     }
 
     // Add role if present
@@ -929,10 +920,12 @@ export class CssGenerator {
 
       for (const candidate of candidates) {
         const elText = candidate.textContent?.trim() || '';
-        if (elText === normalizedText ||
-            elText.includes(normalizedText) ||
-            normalizedText.includes(elText)) {
-          return candidate;  // Return element instead of index
+        if (
+          elText === normalizedText ||
+          elText.includes(normalizedText) ||
+          normalizedText.includes(elText)
+        ) {
+          return candidate; // Return element instead of index
         }
       }
     }
@@ -960,9 +953,7 @@ export class CssGenerator {
     if (!parent) return null;
 
     // Get all siblings with same tag
-    const siblings = Array.from(parent.children).filter(
-      (el) => el.tagName.toLowerCase() === tag
-    );
+    const siblings = Array.from(parent.children).filter((el) => el.tagName.toLowerCase() === tag);
 
     const index = siblings.indexOf(element);
     return index !== -1 ? index + 1 : null;
@@ -975,10 +966,7 @@ export class CssGenerator {
    * @param root - Root element for uniqueness check
    * @returns Unique selector for anchor
    */
-  private ensureUniqueAnchor(
-    eid: ElementIdentity,
-    root: Document | Element
-  ): string {
+  private ensureUniqueAnchor(eid: ElementIdentity, root: Document | Element): string {
     const tag = eid.anchor.tag;
     const semantics = eid.anchor.semantics;
 
@@ -1005,9 +993,7 @@ export class CssGenerator {
 
       for (const { name, value } of sortedAttrs) {
         const cleanedValue =
-          name === 'href' || name === 'src'
-            ? cleanAttributeValue(name, value)
-            : value;
+          name === 'href' || name === 'src' ? cleanAttributeValue(name, value) : value;
 
         if (cleanedValue) {
           const selectorWithAttr = `${tag}[${name}="${this.escapeAttr(cleanedValue)}"]`;
@@ -1053,16 +1039,13 @@ export class CssGenerator {
    * @param semantics - Semantics to match against
    * @returns Matching element or null
    */
-  private findElementBySemantics(
-    elements: Element[],
-    semantics: ElementSemantics
-  ): Element | null {
+  private findElementBySemantics(elements: Element[], semantics: ElementSemantics): Element | null {
     // If semantics is empty (no classes, attributes, or text), return first element
-    const hasSemantics = 
+    const hasSemantics =
       (semantics.classes && semantics.classes.length > 0) ||
       (semantics.attributes && Object.keys(semantics.attributes).length > 0) ||
       semantics.text;
-    
+
     if (!hasSemantics) {
       return elements.length > 0 ? elements[0] : null;
     }
@@ -1071,9 +1054,7 @@ export class CssGenerator {
       elements.find((el) => {
         // Match by classes
         if (semantics.classes && semantics.classes.length > 0) {
-          const hasClasses = semantics.classes.every((cls) =>
-            el.classList.contains(cls)
-          );
+          const hasClasses = semantics.classes.every((cls) => el.classList.contains(cls));
           if (hasClasses) return true;
         }
 
@@ -1163,8 +1144,7 @@ export class CssGenerator {
 
     // Angular/React service attributes
     if (attrName.startsWith('ng-') || attrName.startsWith('_ng')) return true;
-    if (attrName.startsWith('data-reactid') || attrName.startsWith('data-react'))
-      return true;
+    if (attrName.startsWith('data-reactid') || attrName.startsWith('data-react')) return true;
     if (attrName.startsWith('data-v-')) return true; // Vue scoped styles
 
     return false;
@@ -1178,17 +1158,21 @@ export class CssGenerator {
   private getSortedAttributes(
     attributes: Record<string, string>
   ): Array<{ name: string; value: string; priority: number }> {
-    return Object.entries(attributes)
-      .filter(([name]) => !this.shouldIgnoreAttribute(name))
-      // Filter out ID-reference attributes with dynamic values
-      .filter(([name, value]) => !ID_REFERENCE_ATTRIBUTES.has(name) || !hasDynamicIdReference(value))
-      .map(([name, value]) => ({
-        name,
-        value,
-        priority: this.getAttributePriority(name),
-      }))
-      .filter((attr) => attr.priority > 0)
-      .sort((a, b) => b.priority - a.priority);
+    return (
+      Object.entries(attributes)
+        .filter(([name]) => !this.shouldIgnoreAttribute(name))
+        // Filter out ID-reference attributes with dynamic values
+        .filter(
+          ([name, value]) => !ID_REFERENCE_ATTRIBUTES.has(name) || !hasDynamicIdReference(value)
+        )
+        .map(([name, value]) => ({
+          name,
+          value,
+          priority: this.getAttributePriority(name),
+        }))
+        .filter((attr) => attr.priority > 0)
+        .sort((a, b) => b.priority - a.priority)
+    );
   }
 
   /**
@@ -1215,9 +1199,7 @@ export class CssGenerator {
       for (const { name, value } of sortedAttrs) {
         // Clean href/src from dynamic parts
         const cleanedValue =
-          name === 'href' || name === 'src'
-            ? cleanAttributeValue(name, value)
-            : value;
+          name === 'href' || name === 'src' ? cleanAttributeValue(name, value) : value;
 
         if (cleanedValue) {
           selector += `[${name}="${this.escapeAttr(cleanedValue)}"]`;
@@ -1235,9 +1217,10 @@ export class CssGenerator {
       const stableClasses = filterStableClasses(semantics.classes);
 
       // Apply maxClasses limit if specified
-      const classesToAdd = options?.maxClasses !== undefined
-        ? stableClasses.slice(0, options.maxClasses)
-        : stableClasses;
+      const classesToAdd =
+        options?.maxClasses !== undefined
+          ? stableClasses.slice(0, options.maxClasses)
+          : stableClasses;
 
       selector += classesToAdd.map((c) => `.${this.escapeCSS(c)}`).join('');
     }
@@ -1252,15 +1235,15 @@ export class CssGenerator {
     // Экранируем ведущий дефис для классов, начинающихся с дефиса (например, -bottom-6)
     // Согласно CSS спецификации, класс -bottom-6 должен быть записан как \-bottom-6
     let escaped = str;
-    
+
     // Если строка начинается с дефиса, экранируем его
     if (escaped.startsWith('-')) {
       escaped = '\\-' + escaped.slice(1);
     }
-    
+
     // Экранируем другие специальные символы (дефис внутри имен классов валиден, только ведущий требует экранирования)
     escaped = escaped.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
-    
+
     return escaped;
   }
 
@@ -1277,6 +1260,6 @@ export class CssGenerator {
    * @returns True if element is an SVG child
    */
   private isSvgChildElement(tag: string): boolean {
-    return SVG_CHILD_ELEMENTS.includes(tag as any);
+    return (SVG_CHILD_ELEMENTS as readonly string[]).includes(tag);
   }
 }

@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  generateEIDBatch,
-  generateEIDForElements,
-} from '../../src/utils/batch-generator';
+import { generateEIDBatch, generateEIDForElements } from '../../src/utils/batch-generator';
 import { createEIDCache, resetGlobalCache } from '../../src/utils/eid-cache';
 
 describe('batch-generator', () => {
@@ -121,7 +118,7 @@ describe('batch-generator', () => {
       // Should have been called at least once
       expect(progressCalls.length).toBeGreaterThan(0);
       expect(progressCalls[progressCalls.length - 1][0]).toBe(
-        progressCalls[progressCalls.length - 1][1],
+        progressCalls[progressCalls.length - 1][1]
       ); // Final call should be (total, total)
     });
 
@@ -158,7 +155,7 @@ describe('batch-generator', () => {
       const cache = createEIDCache();
 
       // First batch - cold cache
-      const result1 = generateEIDBatch({
+      generateEIDBatch({
         root: doc.body,
         filter: 'button',
         cache,
@@ -273,7 +270,7 @@ describe('batch-generator', () => {
       const cache = createEIDCache();
 
       // First call
-      const result1 = generateEIDForElements([button], { cache });
+      generateEIDForElements([button], { cache });
 
       // Second call - should use cache
       const result2 = generateEIDForElements([button], { cache });
@@ -294,9 +291,7 @@ describe('batch-generator', () => {
 
       // Should either succeed or fail gracefully
       expect(result.stats.totalElements).toBe(1);
-      expect(result.stats.failed + result.stats.successful).toBeLessThanOrEqual(
-        1,
-      );
+      expect(result.stats.failed + result.stats.successful).toBeLessThanOrEqual(1);
     });
 
     it('should prioritize elements with ID', () => {
@@ -350,9 +345,7 @@ describe('batch-generator', () => {
       const cache = createEIDCache();
 
       // First call - cold cache
-      const start1 = performance.now();
       generateEIDForElements([button], { cache });
-      const duration1 = performance.now() - start1;
 
       // Second call - warm cache
       const start2 = performance.now();

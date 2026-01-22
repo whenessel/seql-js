@@ -5,6 +5,7 @@ Naming conventions for exported symbols and public APIs.
 ## Scope
 
 Public API includes:
+
 - Exported functions
 - Exported classes
 - Exported types/interfaces
@@ -15,6 +16,7 @@ Public API includes:
 ## Stability Requirements
 
 Public API names must:
+
 - **Remain stable**: Names should not change without major version bump
 - **Reflect specification**: Align with project documentation and specifications
 - **Be clear**: No ambiguity about purpose or usage
@@ -208,6 +210,7 @@ export interface ProductParams { ... }
 ## Documentation Alignment
 
 Public API names should align with:
+
 - Project README
 - API documentation
 - Type definitions
@@ -218,6 +221,7 @@ If documentation uses "User Profile", API should use `UserProfile`, not `UserPro
 ## Migration Path
 
 When renaming public API:
+
 1. Add new name with `@deprecated` tag on old name
 2. Document migration path
 3. Remove old name in next major version

@@ -1,6 +1,7 @@
 # Упрощенный прямой тест
 
 ## Проблема
+
 Фильтр возвращает `undefined`, хотя кнопки найдены. Нужно проверить атрибуты кнопок.
 
 ## Скрипт для диагностики
@@ -11,8 +12,8 @@ console.log('=== SIMPLE DIRECT TEST ===\n');
 
 // Helper
 function getByXPath(xpath) {
-  return document.evaluate(xpath, document, null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+    .singleNodeValue;
 }
 
 // === DATE 18 ===
@@ -72,7 +73,7 @@ console.log('ClassName:', button31.className);
 
 // Check both buttons with text "31"
 const allButtons = Array.from(document.querySelectorAll('button[role="gridcell"]'));
-const buttons31 = allButtons.filter(btn => btn.textContent.trim() === '31');
+const buttons31 = allButtons.filter((btn) => btn.textContent.trim() === '31');
 
 console.log('\n--- All buttons with text "31" ---');
 buttons31.forEach((btn, idx) => {

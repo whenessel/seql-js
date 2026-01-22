@@ -91,9 +91,9 @@ enum HttpStatus {
 
 ```typescript
 enum UserRole {
-  Admin = 'admin',                     // PascalCase
-  user = 'user',                       // camelCase
-  guest_role = 'guest',                // Wrong case
+  Admin = 'admin', // PascalCase
+  user = 'user', // camelCase
+  guest_role = 'guest', // Wrong case
 }
 ```
 
@@ -171,7 +171,7 @@ const UserRole = {
   GUEST: 'guest',
 } as const;
 
-type UserRole = typeof UserRole[keyof typeof UserRole];
+type UserRole = (typeof UserRole)[keyof typeof UserRole];
 ```
 
 ## Examples
@@ -217,10 +217,10 @@ For bit flag enums, use descriptive names:
 
 ```typescript
 enum Permission {
-  READ = 1 << 0,        // 1
-  WRITE = 1 << 1,       // 2
-  EXECUTE = 1 << 2,     // 4
-  ADMIN = 1 << 3,       // 8
+  READ = 1 << 0, // 1
+  WRITE = 1 << 1, // 2
+  EXECUTE = 1 << 2, // 4
+  ADMIN = 1 << 3, // 8
 }
 ```
 

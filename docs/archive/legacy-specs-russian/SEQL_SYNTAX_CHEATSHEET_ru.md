@@ -26,18 +26,18 @@ tag(.class)*[attr=value,attr~=value]#position
 
 ## 🔧 Разделители
 
-| Символ | Назначение | Пример |
-|--------|------------|--------|
-| `:` | Версия | `v1:` |
-| `::` | Anchor | `footer ::` |
-| `>` | Path | `ul > li` |
-| `.` | Class | `.btn-primary` |
-| `[]` | Attributes | `[type="submit"]` |
-| `=` | Exact match | `text="Click"` |
-| `~=` | Contains | `text~="click"` |
-| `#` | Position | `li#3` |
-| `{}` | Constraints | `{pos=3}` |
-| `,` | Separator | `[role="button",type="submit"]` |
+| Символ | Назначение  | Пример                          |
+| ------ | ----------- | ------------------------------- |
+| `:`    | Версия      | `v1:`                           |
+| `::`   | Anchor      | `footer ::`                     |
+| `>`    | Path        | `ul > li`                       |
+| `.`    | Class       | `.btn-primary`                  |
+| `[]`   | Attributes  | `[type="submit"]`               |
+| `=`    | Exact match | `text="Click"`                  |
+| `~=`   | Contains    | `text~="click"`                 |
+| `#`    | Position    | `li#3`                          |
+| `{}`   | Constraints | `{pos=3}`                       |
+| `,`    | Separator   | `[role="button",type="submit"]` |
 
 ## ✅ Правильно
 
@@ -75,6 +75,7 @@ v1: ul ~ li
 ## 📋 Примеры по категориям
 
 ### Кнопки
+
 ```eiq
 v1: form :: button[type="submit"]
 v1: dialog :: button[aria-label="Close"]
@@ -82,6 +83,7 @@ v1: section :: button.btn-primary#2
 ```
 
 ### Ссылки
+
 ```eiq
 v1: nav :: a[href="/products"]
 v1: footer :: a[href="mailto:info@example.com"]
@@ -89,6 +91,7 @@ v1: section :: a[target="_blank"]
 ```
 
 ### Поля ввода
+
 ```eiq
 v1: form :: input[name="email",type="email"]
 v1: form :: input[name="password",type="password"]
@@ -96,6 +99,7 @@ v1: form :: input[type="checkbox"]#1
 ```
 
 ### Списки
+
 ```eiq
 v1: footer :: ul.space-y-3 > li#3
 v1: nav :: ul.menu > li.active > a
@@ -103,6 +107,7 @@ v1: article :: ol > li[text~="step"]
 ```
 
 ### SVG
+
 ```eiq
 v1: footer :: svg.lucide-mail > rect[dHash="abc123"]
 v1: button :: svg.icon > path#1
@@ -110,6 +115,7 @@ v1: section :: svg > circle[dHash="def456"]
 ```
 
 ### Формы
+
 ```eiq
 v1: form[id="login"] :: input[name="username"]
 v1: form :: fieldset#2 > input[type="text"]
@@ -117,6 +123,7 @@ v1: form :: button[type="submit"] {pos=1}
 ```
 
 ### Таблицы
+
 ```eiq
 v1: table :: thead > tr > th#2
 v1: table :: tbody > tr#3 > td#1
@@ -124,6 +131,7 @@ v1: table :: tbody > tr[data-id="123"]
 ```
 
 ### Модалы
+
 ```eiq
 v1: body :: div[role="dialog"]
 v1: div[role="dialog"] :: button[aria-label="Close"]
@@ -133,6 +141,7 @@ v1: div[role="dialog"] :: div.modal-footer > button
 ## 🚫 Запреты
 
 ### Псевдоклассы (используйте #N)
+
 ```
 ❌ li:nth-child(3)
 ✅ li#3
@@ -145,6 +154,7 @@ v1: div[role="dialog"] :: div.modal-footer > button
 ```
 
 ### Комбинаторы (только >)
+
 ```
 ❌ ul ~ li
 ✅ ul > li
@@ -157,6 +167,7 @@ v1: div[role="dialog"] :: div.modal-footer > button
 ```
 
 ### Attribute selectors (только = и ~=)
+
 ```
 ❌ [class^="btn-"]
 ✅ .btn-primary
@@ -184,12 +195,14 @@ v1: div[role="dialog"] :: div.modal-footer > button
 ## 📏 Сортировка
 
 ### Атрибуты (алфавитно)
+
 ```
 ✅ [aria-label="Close",id="modal",role="button"]
 ❌ [id="modal",role="button",aria-label="Close"]
 ```
 
 ### Классы (алфавитно)
+
 ```
 ✅ .btn-primary.large
 ❌ .large.btn-primary
@@ -207,9 +220,10 @@ aria-label="Time\: 12:00"    (colon in value)
 ## ✅ Валидация
 
 Проверьте:
+
 - [ ] Версия: `v1:`
 - [ ] Anchor separator: `::`
-- [ ] Path separator: ` > ` (с пробелами!)
+- [ ] Path separator: `>` (с пробелами!)
 - [ ] Атрибуты отсортированы
 - [ ] Классы семантические
 - [ ] Текст в кавычках
@@ -234,5 +248,6 @@ Full:        v1: footer :: ul.menu > li.active > a[href="/"]#3
 ---
 
 **См. также:**
+
 - `EIQ_SPECIFICATION_v1.0.md` — полная спецификация
 - `EIQ_PRACTICAL_EXAMPLES.md` — реальные примеры

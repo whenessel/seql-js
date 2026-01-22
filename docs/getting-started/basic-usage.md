@@ -80,7 +80,7 @@ document.addEventListener('click', (event) => {
     // Send to analytics
     gtag('event', 'button_click', {
       element_selector: selector,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 });
@@ -111,16 +111,14 @@ const interactiveElements = document.querySelectorAll('button, a, input, select,
 const eids = generateEIDBatch(Array.from(interactiveElements));
 
 // Convert to SEQL selectors
-const selectors = eids
-  .filter(eid => eid !== null)
-  .map(eid => stringifySEQL(eid!));
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
 
 console.log(`Generated ${selectors.length} selectors`);
 
 // Send batch to analytics
 fetch('/api/analytics/elements', {
   method: 'POST',
-  body: JSON.stringify({ selectors })
+  body: JSON.stringify({ selectors }),
 });
 ```
 
@@ -136,24 +134,20 @@ const button = document.querySelector('button');
 const selector = generateSEQL(
   button,
   {
-    maxPathDepth: 5,              // Limit path depth (default: 10)
-    enableSvgFingerprint: true,   // Enable SVG fingerprinting (default: true)
-    confidenceThreshold: 0.1      // Minimum confidence score (default: 0.1)
+    maxPathDepth: 5, // Limit path depth (default: 10)
+    enableSvgFingerprint: true, // Enable SVG fingerprinting (default: true)
+    confidenceThreshold: 0.1, // Minimum confidence score (default: 0.1)
   },
   {
-    verbose: false                // Compact selector format (default: false)
+    verbose: false, // Compact selector format (default: false)
   }
 );
 
 // Custom resolver options
-const elements = resolveSEQL(
-  selector,
-  document,
-  {
-    strictMode: false,            // Allow degraded matches (default: false)
-    requireUniqueness: true       // Require single match (default: false)
-  }
-);
+const elements = resolveSEQL(selector, document, {
+  strictMode: false, // Allow degraded matches (default: false)
+  requireUniqueness: true, // Require single match (default: false)
+});
 ```
 
 ## Error Handling
@@ -199,7 +193,7 @@ const waitForElement = async (selector: string, timeout = 5000): Promise<Element
     }
 
     // Wait 100ms before trying again
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   return null;
@@ -219,11 +213,13 @@ if (modalButton) {
 ### 1. Don't Cache DOM Elements, Cache Selectors
 
 ❌ **Bad**: Caching DOM elements directly
+
 ```typescript
-const cachedElement = document.querySelector('.submit');  // Element may become stale
+const cachedElement = document.querySelector('.submit'); // Element may become stale
 ```
 
 ✅ **Good**: Cache SEQL selectors and resolve when needed
+
 ```typescript
 const selector = generateSEQL(document.querySelector('.submit'));
 // Later...
@@ -233,12 +229,14 @@ const element = resolveSEQL(selector, document)[0];
 ### 2. Handle Multiple Matches
 
 ❌ **Bad**: Assuming single match
+
 ```typescript
-const element = resolveSEQL(selector, document)[0];  // May be undefined
-element.click();  // Error if no matches
+const element = resolveSEQL(selector, document)[0]; // May be undefined
+element.click(); // Error if no matches
 ```
 
 ✅ **Good**: Check array length
+
 ```typescript
 const elements = resolveSEQL(selector, document);
 if (elements.length > 0) {
@@ -249,14 +247,16 @@ if (elements.length > 0) {
 ### 3. Use Appropriate Root Context
 
 ❌ **Bad**: Always using `document`
+
 ```typescript
-const element = resolveSEQL(selector, document);  // Searches entire document
+const element = resolveSEQL(selector, document); // Searches entire document
 ```
 
 ✅ **Good**: Scope to specific container when possible
+
 ```typescript
 const modal = document.querySelector('.modal');
-const button = resolveSEQL(selector, modal)[0];  // Searches only within modal
+const button = resolveSEQL(selector, modal)[0]; // Searches only within modal
 ```
 
 ## Next Steps

@@ -7,15 +7,7 @@ import { isDynamicId } from './id-validator';
 /**
  * Elements to skip during batch generation
  */
-const SKIP_TAGS = new Set([
-  'script',
-  'style',
-  'noscript',
-  'meta',
-  'link',
-  'head',
-  'title',
-]);
+const SKIP_TAGS = new Set(['script', 'style', 'noscript', 'meta', 'link', 'head', 'title']);
 
 /**
  * Options for batch EID generation
@@ -152,13 +144,10 @@ function sortElementsByPriority(elements: Element[]): Element[] {
   });
 }
 
-
 /**
  * Generate EID for all elements matching criteria
  */
-export function generateEIDBatch(
-  options: BatchGeneratorOptions = {},
-): BatchResult {
+export function generateEIDBatch(options: BatchGeneratorOptions = {}): BatchResult {
   const startTime = performance.now();
   const {
     root = typeof document !== 'undefined' ? document.body : undefined,
@@ -187,7 +176,7 @@ export function generateEIDBatch(
     } else {
       allElements = Array.from(root.querySelectorAll(filter));
     }
-  } catch (error) {
+  } catch {
     return {
       results: [],
       failed: [],
@@ -204,9 +193,7 @@ export function generateEIDBatch(
   }
 
   // Filter out skipped elements
-  const filteredElements = allElements.filter(
-    (el) => !shouldSkipElement(el, skipNonSemantic),
-  );
+  const filteredElements = allElements.filter((el) => !shouldSkipElement(el, skipNonSemantic));
 
   // Sort by priority for optimized processing
   const sortedElements = sortElementsByPriority(filteredElements);
@@ -281,8 +268,7 @@ export function generateEIDBatch(
   const totalCacheOps =
     cacheStats.eidHits + cacheStats.eidMisses + cacheStats.selectorHits + cacheStats.selectorMisses;
   const totalCacheHits = cacheStats.eidHits + cacheStats.selectorHits;
-  const cacheHitRate =
-    totalCacheOps > 0 ? totalCacheHits / totalCacheOps : 0;
+  const cacheHitRate = totalCacheOps > 0 ? totalCacheHits / totalCacheOps : 0;
 
   return {
     results,
@@ -293,8 +279,7 @@ export function generateEIDBatch(
       failed: failed.length,
       skipped,
       totalTimeMs: totalTime,
-      avgTimePerElementMs:
-        results.length > 0 ? totalTime / results.length : 0,
+      avgTimePerElementMs: results.length > 0 ? totalTime / results.length : 0,
       cacheHitRate,
     },
   };
@@ -305,7 +290,7 @@ export function generateEIDBatch(
  */
 export function generateEIDForElements(
   elements: Element[],
-  options: Omit<BatchGeneratorOptions, 'root' | 'filter'> = {},
+  options: Omit<BatchGeneratorOptions, 'root' | 'filter'> = {}
 ): BatchResult {
   const startTime = performance.now();
   const {
@@ -322,9 +307,7 @@ export function generateEIDForElements(
   const mergedOptions = { ...generatorOptions, cache: cacheInstance };
 
   // Filter out skipped elements
-  const filteredElements = elements.filter(
-    (el) => !shouldSkipElement(el, skipNonSemantic),
-  );
+  const filteredElements = elements.filter((el) => !shouldSkipElement(el, skipNonSemantic));
 
   // Sort by priority
   const sortedElements = sortElementsByPriority(filteredElements);
@@ -399,8 +382,7 @@ export function generateEIDForElements(
   const totalCacheOps =
     cacheStats.eidHits + cacheStats.eidMisses + cacheStats.selectorHits + cacheStats.selectorMisses;
   const totalCacheHits = cacheStats.eidHits + cacheStats.selectorHits;
-  const cacheHitRate =
-    totalCacheOps > 0 ? totalCacheHits / totalCacheOps : 0;
+  const cacheHitRate = totalCacheOps > 0 ? totalCacheHits / totalCacheOps : 0;
 
   return {
     results,
@@ -411,8 +393,7 @@ export function generateEIDForElements(
       failed: failed.length,
       skipped,
       totalTimeMs: totalTime,
-      avgTimePerElementMs:
-        results.length > 0 ? totalTime / results.length : 0,
+      avgTimePerElementMs: results.length > 0 ? totalTime / results.length : 0,
       cacheHitRate,
     },
   };

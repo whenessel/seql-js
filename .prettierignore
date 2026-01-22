@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.d.ts
+*.d.cts
+
+# Coverage
+coverage/
+.coverage/
+.nyc_output/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated files
+*.min.js
+*.min.css
+
+# Test fixtures
+fixtures/
+
+# Extensions (may contain generated code)
+extensions/chrome/lib/
+
+# Markdown
+*.md
+.aiassistant
+.claude
+.cursor
+.junie
+.github

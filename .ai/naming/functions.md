@@ -15,6 +15,7 @@ Naming conventions for functions and methods.
 Use standard verb prefixes based on function purpose:
 
 #### Retrieval
+
 - `get*` - Retrieve a value
 - `fetch*` - Retrieve from remote source
 - `load*` - Load data from storage
@@ -28,6 +29,7 @@ readFile(path: string): string
 ```
 
 #### Creation
+
 - `create*` - Create new entity
 - `build*` - Build/construct something
 - `generate*` - Generate new data
@@ -41,6 +43,7 @@ makeRequest(options: RequestOptions): Request
 ```
 
 #### Updates
+
 - `update*` - Update existing entity
 - `set*` - Set a value
 - `modify*` - Modify something
@@ -54,6 +57,7 @@ changeStatus(id: string, status: Status): void
 ```
 
 #### Deletion
+
 - `delete*` - Delete an entity
 - `remove*` - Remove something
 - `clear*` - Clear/reset something
@@ -65,6 +69,7 @@ clearCache(): void
 ```
 
 #### Processing
+
 - `transform*` - Transform data (preferred over `process*`)
 - `parse*` - Parse string/data
 - `serialize*` - Serialize to string
@@ -84,6 +89,7 @@ processData(data: Data): ProcessedData         // Too generic - use transformDat
 ```
 
 #### Checks
+
 - `is*` - Boolean check (predicate)
 - `has*` - Check for existence
 - `can*` - Check capability

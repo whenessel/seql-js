@@ -14,6 +14,7 @@ Algorithm for finding semantic anchor elements.
 ## Anchor Tiers
 
 ### Tier A: Native Semantic Tags (Highest Priority)
+
 - `<form>`
 - `<main>`
 - `<nav>`
@@ -23,6 +24,7 @@ Algorithm for finding semantic anchor elements.
 - `<footer>`
 
 ### Tier B: ARIA Roles
+
 - `role="navigation"`
 - `role="main"`
 - `role="region"`
@@ -30,6 +32,7 @@ Algorithm for finding semantic anchor elements.
 - `role="form"`
 
 ### Tier C: Fallback
+
 - Elements with `data-testid`
 - Elements with stable `id`
 - `<body>` as last resort
@@ -70,6 +73,7 @@ function findAnchor(target: Element): AnchorResult | null {
 ## Depth Penalty
 
 Anchors found at greater depths receive lower confidence scores:
+
 - Depth 0-3: No penalty
 - Depth 4-6: 10% confidence reduction
 - Depth 7-9: 20% confidence reduction
@@ -78,22 +82,28 @@ Anchors found at greater depths receive lower confidence scores:
 ## Examples
 
 **Tier A:**
+
 ```html
 <form>
-  <input type="email">  <!-- Anchor: <form>, Tier A, Depth 1 -->
+  <input type="email" />
+  <!-- Anchor: <form>, Tier A, Depth 1 -->
 </form>
 ```
 
 **Tier B:**
+
 ```html
 <div role="dialog">
-  <button>Close</button>  <!-- Anchor: div[role="dialog"], Tier B, Depth 1 -->
+  <button>Close</button>
+  <!-- Anchor: div[role="dialog"], Tier B, Depth 1 -->
 </div>
 ```
 
 **Tier C:**
+
 ```html
 <div data-testid="user-profile">
-  <h1>Profile</h1>  <!-- Anchor: div[data-testid="user-profile"], Tier C, Depth 1 -->
+  <h1>Profile</h1>
+  <!-- Anchor: div[data-testid="user-profile"], Tier C, Depth 1 -->
 </div>
 ```

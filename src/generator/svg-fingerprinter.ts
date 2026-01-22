@@ -158,8 +158,7 @@ export class SvgFingerprinter {
         const style = doc.defaultView.getComputedStyle(element);
         if (
           style.animationName !== 'none' ||
-          (style.transitionProperty !== 'all' &&
-            style.transitionProperty !== 'none')
+          (style.transitionProperty !== 'all' && style.transitionProperty !== 'none')
         ) {
           return true;
         }

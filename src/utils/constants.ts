@@ -212,15 +212,15 @@ export const ATTRIBUTE_PRIORITY: Record<string, number> = {
   'aria-describedby': 80,
 
   // Semantic HTML attributes
-  'name': 75,
-  'href': 70, // for <a>
-  'src': 70, // for <img>, <script>, etc.
-  'type': 65,
-  'role': 60,
-  'alt': 55,
-  'title': 50,
-  'for': 45,
-  'placeholder': 40,
+  name: 75,
+  href: 70, // for <a>
+  src: 70, // for <img>, <script>, etc.
+  type: 65,
+  role: 60,
+  alt: 55,
+  title: 50,
+  for: 45,
+  placeholder: 40,
 
   // Any data-* attribute (if not above)
   'data-*': 30,
@@ -245,7 +245,8 @@ export const IGNORED_ATTRIBUTES = new Set([
  * Default generator options
  * Note: cache is optional and not included in defaults
  */
-export const DEFAULT_GENERATOR_OPTIONS: Omit<Required<GeneratorOptions>, 'cache'> & Pick<GeneratorOptions, 'cache'> = {
+export const DEFAULT_GENERATOR_OPTIONS: Omit<Required<GeneratorOptions>, 'cache'> &
+  Pick<GeneratorOptions, 'cache'> = {
   maxPathDepth: MAX_PATH_DEPTH,
   enableSvgFingerprint: true,
   confidenceThreshold: 0.1,

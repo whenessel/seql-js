@@ -55,6 +55,7 @@ serviceUtils/      // camelCase
 ### Use Plural
 
 - Collections of similar entities:
+
   ```
   services/        // Multiple service classes
   utils/           // Multiple utility functions
@@ -65,6 +66,7 @@ serviceUtils/      // camelCase
 ### Use Singular
 
 - Single entity or concept:
+
   ```
   src/             // Source root
   dist/             // Distribution output

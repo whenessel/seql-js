@@ -51,6 +51,7 @@ footer.text-card-foreground > div.container:nth-child(1) > ul:nth-child(2) > li:
 **Результат**: 0 элементов ❌
 
 **Почему не работает**:
+
 - Селектор требует что `ul` является **прямым ребенком** `div.container` (из-за `>`)
 - Селектор требует что `ul` является **2-м ребенком** `div.container` (из-за `:nth-child(2)`)
 - Но в реальности `ul` находится на 3 уровня ниже, внутри промежуточных `div`
@@ -97,6 +98,7 @@ const baseSelector = parts.join(' > ');
    - Промежуточные элементы не допускаются
 
 4. **Комбинация child combinator + nth-child из DSL = неверный селектор**:
+
    ```
    div.container:nth-child(1) > ul:nth-child(2)
    ↑                             ↑
@@ -113,23 +115,23 @@ const baseSelector = parts.join(' > ');
 
 ```javascript
 // ✅ Descendant combinator с nth-child (1 элемент)
-'footer div.container:nth-child(1) ul:nth-child(2) li:nth-child(3) svg:nth-child(1) rect:nth-child(1)'
+'footer div.container:nth-child(1) ul:nth-child(2) li:nth-child(3) svg:nth-child(1) rect:nth-child(1)';
 
 // ✅ Без nth-child вообще (1 элемент)
-'footer div.container ul li svg.lucide-mail rect'
+'footer div.container ul li svg.lucide-mail rect';
 
 // ✅ Полный путь со всеми div (1 элемент)
-'footer > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > ul:nth-child(2) > li:nth-child(3) > svg:nth-child(1) > rect:nth-child(1)'
+'footer > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > ul:nth-child(2) > li:nth-child(3) > svg:nth-child(1) > rect:nth-child(1)';
 
 // ✅ Гибридный: descendant для основного пути, child для SVG (1 элемент)
-'footer div.container ul li > svg > rect'
+'footer div.container ul li > svg > rect';
 ```
 
 ### Селектор который НЕ РАБОТАЕТ
 
 ```javascript
 // ❌ Child combinator с nth-child из DSL (0 элементов)
-'footer > div.container:nth-child(1) > ul:nth-child(2) > li:nth-child(3) > svg:nth-child(1) > rect:nth-child(1)'
+'footer > div.container:nth-child(1) > ul:nth-child(2) > li:nth-child(3) > svg:nth-child(1) > rect:nth-child(1)';
 ```
 
 ---
@@ -138,7 +140,7 @@ const baseSelector = parts.join(' > ');
 
 ### Решение 1: Использовать descendant combinator по умолчанию
 
-**Простое и безопасное**
+#### Простое и безопасное
 
 ```typescript
 // В buildSelector()
@@ -150,11 +152,13 @@ const baseSelector = parts.join(' ');
 ```
 
 **Преимущества**:
+
 - Работает с пропущенными промежуточными элементами
 - nth-child из DSL продолжает работать (относительно реального родителя)
 - Минимальные изменения кода
 
 **Недостатки**:
+
 - Менее точные селекторы (могут найти вложенные элементы)
 - Медленнее производительность
 
@@ -162,7 +166,7 @@ const baseSelector = parts.join(' ');
 
 ### Решение 2: НЕ использовать nth-child при child combinator
 
-**Более корректное**
+#### Более корректное
 
 ```typescript
 // В buildSelector()
@@ -179,16 +183,18 @@ for (const node of dsl.path) {
   parts.push(nodeSelector);
 }
 
-const baseSelector = useChildCombinator 
-  ? parts.join(' > ')  // Child combinator БЕЗ nth-child
-  : parts.join(' ');   // Descendant combinator С nth-child
+const baseSelector = useChildCombinator
+  ? parts.join(' > ') // Child combinator БЕЗ nth-child
+  : parts.join(' '); // Descendant combinator С nth-child
 ```
 
 **Преимущества**:
+
 - Логически корректно
 - Можно выбирать стратегию
 
 **Недостатки**:
+
 - Требует изменения логики
 - Нужно решить когда использовать какой вариант
 
@@ -196,20 +202,22 @@ const baseSelector = useChildCombinator
 
 ### Решение 3: Специальная обработка для SVG элементов
 
-**Целенаправленное**
+#### Целенаправленное
 
 ```typescript
 // Специальная логика для SVG дочерних элементов
-const isSvgChild = ['rect', 'path', 'circle', 'line', 'polygon', 'ellipse', 'polyline'].includes(dsl.target.tag);
+const isSvgChild = ['rect', 'path', 'circle', 'line', 'polygon', 'ellipse', 'polyline'].includes(
+  dsl.target.tag
+);
 
 if (isSvgChild) {
   // Для SVG используем descendant до svg, потом child для svg > rect
-  const svgIndex = dsl.path.findIndex(node => node.tag === 'svg');
-  
+  const svgIndex = dsl.path.findIndex((node) => node.tag === 'svg');
+
   if (svgIndex !== -1) {
     const beforeSvg = parts.slice(0, svgIndex + 1);
     const svgAndAfter = parts.slice(svgIndex + 1);
-    
+
     // До SVG: descendant combinator
     // После SVG: child combinator
     const baseSelector = beforeSvg.join(' ') + ' > ' + svgAndAfter.join(' > ');
@@ -218,17 +226,19 @@ if (isSvgChild) {
 ```
 
 **Преимущества**:
+
 - Точное решение для SVG
 - Сохраняет поведение для остальных элементов
 
 **Недостатки**:
+
 - Не решает общую проблему с nth-child
 
 ---
 
 ### Решение 4: Строить полный DOM путь (ЛУЧШЕЕ)
 
-**Наиболее корректное**
+#### Наиболее корректное
 
 Это уже реализовано в `buildPathFromAnchorToTarget()`, но НЕ используется в `buildSelector()`!
 
@@ -236,25 +246,31 @@ if (isSvgChild) {
 // В buildSelector()
 if (options?.ensureUnique) {
   // Используем buildFullDomPathSelector для точного пути
-  const fullPathSelector = this.buildFullDomPathSelector(dsl, dsl.target.semantics, options.root ?? document);
-  
+  const fullPathSelector = this.buildFullDomPathSelector(
+    dsl,
+    dsl.target.semantics,
+    options.root ?? document
+  );
+
   if (fullPathSelector && this.isUnique(fullPathSelector, options.root ?? document)) {
     return {
       selector: fullPathSelector,
       isUnique: true,
       usedNthOfType: fullPathSelector.includes(':nth-'),
-      extraClassesAdded: 0
+      extraClassesAdded: 0,
     };
   }
 }
 ```
 
 **Преимущества**:
+
 - Строит РЕАЛЬНЫЙ DOM путь со всеми элементами
 - Использует nth-child корректно
 - Уже реализовано и протестировано
 
 **Недостатки**:
+
 - Требует доступ к реальному DOM для построения
 - Не работает без ensureUnique
 
@@ -262,13 +278,13 @@ if (options?.ensureUnique) {
 
 ## 🎯 РЕКОМЕНДУЕМОЕ РЕШЕНИЕ
 
-### Комбинированный подход:
+### Комбинированный подход
 
 1. **По умолчанию**: Использовать **descendant combinator** (пробел)
 2. **С ensureUnique**: Использовать **buildFullDomPathSelector** для точного пути
 3. **Для SVG дочерних элементов**: Специальная обработка с `svg > rect`
 
-### Код изменений:
+### Код изменений
 
 ```typescript
 // В buildSelector()
@@ -277,16 +293,16 @@ buildSelector(dsl: DslIdentity, options?: BuildSelectorOptions): string | BuildS
 
   // Determine combinator strategy
   const isSvgChild = ['rect', 'path', 'circle', 'line', 'polygon', 'ellipse', 'polyline', 'g'].includes(dsl.target.tag);
-  
+
   // Build base selector
   let baseSelector: string;
-  
+
   if (isSvgChild && dsl.path.some(n => n.tag === 'svg')) {
     // Special handling for SVG children: use child combinator only for svg > rect
     const svgIndex = dsl.path.findIndex(n => n.tag === 'svg');
     const beforeSvg = parts.slice(0, svgIndex + 1);
     const afterSvg = parts.slice(svgIndex + 1);
-    
+
     baseSelector = beforeSvg.join(' ') + ' > ' + afterSvg.concat(parts[parts.length - 1]).join(' > ');
   } else {
     // For regular elements: use descendant combinator (space)
@@ -300,7 +316,7 @@ buildSelector(dsl: DslIdentity, options?: BuildSelectorOptions): string | BuildS
 
   // For ensureUnique: try buildFullDomPathSelector first
   const fullPathSelector = this.buildFullDomPathSelector(dsl, dsl.target.semantics, options.root ?? document);
-  
+
   if (fullPathSelector && this.isUnique(fullPathSelector, options.root ?? document)) {
     return {
       selector: fullPathSelector,
@@ -351,16 +367,16 @@ it('should resolve SVG rect element', () => {
       { tag: 'div', semantics: { classes: ['container'] }, nthChild: 1 },
       { tag: 'ul', semantics: {}, nthChild: 1 },
       { tag: 'li', semantics: {}, nthChild: 1 },
-      { tag: 'svg', semantics: { classes: ['lucide-mail'] }, nthChild: 1 }
+      { tag: 'svg', semantics: { classes: ['lucide-mail'] }, nthChild: 1 },
     ],
-    target: { tag: 'rect', semantics: {}, nthChild: 1 }
+    target: { tag: 'rect', semantics: {}, nthChild: 1 },
   };
 
   const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
 
   expect(result.isUnique).toBe(true);
   expect(result.selector).toMatch(/svg.*rect/);
-  
+
   const matched = div.querySelectorAll(result.selector);
   expect(matched.length).toBe(1);
   expect(matched[0].tagName.toLowerCase()).toBe('rect');
@@ -386,16 +402,14 @@ it('should resolve SVG path element', () => {
 
   const dsl: DslIdentity = {
     anchor: { tag: 'footer', semantics: {} },
-    path: [
-      { tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1 }
-    ],
-    target: { tag: 'path', semantics: {}, nthChild: 2 }
+    path: [{ tag: 'svg', semantics: { classes: ['icon'] }, nthChild: 1 }],
+    target: { tag: 'path', semantics: {}, nthChild: 2 },
   };
 
   const result = generator.buildSelector(dsl, { ensureUnique: true, root: div });
 
   expect(result.isUnique).toBe(true);
-  
+
   const matched = div.querySelector(result.selector);
   expect(matched?.tagName.toLowerCase()).toBe('path');
 
@@ -423,10 +437,8 @@ it('should use descendant combinator for paths with nth-child', () => {
 
   const dsl: DslIdentity = {
     anchor: { tag: 'div', semantics: { classes: ['container'] } },
-    path: [
-      { tag: 'ul', semantics: {}, nthChild: 1 }
-    ],
-    target: { tag: 'li', semantics: { classes: ['item'] }, nthChild: 1 }
+    path: [{ tag: 'ul', semantics: {}, nthChild: 1 }],
+    target: { tag: 'li', semantics: { classes: ['item'] }, nthChild: 1 },
   };
 
   const result = generator.buildSelector(dsl);
@@ -434,7 +446,7 @@ it('should use descendant combinator for paths with nth-child', () => {
   // Should use space (descendant) not > (child)
   expect(result).toContain(' ');
   expect(result).not.toMatch(/>\s*ul/);
-  
+
   const matched = div.querySelectorAll(result);
   expect(matched.length).toBe(1);
 
@@ -461,6 +473,7 @@ it('should use descendant combinator for paths with nth-child', () => {
 ## 🔗 СВЯЗАННЫЕ ПРОБЛЕМЫ
 
 Эта проблема также объясняет:
+
 - Проблему #3 из предыдущего документа (div.inset-0 не различаются)
 - Общую проблему с child combinator и nth-child
 

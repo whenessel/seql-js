@@ -15,7 +15,7 @@ describe('Benchmark: modern-seaside-stay.htm', () => {
     const allElements = Array.from(document.body.querySelectorAll('*')) as HTMLElement[];
 
     // Фильтруем элементы, для которых генерация имеет смысл
-    const elements = allElements.filter(el => {
+    const elements = allElements.filter((el) => {
       const tag = el.tagName.toLowerCase();
       return !['script', 'style', 'meta', 'link', 'noscript', 'br', 'head', 'html'].includes(tag);
     });
@@ -41,7 +41,9 @@ describe('Benchmark: modern-seaside-stay.htm', () => {
     }
     const genEnd = performance.now();
     const totalGenTime = genEnd - genStart;
-    console.log(`Total generation time: ${totalGenTime.toFixed(2)}ms for ${elements.length} elements`);
+    console.log(
+      `Total generation time: ${totalGenTime.toFixed(2)}ms for ${elements.length} elements`
+    );
     console.log(`Average generation time: ${(totalGenTime / elements.length).toFixed(4)}ms`);
 
     // Benchmark Resolution
@@ -52,7 +54,7 @@ describe('Benchmark: modern-seaside-stay.htm', () => {
 
     for (const result of results) {
       const resolveResult = resolve(result.eid, document);
-      
+
       const isFound = resolveResult.elements.includes(result.element);
 
       if (isFound) {
@@ -68,9 +70,11 @@ describe('Benchmark: modern-seaside-stay.htm', () => {
     }
     const resEnd = performance.now();
     const totalResTime = resEnd - resStart;
-    console.log(`Total resolution time: ${totalResTime.toFixed(2)}ms for ${results.length} elements`);
+    console.log(
+      `Total resolution time: ${totalResTime.toFixed(2)}ms for ${results.length} elements`
+    );
     console.log(`Average resolution time: ${(totalResTime / results.length).toFixed(4)}ms`);
-    
+
     // Summary
     console.log('--- Benchmark Summary ---');
     console.log(`Total elements scanned: ${elements.length}`);

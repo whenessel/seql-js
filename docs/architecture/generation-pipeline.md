@@ -5,6 +5,7 @@ How EIDs are created from DOM elements.
 ## Pipeline Stages
 
 ### Stage 1: Anchor Finding
+
 Find semantic root element up to 10 levels above target.
 
 **Input**: Target element  
@@ -12,6 +13,7 @@ Find semantic root element up to 10 levels above target.
 **Component**: `AnchorFinder`
 
 ### Stage 2: Path Building
+
 Build semantic path from anchor to target.
 
 **Input**: Anchor, target, semantic extractor  
@@ -19,6 +21,7 @@ Build semantic path from anchor to target.
 **Component**: `PathBuilder`
 
 ### Stage 3: Semantic Extraction
+
 Extract semantics for anchor, path nodes, and target.
 
 **Input**: Each element  
@@ -26,6 +29,7 @@ Extract semantics for anchor, path nodes, and target.
 **Component**: `SemanticExtractor`
 
 ### Stage 4: SVG Fingerprinting (Optional)
+
 Create fingerprints for SVG elements.
 
 **Input**: SVG element  
@@ -33,6 +37,7 @@ Create fingerprints for SVG elements.
 **Component**: `SvgFingerprinter`
 
 ### Stage 5: Confidence Calculation
+
 Calculate quality score for generated EID.
 
 **Input**: Anchor tier, path degradation, semantic richness  
@@ -40,6 +45,7 @@ Calculate quality score for generated EID.
 **Component**: Built into generator
 
 ### Stage 6: Constraints Generation
+
 Add disambiguation constraints if needed.
 
 **Input**: EID, DOM context  
@@ -68,7 +74,7 @@ const svgFingerprint = isSvg ? svgFingerprinter.fingerprint(target) : undefined;
 const confidence = calculateConfidence({
   anchorTier: anchor.tier,
   pathDegraded: pathResult.degraded,
-  semanticRichness: targetSemantics.attributes.length
+  semanticRichness: targetSemantics.attributes.length,
 });
 
 // Stage 6: Generate constraints
@@ -81,6 +87,6 @@ const eid: ElementIdentity = {
   path: pathResult.path,
   target: { tag: target.tagName, semantics: targetSemantics },
   constraints,
-  meta: { confidence, generatedAt: new Date().toISOString(), degraded: false }
+  meta: { confidence, generatedAt: new Date().toISOString(), degraded: false },
 };
 ```

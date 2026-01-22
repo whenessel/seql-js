@@ -5,7 +5,6 @@ import {
   stringifySEQL,
   generateSEQL,
   resolveSEQL,
-  generateEID,
   type ElementIdentity,
 } from '../../src';
 
@@ -125,7 +124,9 @@ describe('EIQ Parser', () => {
 
       const eiq = stringifySEQL(eid);
       // Attributes should be sorted alphabetically
-      expect(eiq).toBe('v1.0: form[id="checkout",role="form"] :: button[aria-label="Submit",type="submit"]');
+      expect(eiq).toBe(
+        'v1.0: form[id="checkout",role="form"] :: button[aria-label="Submit",type="submit"]'
+      );
     });
 
     it('should stringify EID with path', () => {
@@ -398,7 +399,8 @@ describe('EIQ Parser', () => {
     });
 
     it('should maintain complex structure after round-trip', () => {
-      const original = 'v1: form[id="login"] :: div.field-container > input[name="email",type="email"]';
+      const original =
+        'v1: form[id="login"] :: div.field-container > input[name="email",type="email"]';
       const eid = parseSEQL(original);
       const stringified = stringifySEQL(eid);
 

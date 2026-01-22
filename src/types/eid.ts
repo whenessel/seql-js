@@ -69,9 +69,7 @@ export interface PathNode {
 /**
  * Target node - the element being identified
  */
-export interface TargetNode extends PathNode {
-  // Same structure as PathNode but semantically represents the target
-}
+export type TargetNode = PathNode;
 
 /**
  * EID metadata

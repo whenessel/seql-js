@@ -15,6 +15,7 @@ Traditional selectors describe **how to navigate** to an element:
 ```
 
 **Problem**: These selectors break when:
+
 - DOM structure changes (new divs added, elements moved)
 - CSS classes are renamed or removed
 - nth-child positions shift
@@ -36,17 +37,20 @@ SEQL provides two complementary formats for element identification:
 **Purpose**: Compact, human-readable, URL-safe string representation.
 
 **Use Cases**:
+
 - Sending to analytics platforms
 - Storing in databases or logs
 - Embedding in URLs
 - Human-readable debugging
 
 **Example**:
+
 ```
 v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
 ```
 
 **Advantages**:
+
 - Compact (~100-200 characters typically)
 - Easy to transmit and store
 - URL-safe (when properly encoded)
@@ -57,12 +61,14 @@ v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
 **Purpose**: Structured, programmatically accessible semantic description.
 
 **Use Cases**:
+
 - Programmatic analysis of semantics
 - Custom resolution logic
 - Debug and introspection
 - Internal processing
 
 **Example**:
+
 ```json
 {
   "anchor": {
@@ -89,6 +95,7 @@ v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
 ```
 
 **Advantages**:
+
 - Full semantic metadata
 - Type-safe (with TypeScript)
 - Programmatically accessible
@@ -120,6 +127,7 @@ The **anchor** is a stable, semantic starting point in the DOM.
 **Purpose**: Provide a stable reference point that's unlikely to change.
 
 **Anchor Priority** (Tier A → C):
+
 - **Tier A**: Semantic HTML tags
   - `<form>`, `<main>`, `<nav>`, `<section>`, `<article>`, `<header>`, `<footer>`
 - **Tier B**: ARIA roles
@@ -129,6 +137,7 @@ The **anchor** is a stable, semantic starting point in the DOM.
   - `<body>` as last resort
 
 **Example**:
+
 ```typescript
 // Anchor: <form> tag (Tier A)
 v1: form :: button[type="submit"]
@@ -144,16 +153,20 @@ The **path** describes the semantic journey from anchor to target's parent.
 **Purpose**: Capture meaningful intermediate steps while ignoring noise.
 
 **Path Filtering**:
+
 - Includes: Semantic tags, elements with classes/IDs, role attributes
 - Excludes: Generic `<div>` and `<span>` without semantic value
 
 **Example**:
+
 ```html
 <form>
   <div class="wrapper">
-    <div>  <!-- Filtered out: no semantic value -->
-      <div class="fields">  <!-- Included: has semantic class -->
-        <input type="email">
+    <div>
+      <!-- Filtered out: no semantic value -->
+      <div class="fields">
+        <!-- Included: has semantic class -->
+        <input type="email" />
       </div>
     </div>
   </div>
@@ -171,6 +184,7 @@ The **target** is the element you're identifying.
 **Purpose**: Capture sufficient semantic features for unique identification.
 
 **Target Semantics**:
+
 - **Tag name**: `button`, `input`, `a`
 - **Type**: `type="submit"`, `type="email"`
 - **Text content**: `text="Login"`, `text="Submit"`
@@ -180,6 +194,7 @@ The **target** is the element you're identifying.
 - **nth-child** (v1.1.0): Position among siblings for disambiguation
 
 **Example**:
+
 ```typescript
 // Target with multiple semantic features
 button[type="submit",text="Create Account",aria-label="Submit form"]
@@ -211,6 +226,7 @@ input[type="radio",name="plan",nthChild=2]
    - Filters out hidden or display:none elements
 
 **Example**:
+
 ```json
 {
   "constraints": {
@@ -228,12 +244,14 @@ input[type="radio",name="plan",nthChild=2]
 SEQL identifies elements by their **semantic identity**, not their current state.
 
 **State attributes are filtered out**:
+
 - `aria-selected="true"` → Ignored
 - `aria-expanded="false"` → Ignored
 - `data-state="active"` → Ignored
 - `disabled` → Ignored
 
 **Identity attributes are preserved**:
+
 - `aria-label="Close"` → Preserved
 - `role="button"` → Preserved
 - `type="submit"` → Preserved
@@ -242,6 +260,7 @@ SEQL identifies elements by their **semantic identity**, not their current state
 **Why**: An element's identity doesn't change when its state changes. A "Close" button is still a "Close" button whether the modal is open or closed.
 
 **Example**:
+
 ```html
 <!-- State changes don't affect identity -->
 <button aria-label="Menu" aria-expanded="false">Menu</button>
@@ -256,11 +275,13 @@ v1: button[aria-label="Menu"]
 For elements that are otherwise identical, **nth-child** provides precise disambiguation.
 
 **When nth-child is used**:
+
 - Multiple sibling elements with identical semantics
 - Table cells, list items, form fields
 - When order is semantically meaningful
 
 **Example**:
+
 ```html
 <table>
   <tr>
@@ -288,11 +309,13 @@ SEQL automatically filters out non-semantic noise to focus on meaningful identif
 ### Class Filtering
 
 **Filtered out** (utility/framework classes):
+
 - Tailwind: `flex`, `p-4`, `text-center`, `bg-blue-500`
 - Bootstrap: `btn`, `btn-primary`, `col-md-6`, `d-flex`
 - Generated: `css-1y7f3z`, `MuiButton-root`
 
 **Preserved** (semantic classes):
+
 - Component names: `login-form`, `submit-button`, `user-profile`
 - State modifiers: `active`, `selected`, `highlighted`
 - Semantic identifiers: `primary-action`, `navigation-menu`
@@ -300,11 +323,13 @@ SEQL automatically filters out non-semantic noise to focus on meaningful identif
 ### Attribute Filtering (v1.0.3)
 
 **Filtered out** (state/generated):
+
 - State: `aria-selected`, `aria-expanded`, `data-state`
 - Library-generated: `data-radix-id`, `data-headlessui-state`
 - Auto-generated IDs: `radix-1`, `headlessui-menu-button-2`
 
 **Preserved** (identity):
+
 - Test markers: `data-testid`, `data-cy`, `data-qa`
 - Semantic: `aria-label`, `role`, `name`, `type`
 - Stable IDs: User-defined IDs that follow semantic patterns
@@ -313,28 +338,34 @@ SEQL automatically filters out non-semantic noise to focus on meaningful identif
 
 SEQL uses a multi-phase resolution algorithm for robustness:
 
-**Phase 1: CSS Narrowing**
+### Phase 1: CSS Narrowing
+
 - Generate optimized CSS selector from EID
 - Narrow down candidates using browser's native query
 
-**Phase 2: Semantic Filtering**
+### Phase 2: Semantic Filtering
+
 - Score remaining candidates by semantic similarity
 - Filter out low-scoring matches
 
-**Phase 3: Uniqueness Check**
+### Phase 3: Uniqueness Check
+
 - If only one candidate remains, return early
 - Skip remaining phases for performance
 
-**Phase 4: Constraints Evaluation**
+### Phase 4: Constraints Evaluation
+
 - Apply uniqueness, visibility, text proximity constraints
 - Filter candidates that don't meet constraints
 
-**Phase 5: Handle Ambiguity**
+### Phase 5: Handle Ambiguity
+
 - If multiple matches remain, return all (status: 'ambiguous')
 - If no matches, check fallback rules
 - Return results with confidence score
 
 **Example**:
+
 ```typescript
 const result = resolve(eid, document);
 
@@ -354,18 +385,21 @@ const result = resolve(eid, document);
 ## Practical Decision Guide
 
 ### When to use SEQL Selector?
+
 - Sending to analytics platforms
 - Storing in logs or databases
 - Simple, string-based workflows
 - Human-readable output needed
 
 ### When to use EID?
+
 - Need programmatic access to semantics
 - Building custom resolution logic
 - Debugging semantic extraction
 - Internal processing pipelines
 
 ### When to use batch processing?
+
 - Generating selectors for 10+ elements
 - Performance-critical scenarios
 - Initial page load analysis

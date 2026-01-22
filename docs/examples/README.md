@@ -16,22 +16,22 @@ Real-world examples demonstrating SEQL usage across different scenarios.
 
 ### By Use Case
 
-| Use Case | Examples | Link |
-|----------|----------|------|
-| Button clicks | Submit buttons, actions, dialogs | [Basic Examples](./basic-examples.md#buttons) |
-| Form inputs | Text, email, checkboxes, selects | [Forms](./forms.md) |
-| Links & navigation | Nav menus, breadcrumbs, tabs | [Navigation](./navigation.md) |
-| Tables | Cells, rows, headers | [Tables](./tables.md) |
-| Dynamic content | Modals, dropdowns, tooltips | [Edge Cases](./edge-cases.md) |
-| Graphics | SVG icons, charts | [SVG Elements](./svg-elements.md) |
+| Use Case           | Examples                         | Link                                          |
+| ------------------ | -------------------------------- | --------------------------------------------- |
+| Button clicks      | Submit buttons, actions, dialogs | [Basic Examples](./basic-examples.md#buttons) |
+| Form inputs        | Text, email, checkboxes, selects | [Forms](./forms.md)                           |
+| Links & navigation | Nav menus, breadcrumbs, tabs     | [Navigation](./navigation.md)                 |
+| Tables             | Cells, rows, headers             | [Tables](./tables.md)                         |
+| Dynamic content    | Modals, dropdowns, tooltips      | [Edge Cases](./edge-cases.md)                 |
+| Graphics           | SVG icons, charts                | [SVG Elements](./svg-elements.md)             |
 
 ### By Complexity
 
-| Level | Description | Examples |
-|-------|-------------|----------|
-| Beginner | Single elements, simple selectors | [Basic Examples](./basic-examples.md) |
-| Intermediate | Forms, navigation, tables | [Forms](./forms.md), [Navigation](./navigation.md) |
-| Advanced | SVG, dynamic content, edge cases | [SVG Elements](./svg-elements.md), [Edge Cases](./edge-cases.md) |
+| Level        | Description                       | Examples                                                         |
+| ------------ | --------------------------------- | ---------------------------------------------------------------- |
+| Beginner     | Single elements, simple selectors | [Basic Examples](./basic-examples.md)                            |
+| Intermediate | Forms, navigation, tables         | [Forms](./forms.md), [Navigation](./navigation.md)               |
+| Advanced     | SVG, dynamic content, edge cases  | [SVG Elements](./svg-elements.md), [Edge Cases](./edge-cases.md) |
 
 ## Common Patterns
 
@@ -94,7 +94,7 @@ console.log('Selector:', selector);
 const resolved = resolveSEQL(selector, document);
 
 console.log('Resolved:', resolved[0]);
-console.log('Match:', resolved[0] === element);  // Should be true
+console.log('Match:', resolved[0] === element); // Should be true
 ```
 
 ## Next Steps

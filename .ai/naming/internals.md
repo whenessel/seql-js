@@ -5,6 +5,7 @@ Naming conventions for non-exported symbols and internal implementation.
 ## Scope
 
 Internal naming applies to:
+
 - Non-exported functions
 - Non-exported classes
 - Private methods and properties
@@ -36,7 +37,7 @@ Use descriptive names for larger scopes or complex logic:
 ```typescript
 // Good: Descriptive names for complex logic
 function processUserOrders(userId: string, orderIds: string[]): ProcessResult {
-  const userOrders = orderIds.map(orderId => {
+  const userOrders = orderIds.map((orderId) => {
     const order = fetchOrder(orderId);
     return validateOrder(order);
   });
@@ -83,9 +84,9 @@ Temporary variables must be descriptive. Generic names like `temp`, `result`, `v
 ```typescript
 // Bad: Generic names in function scope
 function processData(data: Data): ProcessedData {
-  const temp = calculateIntermediate();    // Too generic
-  const result = processData(data);        // Too generic
-  const value = getValue();                // Too generic
+  const temp = calculateIntermediate(); // Too generic
+  const result = processData(data); // Too generic
+  const value = getValue(); // Too generic
   return result;
 }
 ```
@@ -169,8 +170,8 @@ function processData(data: Data): ProcessedData {
 
 ```typescript
 function processData(d: Data): ProcessedData {
-  const n = normalizeData(d);        // Too short
-  const v = validateData(n);         // Too short
+  const n = normalizeData(d); // Too short
+  const v = validateData(n); // Too short
   return transformData(v);
 }
 ```
@@ -198,12 +199,12 @@ The following abbreviations are widely accepted in the TypeScript/JavaScript eco
 ### Allowed Examples
 
 ```typescript
-const userId = user.id;                    // id - allowed
-const apiUrl = 'https://api.example.com';  // api, url - allowed
-const httpClient = new HttpClient();       // http - allowed
+const userId = user.id; // id - allowed
+const apiUrl = 'https://api.example.com'; // api, url - allowed
+const httpClient = new HttpClient(); // http - allowed
 const htmlElement = document.createElement('div'); // html - allowed
 const domNode = document.querySelector('.class'); // dom - allowed
-const astParser = new AstParser();         // ast - allowed
+const astParser = new AstParser(); // ast - allowed
 ```
 
 ### Forbidden Abbreviations
@@ -211,13 +212,13 @@ const astParser = new AstParser();         // ast - allowed
 Any abbreviation not in the list above is forbidden, even if it seems common:
 
 ```typescript
-const usrId = user.id;                // usr - forbidden (use userId)
-const apiUrlStr = 'https://...';     // Str - forbidden (type encoding)
-const usr = getUser();                // usr - forbidden (use user)
-const svc = getService();             // svc - forbidden (use service)
-const cfg = getConfig();              // cfg - forbidden (use config)
-const val = getValue();               // val - forbidden (use value)
-const res = getResult();              // res - forbidden (use result)
+const usrId = user.id; // usr - forbidden (use userId)
+const apiUrlStr = 'https://...'; // Str - forbidden (type encoding)
+const usr = getUser(); // usr - forbidden (use user)
+const svc = getService(); // svc - forbidden (use service)
+const cfg = getConfig(); // cfg - forbidden (use config)
+const val = getValue(); // val - forbidden (use value)
+const res = getResult(); // res - forbidden (use result)
 ```
 
 ### Very Short Scope Exception
@@ -242,8 +243,8 @@ function processItems(items: Item[]) {
 ```typescript
 function processUsers(users: User[]): ProcessedUser[] {
   return users
-    .filter(user => user.isActive)
-    .map(user => {
+    .filter((user) => user.isActive)
+    .map((user) => {
       const normalizedName = normalizeName(user.name);
       const validatedEmail = validateEmail(user.email);
       return {
@@ -260,10 +261,10 @@ function processUsers(users: User[]): ProcessedUser[] {
 ```typescript
 function processUsers(usrs: User[]): ProcessedUser[] {
   return usrs
-    .filter(u => u.a)                // Abbreviations
-    .map(u => {
-      const nn = normalizeName(u.n);  // Too short
-      const ve = validateEmail(u.e);  // Too short
+    .filter((u) => u.a) // Abbreviations
+    .map((u) => {
+      const nn = normalizeName(u.n); // Too short
+      const ve = validateEmail(u.e); // Too short
       return { ...u, n: nn, e: ve };
     });
 }

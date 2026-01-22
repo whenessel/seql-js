@@ -22,8 +22,8 @@ console.log('=== DEBUG: Wrong Element Problem ===\n');
 
 // Helper: Get element by XPath
 function getByXPath(xpath) {
-  return document.evaluate(xpath, document, null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+    .singleNodeValue;
 }
 
 // Helper: Get table position
@@ -50,7 +50,7 @@ console.log('  Position: row', pos18Correct.rowIndex + 1, 'cell', pos18Correct.c
 
 // Find via domDsl
 const cells = Array.from(document.querySelectorAll('.rdp-day'));
-const foundCell18 = cells.find(el => el.textContent.trim() === '18');
+const foundCell18 = cells.find((el) => el.textContent.trim() === '18');
 
 console.log('\n✓ Element found by text "18":');
 console.log('  Text:', foundCell18?.textContent.trim());
@@ -85,9 +85,27 @@ if (selectorMatches18.length === 1) {
 
   // Compare all three
   console.log('\n📊 COMPARISON:');
-  console.log('  XPath element (correct):  row', pos18Correct.rowIndex + 1, 'cell', pos18Correct.cellIndex + 1, '→ text "' + correctCell18.textContent.trim() + '"');
-  console.log('  Found by text "18":       row', pos18Found.rowIndex + 1, 'cell', pos18Found.cellIndex + 1, '→ text "' + foundCell18.textContent.trim() + '"');
-  console.log('  Matched by selector:      row', posMatched18.rowIndex + 1, 'cell', posMatched18.cellIndex + 1, '→ text "' + matched.textContent.trim() + '"');
+  console.log(
+    '  XPath element (correct):  row',
+    pos18Correct.rowIndex + 1,
+    'cell',
+    pos18Correct.cellIndex + 1,
+    '→ text "' + correctCell18.textContent.trim() + '"'
+  );
+  console.log(
+    '  Found by text "18":       row',
+    pos18Found.rowIndex + 1,
+    'cell',
+    pos18Found.cellIndex + 1,
+    '→ text "' + foundCell18.textContent.trim() + '"'
+  );
+  console.log(
+    '  Matched by selector:      row',
+    posMatched18.rowIndex + 1,
+    'cell',
+    posMatched18.cellIndex + 1,
+    '→ text "' + matched.textContent.trim() + '"'
+  );
 
   if (matched === foundCell18 && foundCell18 === correctCell18) {
     console.log('\n✅ PASS: All three are the same element');
@@ -112,7 +130,7 @@ const pos31Correct = getTablePosition(correctCell31);
 console.log('  Position: row', pos31Correct.rowIndex + 1, 'cell', pos31Correct.cellIndex + 1);
 
 // Find via domDsl
-const foundCell31 = cells.find(el => el.textContent.trim() === '31');
+const foundCell31 = cells.find((el) => el.textContent.trim() === '31');
 
 console.log('\n✓ Element found by text "31":');
 console.log('  Text:', foundCell31?.textContent.trim());
@@ -146,9 +164,27 @@ if (selectorMatches31.length === 1) {
 
   // Compare all three
   console.log('\n📊 COMPARISON:');
-  console.log('  XPath element (correct):  row', pos31Correct.rowIndex + 1, 'cell', pos31Correct.cellIndex + 1, '→ text "' + correctCell31.textContent.trim() + '"');
-  console.log('  Found by text "31":       row', pos31Found.rowIndex + 1, 'cell', pos31Found.cellIndex + 1, '→ text "' + foundCell31.textContent.trim() + '"');
-  console.log('  Matched by selector:      row', posMatched31.rowIndex + 1, 'cell', posMatched31.cellIndex + 1, '→ text "' + matched.textContent.trim() + '"');
+  console.log(
+    '  XPath element (correct):  row',
+    pos31Correct.rowIndex + 1,
+    'cell',
+    pos31Correct.cellIndex + 1,
+    '→ text "' + correctCell31.textContent.trim() + '"'
+  );
+  console.log(
+    '  Found by text "31":       row',
+    pos31Found.rowIndex + 1,
+    'cell',
+    pos31Found.cellIndex + 1,
+    '→ text "' + foundCell31.textContent.trim() + '"'
+  );
+  console.log(
+    '  Matched by selector:      row',
+    posMatched31.rowIndex + 1,
+    'cell',
+    posMatched31.cellIndex + 1,
+    '→ text "' + matched.textContent.trim() + '"'
+  );
 
   if (matched === foundCell31 && foundCell31 === correctCell31) {
     console.log('\n✅ PASS: All three are the same element');
@@ -167,6 +203,7 @@ console.log('\n' + '='.repeat(70));
 ### 1. Проблема с поиском элемента по тексту
 
 Календарь может содержать несколько кнопок с текстом "18" или "31":
+
 - Предыдущий месяц (серые даты)
 - Текущий месяц
 - Следующий месяц (серые даты)
@@ -174,12 +211,14 @@ console.log('\n' + '='.repeat(70));
 ### 2. Проблема со структурой календаря
 
 Возможно calendar имеет сложную структуру где:
+
 - `<button>` находится внутри `<td>`
 - XPath указывает на `<td>`, а `.rdp-day` находит `<button>`
 
 ### 3. Проблема с nth-child индексами
 
 Возможно расчет позиции элемента неверен из-за:
+
 - Header row (`<thead>`)
 - Скрытых элементов
 - Неучтенных wrapper элементов
@@ -196,8 +235,13 @@ console.log('\n' + '='.repeat(70));
 ```javascript
 // Detailed DOM inspection
 const xpath18 = '/html/body/div[3]/div/div/div/div/table/tbody/tr[4]/td[1]';
-const cell = document.evaluate(xpath18, document, null,
-  XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+const cell = document.evaluate(
+  xpath18,
+  document,
+  null,
+  XPathResult.FIRST_ORDERED_NODE_TYPE,
+  null
+).singleNodeValue;
 
 console.log('=== DOM Structure for Date 18 ===');
 console.log('TD element:', cell);
@@ -214,8 +258,9 @@ console.log('  button.textContent:', button?.textContent.trim());
 console.log('  button.className:', button?.className);
 
 // Compare
-const foundByClass = Array.from(document.querySelectorAll('.rdp-day'))
-  .find(el => el.textContent.trim() === '18');
+const foundByClass = Array.from(document.querySelectorAll('.rdp-day')).find(
+  (el) => el.textContent.trim() === '18'
+);
 
 console.log('\nFound by .rdp-day class:');
 console.log('  element:', foundByClass);
@@ -227,6 +272,7 @@ console.log('  Parent TD same as XPath TD:', foundByClass?.parentElement === cel
 ---
 
 **Следующие шаги:**
+
 1. Выполнить debug скрипт в консоли
 2. Определить точную причину несоответствия
 3. Исправить логику генерации селекторов

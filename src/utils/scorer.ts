@@ -9,16 +9,11 @@ import { CONFIDENCE_WEIGHTS } from './constants';
  * @param uniquenessBonus - Bonus for unique resolution (0-1), determined during resolution
  * @returns Confidence score from 0 to 1
  */
-export function calculateConfidence(
-  eid: ElementIdentity,
-  uniquenessBonus: number = 0,
-): number {
+export function calculateConfidence(eid: ElementIdentity, uniquenessBonus = 0): number {
   const anchorScore = eid.anchor.score;
 
   const avgPathScore =
-    eid.path.length > 0
-      ? eid.path.reduce((sum, n) => sum + n.score, 0) / eid.path.length
-      : 0.5;
+    eid.path.length > 0 ? eid.path.reduce((sum, n) => sum + n.score, 0) / eid.path.length : 0.5;
 
   const targetScore = eid.target.score;
 
@@ -45,7 +40,7 @@ export function calculateConfidence(
 export function calculateElementScore(
   semanticsCount: number,
   hasId: boolean,
-  hasRole: boolean,
+  hasRole: boolean
 ): number {
   let score = 0.5; // Base score
 

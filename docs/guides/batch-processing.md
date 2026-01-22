@@ -16,7 +16,7 @@ import { generateEIDBatch } from 'seql-js';
 const elements = Array.from(document.querySelectorAll('button'));
 const eids = generateEIDBatch(elements);
 
-console.log(`Generated ${eids.filter(e => e).length}/${elements.length} EIDs`);
+console.log(`Generated ${eids.filter((e) => e).length}/${elements.length} EIDs`);
 ```
 
 ## With Options
@@ -24,7 +24,7 @@ console.log(`Generated ${eids.filter(e => e).length}/${elements.length} EIDs`);
 ```typescript
 generateEIDBatch(elements, {
   maxPathDepth: 5,
-  enableSvgFingerprint: false
+  enableSvgFingerprint: false,
 });
 ```
 
@@ -43,7 +43,7 @@ async function processLarge(elements: Element[], chunkSize = 100) {
     const chunkEIDs = generateEIDBatch(chunk);
     allEIDs.push(...chunkEIDs);
 
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   return allEIDs;

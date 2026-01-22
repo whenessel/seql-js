@@ -40,11 +40,7 @@ export class PathBuilder {
    * @param extractor - Semantic extractor instance
    * @returns Path build result with nodes and degradation info
    */
-  buildPath(
-    anchor: Element,
-    target: Element,
-    extractor: SemanticExtractor,
-  ): PathBuildResult {
+  buildPath(anchor: Element, target: Element, extractor: SemanticExtractor): PathBuildResult {
     const rawPath: Element[] = [];
     let current: Element | null = target.parentElement;
 
@@ -61,13 +57,7 @@ export class PathBuilder {
     let filteredPath = this.filterNoise(rawPath);
 
     // Check uniqueness and add disambiguation nodes if needed (SPECIFICATION.md §8)
-    filteredPath = this.ensureUniqueness(
-      rawPath,
-      filteredPath,
-      anchor,
-      target,
-      extractor,
-    );
+    filteredPath = this.ensureUniqueness(rawPath, filteredPath, anchor, target, extractor);
 
     // Convert to PathNodes
     const pathNodes = filteredPath.map((el) => {
@@ -101,11 +91,7 @@ export class PathBuilder {
   /**
    * Legacy method for backward compatibility
    */
-  buildPathNodes(
-    anchor: Element,
-    target: Element,
-    extractor: SemanticExtractor,
-  ): PathNode[] {
+  buildPathNodes(anchor: Element, target: Element, extractor: SemanticExtractor): PathNode[] {
     return this.buildPath(anchor, target, extractor).path;
   }
 
@@ -118,7 +104,7 @@ export class PathBuilder {
     filteredPath: Element[],
     anchor: Element,
     target: Element,
-    extractor: SemanticExtractor,
+    extractor: SemanticExtractor
   ): Element[] {
     // Build selector from current path and check uniqueness
     const selector = this.buildTestSelector(anchor, filteredPath, target);
@@ -196,11 +182,7 @@ export class PathBuilder {
   /**
    * Inserts node into path maintaining original order
    */
-  private insertNodeInOrder(
-    path: Element[],
-    node: Element,
-    rawPath: Element[],
-  ): Element[] {
+  private insertNodeInOrder(path: Element[], node: Element, rawPath: Element[]): Element[] {
     const nodeIndex = rawPath.indexOf(node);
     const result = [...path];
 
@@ -221,11 +203,7 @@ export class PathBuilder {
   /**
    * Builds a test CSS selector from path
    */
-  private buildTestSelector(
-    anchor: Element,
-    path: Element[],
-    target: Element,
-  ): string {
+  private buildTestSelector(anchor: Element, path: Element[], target: Element): string {
     const parts: string[] = [];
 
     // Anchor

@@ -40,7 +40,7 @@ if (result.status === 'ambiguous') {
 ```typescript
 if (result.status === 'error') {
   console.error('Element not found');
-  result.warnings.forEach(w => console.warn(w));
+  result.warnings.forEach((w) => console.warn(w));
 }
 ```
 
@@ -66,5 +66,5 @@ Search within a container:
 
 ```typescript
 const modal = document.querySelector('.modal');
-const result = resolve(eid, modal);  // Search only in modal
+const result = resolve(eid, modal); // Search only in modal
 ```

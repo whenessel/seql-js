@@ -84,27 +84,27 @@
 **Ответственность**: Генерация DSL identity из DOM-элемента
 
 **Входы**:
+
 - `target: Element` — целевой DOM-элемент
 - `options: GeneratorOptions` — настройки генерации
 
 **Выходы**:
+
 - `DslIdentity` — JSON объект с DSL
 - `null` — если генерация невозможна
 
 **Подкомпоненты**:
 
 #### 1.1 Anchor Finder
+
 ```typescript
 class AnchorFinder {
   /**
    * Finds semantic anchor for element
    * @returns Anchor node or null if not found
    */
-  findAnchor(
-    element: Element,
-    maxDepth: number = 10
-  ): AnchorNode | null;
-  
+  findAnchor(element: Element, maxDepth: number = 10): AnchorNode | null;
+
   /**
    * Scores anchor candidate
    */
@@ -113,28 +113,26 @@ class AnchorFinder {
 ```
 
 **Алгоритм**:
+
 1. Traverse up from element
 2. Score each candidate (Tier A/B/C)
 3. Stop at semantic element or maxDepth
 4. Return best scored or fallback
 
 #### 1.2 Path Builder
+
 ```typescript
 class PathBuilder {
   /**
    * Builds semantic path from anchor to target
    */
-  buildPath(
-    anchor: Element,
-    target: Element,
-    options: PathOptions
-  ): PathNode[];
-  
+  buildPath(anchor: Element, target: Element, options: PathOptions): PathNode[];
+
   /**
    * Checks if element should be included in path
    */
   shouldInclude(element: Element): boolean;
-  
+
   /**
    * Checks uniqueness of current path
    */
@@ -143,6 +141,7 @@ class PathBuilder {
 ```
 
 **Алгоритм**:
+
 1. Traverse target → anchor
 2. Filter noise elements
 3. Check uniqueness
@@ -150,13 +149,14 @@ class PathBuilder {
 5. Invert path (anchor → target)
 
 #### 1.3 Semantic Extractor
+
 ```typescript
 class SemanticExtractor {
   /**
    * Extracts semantic features from element
    */
   extract(element: Element): DslSemantics;
-  
+
   /**
    * Filters semantic vs utility classes
    */
@@ -164,7 +164,7 @@ class SemanticExtractor {
     semantic: string[];
     utility: string[];
   };
-  
+
   /**
    * Normalizes text content
    */
@@ -172,7 +172,7 @@ class SemanticExtractor {
     raw: string;
     normalized: string;
   };
-  
+
   /**
    * Extracts attributes with stability filtering (v1.0.3)
    * Excludes state attributes, library-generated attributes
@@ -192,13 +192,14 @@ import { isStableAttribute } from '../utils/attribute-filters';
 for (const attr of element.attributes) {
   // Фильтр состояния и библиотечных атрибутов
   if (!isStableAttribute(attr.name, attr.value)) continue;
-  
+
   // Только стабильные атрибуты попадают в DSL
   attrs[attr.name] = attr.value;
 }
 ```
 
 **Критерии стабильности:**
+
 - ✅ ARIA семантика: `aria-label`, `aria-labelledby`, `role`
 - ❌ ARIA состояние: `aria-selected`, `aria-expanded`, `aria-hidden`
 - ✅ HTML семантика: `name`, `type`, `placeholder`, `href`
@@ -209,18 +210,19 @@ for (const attr of element.attributes) {
 - ❌ Generated IDs: `radix-:ru:-*`, `headlessui-*`, `mui-*`
 
 #### 1.4 SVG Fingerprinter
+
 ```typescript
 class SvgFingerprinter {
   /**
    * Generates fingerprint for SVG element
    */
   fingerprint(element: SVGElement): SvgFingerprint;
-  
+
   /**
    * Computes hash for path data
    */
   computePathHash(d: string): string;
-  
+
   /**
    * Detects animations
    */
@@ -235,15 +237,18 @@ class SvgFingerprinter {
 **Ответственность**: Резолв DSL identity обратно в DOM-элемент
 
 **Входы**:
+
 - `dsl: DslIdentity` — DSL объект
 - `dom: Document | INode` — корень DOM (native или rrdom)
 
 **Выходы**:
+
 - `ResolveResult` — результат с элементами, статусом, warnings
 
 **Подкомпоненты**:
 
 #### 2.1 CSS Builder
+
 ```typescript
 class CssBuilder {
   /**
@@ -254,70 +259,55 @@ class CssBuilder {
 ```
 
 #### 2.2 Semantics Matcher
+
 ```typescript
 class SemanticsMatcher {
   /**
    * Filters elements by semantic criteria
    */
-  match(
-    elements: Element[],
-    semantics: DslSemantics
-  ): Element[];
-  
+  match(elements: Element[], semantics: DslSemantics): Element[];
+
   /**
    * Matches text content
    */
   matchText(element: Element, text: TextContent): boolean;
-  
+
   /**
    * Matches attributes
    */
-  matchAttributes(
-    element: Element,
-    attrs: Record<string, string>
-  ): boolean;
-  
+  matchAttributes(element: Element, attrs: Record<string, string>): boolean;
+
   /**
    * Matches SVG fingerprint
    */
-  matchSvgFingerprint(
-    element: SVGElement,
-    fingerprint: SvgFingerprint
-  ): boolean;
+  matchSvgFingerprint(element: SVGElement, fingerprint: SvgFingerprint): boolean;
 }
 ```
 
 #### 2.3 Constraint Processor
+
 ```typescript
 class ConstraintProcessor {
   /**
    * Applies constraints to candidates
    */
-  applyConstraints(
-    candidates: Element[],
-    constraints: Constraint[]
-  ): Element[];
-  
+  applyConstraints(candidates: Element[], constraints: Constraint[]): Element[];
+
   /**
    * Applies single constraint
    */
-  applyConstraint(
-    candidates: Element[],
-    constraint: Constraint
-  ): Element[];
+  applyConstraint(candidates: Element[], constraint: Constraint): Element[];
 }
 ```
 
 #### 2.4 Fallback Handler
+
 ```typescript
 class FallbackHandler {
   /**
    * Handles resolution fallback
    */
-  handleFallback(
-    dsl: DslIdentity,
-    dom: Document
-  ): ResolveResult;
+  handleFallback(dsl: DslIdentity, dom: Document): ResolveResult;
 }
 ```
 
@@ -326,6 +316,7 @@ class FallbackHandler {
 ### 3. Utilities
 
 #### 3.1 Attribute Filters (v1.0.3)
+
 ```typescript
 /**
  * Фильтрация атрибутов по стабильности
@@ -334,34 +325,37 @@ class FallbackHandler {
 function isStableAttribute(name: string, value: string): boolean;
 
 // Константы классификации
-const ARIA_STABLE_ATTRIBUTES: string[];      // aria-label, role, etc.
-const ARIA_STATE_ATTRIBUTES: string[];       // aria-selected, aria-expanded
-const DATA_STATE_ATTRIBUTES: string[];       // data-state, data-active
-const LIBRARY_DATA_PREFIXES: string[];       // data-radix-, data-headlessui-
-const DATA_ID_PATTERNS: string[];            // data-testid, data-cy, data-*-id
-const HTML_STABLE_ATTRIBUTES: string[];      // name, type, placeholder
-const HTML_STATE_ATTRIBUTES: string[];       // disabled, checked, value
-const GENERATED_ID_PATTERNS: RegExp[];       // /^radix-/, /^headlessui-/
+const ARIA_STABLE_ATTRIBUTES: string[]; // aria-label, role, etc.
+const ARIA_STATE_ATTRIBUTES: string[]; // aria-selected, aria-expanded
+const DATA_STATE_ATTRIBUTES: string[]; // data-state, data-active
+const LIBRARY_DATA_PREFIXES: string[]; // data-radix-, data-headlessui-
+const DATA_ID_PATTERNS: string[]; // data-testid, data-cy, data-*-id
+const HTML_STABLE_ATTRIBUTES: string[]; // name, type, placeholder
+const HTML_STATE_ATTRIBUTES: string[]; // disabled, checked, value
+const GENERATED_ID_PATTERNS: RegExp[]; // /^radix-/, /^headlessui-/
 ```
 
 **Назначение:**
+
 - Обеспечивает стабильность EID при изменении состояния элемента
 - Исключает библиотечные сгенерированные атрибуты
 - Фильтрует динамические ID от UI фреймворков
 
 **Философия:**
-> SEQL идентифицирует элементы по их **семантической идентичности**, 
+
+> SEQL идентифицирует элементы по их **семантической идентичности**,
 > а не по **текущему состоянию**. Элемент остается тем же элементом,
 > независимо от того, активен он или нет, виден или скрыт.
 
 #### 3.2 Scoring
+
 ```typescript
 class Scorer {
   /**
    * Calculates confidence score
    */
   calculateConfidence(dsl: DslIdentity): number;
-  
+
   /**
    * Scores node
    */
@@ -370,13 +364,14 @@ class Scorer {
 ```
 
 #### 3.3 Validation
+
 ```typescript
 class DslValidator {
   /**
    * Validates DSL structure
    */
   validate(dsl: DslIdentity): ValidationResult;
-  
+
   /**
    * Validates node
    */
@@ -585,7 +580,7 @@ const dsl = generateDsl(element, {
   maxPathDepth: 10,
   enableSvgFingerprint: true,
   confidenceThreshold: 0.6,
-  fallbackToBody: true
+  fallbackToBody: true,
 });
 
 // Result
@@ -617,7 +612,7 @@ if (result.status === 'ambiguous') {
 const result = resolveDsl(dsl, document, {
   strictMode: false,
   enableFallback: true,
-  maxCandidates: 20
+  maxCandidates: 20,
 });
 ```
 
@@ -637,9 +632,9 @@ const stopFn = rrweb.record({
   },
   plugins: [
     new RrwebDslPlugin({
-      enableSvgFingerprint: true
-    })
-  ]
+      enableSvgFingerprint: true,
+    }),
+  ],
 });
 
 // Player with DSL resolver
@@ -650,9 +645,9 @@ const replayer = new rrweb.Replayer(events, {
         if (result.status === 'success') {
           highlightElement(result.elements[0]);
         }
-      }
-    })
-  ]
+      },
+    }),
+  ],
 });
 ```
 
@@ -666,13 +661,13 @@ const replayer = new rrweb.Replayer(events, {
 // В rrweb recorder
 function recordInteraction(event: InteractionEvent) {
   const target = event.target;
-  
+
   // Generate DSL identity
   const dslIdentity = generateDsl(target, {
     maxPathDepth: 10,
-    enableSvgFingerprint: true
+    enableSvgFingerprint: true,
   });
-  
+
   // Attach to rrweb event
   emitEvent({
     type: IncrementalSource.MouseInteraction,
@@ -681,8 +676,8 @@ function recordInteraction(event: InteractionEvent) {
       id: mirror.getId(target),
       dslIdentity, // ← Added
       x: event.clientX,
-      y: event.clientY
-    }
+      y: event.clientY,
+    },
   });
 }
 ```
@@ -694,19 +689,16 @@ function recordInteraction(event: InteractionEvent) {
 function handleInteraction(event: InteractionData) {
   // Try to resolve by rrweb id first
   let element = mirror.getNode(event.id);
-  
+
   // Fallback to DSL resolution
   if (!element && event.dslIdentity) {
-    const result = resolveDsl(
-      event.dslIdentity,
-      this.iframe.contentDocument
-    );
-    
+    const result = resolveDsl(event.dslIdentity, this.iframe.contentDocument);
+
     if (result.status === 'success') {
       element = result.elements[0];
     }
   }
-  
+
   if (element) {
     highlightElement(element);
   }
@@ -880,10 +872,12 @@ interface ValidationResult {
 ### Generator Performance
 
 **Целевые метрики**:
+
 - Время генерации: ≤ 5ms
 - Сложность: O(depth), где depth ≤ 10
 
 **Оптимизации**:
+
 1. Early exit при достижении уникальности
 2. Кэширование semantic extraction для элементов
 3. Lazy SVG fingerprinting (только когда нужно)
@@ -891,10 +885,12 @@ interface ValidationResult {
 ### Resolver Performance
 
 **Целевые метрики**:
+
 - Время резолва: ≤ 50ms
 - Сложность: O(candidates)
 
 **Оптимизации**:
+
 1. CSS narrowing first (быстрое сужение)
 2. Early exit при uniqueness
 3. Constraint application только при ambiguity
@@ -916,7 +912,7 @@ class PiiFilter {
     // Phone: +1234567890 → +***
     // Credit card: masked
   }
-  
+
   /**
    * Checks if attribute contains PII
    */
@@ -937,16 +933,19 @@ class PiiFilter {
 ## Testing Strategy
 
 ### Unit Tests
+
 - Каждый компонент изолированно
 - Mock DOM для предсказуемости
 - Edge cases coverage
 
 ### Integration Tests
+
 - Generator → Resolver round-trip
 - rrweb integration
 - Analytics pipeline
 
 ### E2E Tests
+
 - Реальные веб-страницы
 - A/B testing scenarios
 - Release-to-release stability
@@ -955,7 +954,7 @@ class PiiFilter {
 
 ## Future Extensions
 
-### Возможные улучшения (v2.0+):
+### Возможные улучшения (v2.0+)
 
 1. **Machine Learning scoring** (опционально)
    - Обучение на реальных данных

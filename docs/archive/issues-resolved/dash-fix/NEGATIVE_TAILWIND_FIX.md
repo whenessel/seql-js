@@ -3,22 +3,26 @@
 ## 📊 ДИАГНОСТИКА ПРОБЛЕМЫ
 
 ### Корневая причина
+
 Фильтр классов **НЕ распознает** Tailwind утилиты с **ведущим дефисом** (отрицательные значения) как нестабильные классы.
 
 ### Проблемный сценарий
+
 ```html
 <div class="absolute -bottom-6 -left-6 w-2/3 rounded-2xl overflow-hidden shadow-xl">
-  <img src="..." alt="Luxury apartment interior">
+  <img src="..." alt="Luxury apartment interior" />
 </div>
 ```
 
 ### Текущее поведение (❌ НЕПРАВИЛЬНО)
+
 1. **Генератор EID** включает `-bottom-6` и `-left-6` в семантику элемента
 2. **Генератор SEQL** создает селектор: `div.-bottom-6.-left-6#2`
 3. **Парсер SEQL** не может разобрать классы с ведущим дефисом
 4. **Ошибка**: `Invalid node: unexpected content ".-bottom-6.-left-6#2"`
 
 ### Ожидаемое поведение (✅ ПРАВИЛЬНО)
+
 1. **Фильтр классов** должен отфильтровать ВСЕ утилитарные классы: `absolute`, `-bottom-6`, `-left-6`, `w-2/3`, `rounded-2xl`, `overflow-hidden`, `shadow-xl`
 2. **Генератор SEQL** не должен включать утилиты в селектор
 3. **Результат**: `div#2` (без утилитарных классов)
@@ -46,6 +50,7 @@
 ```
 
 **Контекст для вставки**:
+
 ```typescript
 // === Spacing (Tailwind) ===
 /^(gap|space)-/,
@@ -73,22 +78,22 @@ it('should detect negative Tailwind utility classes (margins, positioning)', () 
   expect(isUtilityClass('-mx-4')).toBe(true);
   expect(isUtilityClass('-mb-6')).toBe(true);
   expect(isUtilityClass('-py-2')).toBe(true);
-  
+
   // Negative positioning
   expect(isUtilityClass('-top-4')).toBe(true);
   expect(isUtilityClass('-bottom-6')).toBe(true);
   expect(isUtilityClass('-left-6')).toBe(true);
   expect(isUtilityClass('-right-8')).toBe(true);
   expect(isUtilityClass('-inset-0')).toBe(true);
-  
+
   // Negative z-index
   expect(isUtilityClass('-z-10')).toBe(true);
   expect(isUtilityClass('-z-20')).toBe(true);
-  
+
   // Negative spacing
   expect(isUtilityClass('-space-x-2')).toBe(true);
   expect(isUtilityClass('-space-y-4')).toBe(true);
-  
+
   // Negative transforms
   expect(isUtilityClass('-translate-x-4')).toBe(true);
   expect(isUtilityClass('-translate-y-2')).toBe(true);
@@ -138,8 +143,8 @@ describe('Negative Tailwind classes filtering', () => {
     expect(eid).not.toBeNull();
 
     // Проверяем, что родитель с классами -bottom-6, -left-6 НЕ содержит эти классы в семантике
-    const pathNode = eid!.path.find(node => node.tag === 'div');
-    
+    const pathNode = eid!.path.find((node) => node.tag === 'div');
+
     if (pathNode?.semantics.classes) {
       // Все Tailwind утилиты должны быть отфильтрованы
       expect(pathNode.semantics.classes).not.toContain('absolute');
@@ -197,7 +202,7 @@ describe('Negative Tailwind classes filtering', () => {
       const testDom = new JSDOM(`<!DOCTYPE html><html><body>${html}</body></html>`);
       const testDoc = testDom.window.document;
       const div = testDoc.querySelector('div')!;
-      
+
       const eid = generateEID(div);
       const remainingClasses = eid?.target.semantics.classes || [];
 
@@ -233,6 +238,7 @@ describe('Negative Tailwind classes filtering', () => {
 ## 🧪 ПРОВЕРКА
 
 ### 1. Запустить тесты
+
 ```bash
 # Unit тесты классификатора
 yarn test tests/unit/class-classifier.test.ts
@@ -245,6 +251,7 @@ yarn test
 ```
 
 ### 2. Браузерный тест
+
 ```bash
 # Открыть https://appsurify.github.io/modern-seaside-stay/
 # Выполнить SEQLJsBrowserTestSuite.js на элементе:
@@ -252,6 +259,7 @@ yarn test
 ```
 
 **Ожидаемый результат**:
+
 ```
 ✅ EID успешно сгенерирован
 ✅ SEQL string сгенерирован (БЕЗ утилитарных классов)
@@ -260,19 +268,20 @@ yarn test
 ```
 
 ### 3. Ручная проверка
+
 ```javascript
 // В консоли браузера
 const { filterStableClasses, isUtilityClass } = window.SeqlJS;
 
 // Проверить конкретные классы
-console.log(isUtilityClass('-bottom-6'));  // Должно быть: true
-console.log(isUtilityClass('-left-6'));    // Должно быть: true
-console.log(isUtilityClass('absolute'));   // Должно быть: true
+console.log(isUtilityClass('-bottom-6')); // Должно быть: true
+console.log(isUtilityClass('-left-6')); // Должно быть: true
+console.log(isUtilityClass('absolute')); // Должно быть: true
 
 // Проверить фильтрацию
 const classes = ['absolute', '-bottom-6', '-left-6', 'semantic-name'];
 const filtered = filterStableClasses(classes);
-console.log(filtered);  // Должно быть: ['semantic-name']
+console.log(filtered); // Должно быть: ['semantic-name']
 ```
 
 ---
@@ -284,11 +293,13 @@ console.log(filtered);  // Должно быть: ['semantic-name']
 ### Файл: `src/utils/seql-parser.ts` (строка 456)
 
 **Заменить**:
+
 ```typescript
 while ((classMatch = remaining.match(/^\.([a-zA-Z][a-zA-Z0-9-_]*)/))) {
 ```
 
 **На**:
+
 ```typescript
 while ((classMatch = remaining.match(/^\.(-?[a-zA-Z][a-zA-Z0-9-_]*)/))) {
 ```

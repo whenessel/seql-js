@@ -23,8 +23,8 @@ For most use cases - simple, compact string representation:
 ```typescript
 import { generateSEQL, resolveSEQL } from 'seql-js';
 
-const selector = generateSEQL(element);    // Returns string
-const elements = resolveSEQL(selector);     // Returns Element[]
+const selector = generateSEQL(element); // Returns string
+const elements = resolveSEQL(selector); // Returns Element[]
 ```
 
 #### 2. EID/Core API (Low-Level, JSON-Based)
@@ -34,55 +34,55 @@ For advanced scenarios requiring programmatic access:
 ```typescript
 import { generateEID, resolve } from 'seql-js';
 
-const eid = generateEID(element);           // Returns ElementIdentity (JSON)
-const result = resolve(eid);                 // Returns ResolveResult (detailed)
+const eid = generateEID(element); // Returns ElementIdentity (JSON)
+const result = resolve(eid); // Returns ResolveResult (detailed)
 ```
 
 ## Function Categories
 
 ### Generation Functions
 
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `generateSEQL()` | `string \| null` | Generate SEQL selector string |
-| `generateEID()` | `ElementIdentity \| null` | Generate EID JSON object |
+| Function             | Return Type                   | Description                         |
+| -------------------- | ----------------------------- | ----------------------------------- |
+| `generateSEQL()`     | `string \| null`              | Generate SEQL selector string       |
+| `generateEID()`      | `ElementIdentity \| null`     | Generate EID JSON object            |
 | `generateEIDBatch()` | `(ElementIdentity \| null)[]` | Generate EIDs for multiple elements |
 
 ### Resolution Functions
 
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `resolveSEQL()` | `Element[]` | Resolve SEQL selector to elements |
-| `resolve()` | `ResolveResult` | Resolve EID with detailed results |
+| Function        | Return Type     | Description                       |
+| --------------- | --------------- | --------------------------------- |
+| `resolveSEQL()` | `Element[]`     | Resolve SEQL selector to elements |
+| `resolve()`     | `ResolveResult` | Resolve EID with detailed results |
 
 ### Conversion Functions
 
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `parseSEQL()` | `ElementIdentity` | Parse SEQL string to EID object |
-| `stringifySEQL()` | `string` | Convert EID object to SEQL string |
+| Function          | Return Type       | Description                       |
+| ----------------- | ----------------- | --------------------------------- |
+| `parseSEQL()`     | `ElementIdentity` | Parse SEQL string to EID object   |
+| `stringifySEQL()` | `string`          | Convert EID object to SEQL string |
 
 ### Validation Functions
 
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `validateEID()` | `ValidationResult` | Validate EID structure |
-| `isEID()` | `boolean` | Check if object is valid EID |
+| Function        | Return Type        | Description                  |
+| --------------- | ------------------ | ---------------------------- |
+| `validateEID()` | `ValidationResult` | Validate EID structure       |
+| `isEID()`       | `boolean`          | Check if object is valid EID |
 
 ### Cache Functions
 
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `createEIDCache()` | `EIDCache` | Create new cache instance |
-| `getGlobalCache()` | `EIDCache` | Get global singleton cache |
+| Function           | Return Type | Description                |
+| ------------------ | ----------- | -------------------------- |
+| `createEIDCache()` | `EIDCache`  | Create new cache instance  |
+| `getGlobalCache()` | `EIDCache`  | Get global singleton cache |
 
 ### Utility Functions
 
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `normalizeText()` | `string` | Normalize text content |
-| `filterClasses()` | `string[]` | Filter utility CSS classes |
-| `calculateConfidence()` | `number` | Calculate match confidence |
+| Function                | Return Type | Description                |
+| ----------------------- | ----------- | -------------------------- |
+| `normalizeText()`       | `string`    | Normalize text content     |
+| `filterClasses()`       | `string[]`  | Filter utility CSS classes |
+| `calculateConfidence()` | `number`    | Calculate match confidence |
 
 ## Import Patterns
 
@@ -95,7 +95,7 @@ import {
   generateEID,
   resolve,
   type ElementIdentity,
-  type ResolveResult
+  type ResolveResult,
 } from 'seql-js';
 ```
 
@@ -111,12 +111,7 @@ import { generateSEQL, resolveSEQL } from 'seql-js';
 import { generateSEQL, resolveSEQL, generateEID, resolve } from 'seql-js';
 
 // Advanced: Include utilities
-import {
-  generateSEQL,
-  resolveSEQL,
-  generateEIDBatch,
-  createEIDCache
-} from 'seql-js';
+import { generateSEQL, resolveSEQL, generateEIDBatch, createEIDCache } from 'seql-js';
 ```
 
 ## Common Workflows
@@ -157,13 +152,11 @@ import { generateEIDBatch, stringifySEQL } from 'seql-js';
 // Batch generate → Convert all → Send to backend
 const elements = document.querySelectorAll('button, a, input');
 const eids = generateEIDBatch(Array.from(elements));
-const selectors = eids
-  .filter(eid => eid !== null)
-  .map(eid => stringifySEQL(eid!));
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
 
 await fetch('/api/elements', {
   method: 'POST',
-  body: JSON.stringify(selectors)
+  body: JSON.stringify(selectors),
 });
 ```
 
@@ -181,7 +174,7 @@ const eid: ElementIdentity | null = generateEID(element);
 
 if (eid) {
   // Type narrowing - eid is non-null here
-  console.log(eid.target.tag);  // Type: string
+  console.log(eid.target.tag); // Type: string
   console.log(eid.target.nthChild); //  Type: number | undefined
 }
 ```
@@ -233,7 +226,7 @@ console.log('Cache stats:', cache.getStats());
 
 ```typescript
 // ❌ Bad: Individual calls in loop
-elements.forEach(el => generateEID(el));
+elements.forEach((el) => generateEID(el));
 
 // ✅ Good: Batch processing
 generateEIDBatch(elements);

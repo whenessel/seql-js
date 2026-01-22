@@ -16,6 +16,7 @@ No artifacts (indices, reports, patches) should be created—the result of work 
 ## 🧭 Detecting Changed Areas (CHANGESET)
 
 Use in descending priority order:
+
 1. `git diff --name-only <base>..<head>` (if available) to determine changed files/ranges.
 2. If git is unavailable—compare `mtime` and/or recalculate content hash within the current run (without saving anywhere).
 3. If both options are unavailable—process all code, but prioritize files affected by imports from recently edited modules (via dependency graph).
@@ -59,9 +60,9 @@ For each changed file/symbol:
    a) Determine project style (JSDoc/TSDoc, language, tags).
    b) Parse AST; find exported and significant internal symbols.
    c) For each symbol:
-      — No docstring → generate based on code.
-      — Desynchronization exists (parameters/return/generics/overloads) → carefully update.
-      — Add "Usage (local references)" based on actual use-sites (up to 5 references).
+   — No docstring → generate based on code.
+   — Desynchronization exists (parameters/return/generics/overloads) → carefully update.
+   — Add "Usage (local references)" based on actual use-sites (up to 5 references).
    d) Save file, minimizing diff (follow formatting).
 4. Process related files where docs may be outdated due to changes (identified by dependency graph and use-sites), applying the same rules.
 
@@ -75,13 +76,13 @@ For each changed file/symbol:
 
 • First sentence—brief purpose (does not repeat the name).
 • Functions/methods:
-  — `@param` for each parameter (incl. rest/optional; for object—list actually used keys),
-  — `@typeParam` (constraints `extends`),
-  — `@returns` (do not specify for `void`),
-  — `@throws`—only on explicit `throw`/propagation,
-  — `@remarks`—nuances (timings, DOM mutations, side-effects), if explicitly visible,
-  — `@example`—minimal correct example,
-  — `@see`—to actually related modules/types.
+— `@param` for each parameter (incl. rest/optional; for object—list actually used keys),
+— `@typeParam` (constraints `extends`),
+— `@returns` (do not specify for `void`),
+— `@throws`—only on explicit `throw`/propagation,
+— `@remarks`—nuances (timings, DOM mutations, side-effects), if explicitly visible,
+— `@example`—minimal correct example,
+— `@see`—to actually related modules/types.
 • Types/interfaces: key fields and purpose by types/comments.
 • Classes: purpose, main methods, usage patterns (if visible in code).
 • Events/callbacks: type, payload structure, emission/handling sites (from code).
@@ -113,7 +114,9 @@ For each changed file/symbol:
  * const batch = computeBatch(timeline, changes);
  * mirror.apply(batch);
  */
-export function computeBatch(/* ... */) { /* ... */ }
+export function computeBatch(/* ... */) {
+  /* ... */
+}
 ```
 
 ### Class
@@ -127,7 +130,9 @@ export function computeBatch(/* ... */) { /* ... */ }
  * - src/demo/main.ts:21-47 — new; interactive demo controls.
  * - src/utils/compose.ts:15-33 — type-ref; used as a generic constraint.
  */
-export class Player { /* ... */ }
+export class Player {
+  /* ... */
+}
 ```
 
 ### Type/Interface
@@ -140,7 +145,9 @@ export class Player { /* ... */ }
  * - src/snapshot/serialize.ts:120-164 — type-ref; payload construction.
  * - src/analytics/pipeline/ingest.ts:55-80 — type-ref; validation before enqueue.
  */
-export interface SnapshotNodeEvent { /* ... */ }
+export interface SnapshotNodeEvent {
+  /* ... */
+}
 ```
 
 ### Overloads
@@ -179,5 +186,7 @@ export function parse(input: Buffer, encoding?: string): Data;
 export async function* filterItems<T>(
   collection: Iterable<T>,
   predicate?: (item: T) => boolean
-): AsyncGenerator<T> { /* ... */ }
+): AsyncGenerator<T> {
+  /* ... */
+}
 ```

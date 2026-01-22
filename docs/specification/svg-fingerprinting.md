@@ -6,8 +6,8 @@ Stable identification of SVG elements.
 
 ```typescript
 interface SvgFingerprint {
-  shapeType: string;      // "path" | "circle" | "rect" | "polygon"
-  pathHash?: string;      // Hash of path data
+  shapeType: string; // "path" | "circle" | "rect" | "polygon"
+  pathHash?: string; // Hash of path data
   geometry?: {
     viewBox?: string;
     width?: number;
@@ -28,11 +28,12 @@ interface SvgFingerprint {
 
 ```html
 <svg viewBox="0 0 24 24">
-  <path d="M19 6.41L17.59 5 12 10.59..."/>
+  <path d="M19 6.41L17.59 5 12 10.59..." />
 </svg>
 ```
 
 Fingerprint:
+
 ```json
 {
   "shapeType": "path",

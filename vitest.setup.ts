@@ -4,4 +4,3 @@ import { applyJsdomExtended } from '@whenessel/jsdom-extended';
 if (typeof window !== 'undefined') {
   applyJsdomExtended(window);
 }
-

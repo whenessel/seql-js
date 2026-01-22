@@ -70,13 +70,13 @@ if (isSvgChild) {
 
 ```javascript
 // ❌ НЕ РАБОТАЕТ (0 элементов)
-'footer > div.container:nth-child(1) > ul:nth-child(2) > svg > rect'
+'footer > div.container:nth-child(1) > ul:nth-child(2) > svg > rect';
 
 // ✅ РАБОТАЕТ (1 элемент)
-'footer div.container ul svg > rect'
+'footer div.container ul svg > rect';
 
-// ✅ РАБОТАЕТ (1 элемент) 
-'footer div.container ul li > svg > rect'
+// ✅ РАБОТАЕТ (1 элемент)
+'footer div.container ul li > svg > rect';
 ```
 
 ## 🎯 Приоритет

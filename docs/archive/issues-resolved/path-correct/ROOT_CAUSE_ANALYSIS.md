@@ -7,11 +7,13 @@ DSL генератор строит path с **неправильными nth-chi
 ### Пример для даты 18
 
 **Входной элемент:**
+
 - XPath: `/html/body/div[3]/div/div/div/div/table/tbody/tr[4]/td[1]`
 - Реальная позиция: **Row 4, Cell 1**
 - Текст: **"18"**
 
 **Сгенерированный селектор:**
+
 ```css
 table > tbody > tr:nth-child(1) > td:nth-child(5) > button
                           ↑                 ↑
@@ -19,9 +21,11 @@ table > tbody > tr:nth-child(1) > td:nth-child(5) > button
 ```
 
 **Что находит:**
+
 - Row 1, Cell 5 → дату **"1"** ❌
 
 **Что должно быть:**
+
 ```css
 table > tbody > tr:nth-child(4) > td:nth-child(1) > button
                           ↑                 ↑
@@ -97,8 +101,8 @@ console.clear();
 console.log('=== PATH ANALYSIS ===\n');
 
 function getByXPath(xpath) {
-  return document.evaluate(xpath, document, null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+    .singleNodeValue;
 }
 
 // Get button for date 18
@@ -123,7 +127,9 @@ while (el && el.tagName !== 'TABLE' && depth < 20) {
     const index = siblings.indexOf(el);
     const nthChild = index + 1;
 
-    console.log(`${depth}: ${tag}:nth-child(${nthChild}) of ${siblings.length} siblings (parent: ${parent.tagName})`);
+    console.log(
+      `${depth}: ${tag}:nth-child(${nthChild}) of ${siblings.length} siblings (parent: ${parent.tagName})`
+    );
   }
 
   el = parent;
@@ -184,6 +190,7 @@ console.log('\n' + '='.repeat(70));
 ### 1. PathBuilder.buildPath() (packages/dom-dsl/src/generator/path-builder.ts)
 
 Проверить:
+
 - Включаются ли все TR и TD элементы в path?
 - Правильно ли строится путь от anchor до target?
 - Не фильтруются ли табличные элементы как "noise"?
@@ -191,6 +198,7 @@ console.log('\n' + '='.repeat(70));
 ### 2. CssGenerator.buildSelector() (packages/dom-dsl/src/resolver/css-generator.ts)
 
 Проверить:
+
 - Вызывается ли `getNthSelector()` для каждого элемента в path?
 - Передается ли правильный element в `getNthSelector()`?
 - Используется ли правильный parent для расчета nth-child?
@@ -198,6 +206,7 @@ console.log('\n' + '='.repeat(70));
 ### 3. CssGenerator.ensureUniqueSelector() (packages/dom-dsl/src/resolver/css-generator.ts)
 
 Проверить:
+
 - Не перезаписываются ли nth-child индексы на неправильные?
 - Правильно ли работает `buildFullDomPathSelector()`?
 
@@ -206,6 +215,7 @@ console.log('\n' + '='.repeat(70));
 Для button в Row 4, Cell 1:
 
 1. **PathBuilder должен создать:**
+
 ```javascript
 {
   anchor: { tag: 'table', ... },
@@ -218,12 +228,13 @@ console.log('\n' + '='.repeat(70));
 }
 ```
 
-2. **CssGenerator должен создать:**
+1. **CssGenerator должен создать:**
+
 ```css
 table > tbody > tr:nth-child(4) > td:nth-child(1) > button
 ```
 
-3. **Селектор должен найти:** ровно тот же button
+1. **Селектор должен найти:** ровно тот же button
 
 ## Следующие шаги
 

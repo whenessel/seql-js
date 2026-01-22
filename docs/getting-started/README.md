@@ -36,11 +36,13 @@ That's it! You've just created a stable identifier for a DOM element.
 ## Why SEQL?
 
 **Problem**: CSS selectors like `.modal > div:nth-child(3) > button.primary` break when:
+
 - Developers add a new div above your target
 - CSS classes are renamed during refactoring
 - The component library is updated
 
 **Solution**: SEQL uses semantic features:
+
 - Semantic HTML tags (`<form>`, `<main>`, `<nav>`)
 - ARIA roles and labels
 - Stable attributes (test IDs, names, types)
@@ -48,6 +50,7 @@ That's it! You've just created a stable identifier for a DOM element.
 - Structural relationships
 
 **Example**:
+
 ```typescript
 // Brittle CSS selector
 const badSelector = '.modal > div:nth-child(3) > button.primary';
@@ -57,6 +60,7 @@ const goodSelector = 'v1: main[role="dialog"] :: button[type="submit",text="Save
 ```
 
 The SEQL selector remains valid even if:
+
 - The modal's CSS classes change
 - Divs are added/removed above the button
 - The button's position changes in the DOM
@@ -68,11 +72,13 @@ The SEQL selector remains valid even if:
 SEQL offers two formats:
 
 1. **SEQL Selector (String)** - Compact, URL-safe format for analytics and transport
+
    ```typescript
-   "v1: form :: div.actions > button[text='Submit']"
+   "v1: form :: div.actions > button[text='Submit']";
    ```
 
 2. **EID (JSON)** - Detailed structure for internal operations and high precision
+
    ```typescript
    {
      "anchor": { "tag": "form", "semantics": {...} },
@@ -93,6 +99,7 @@ Every SEQL identifier consists of:
 - **Constraints**: Disambiguation rules (uniqueness, visibility, text proximity)
 
 Example breakdown:
+
 ```
 v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
 │   └────────anchor────────┘    └──────path──────┘  └────────target─────────┘

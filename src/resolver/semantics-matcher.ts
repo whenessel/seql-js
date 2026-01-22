@@ -26,18 +26,12 @@ export class SemanticsMatcher {
     }
 
     // Match attributes (if specified)
-    if (
-      semantics.attributes &&
-      !this.matchAttributes(element, semantics.attributes)
-    ) {
+    if (semantics.attributes && !this.matchAttributes(element, semantics.attributes)) {
       return false;
     }
 
     // Match SVG fingerprint (if specified)
-    if (
-      semantics.svg &&
-      !this.matchSvgFingerprint(element as SVGElement, semantics.svg)
-    ) {
+    if (semantics.svg && !this.matchSvgFingerprint(element as SVGElement, semantics.svg)) {
       return false;
     }
 
@@ -50,12 +44,11 @@ export class SemanticsMatcher {
    */
   matchText(element: Element, text: TextContent): boolean {
     // Prioritize direct text nodes
-    const directTextNodes = Array.from(element.childNodes)
-      .filter(node => node.nodeType === Node.TEXT_NODE);
+    const directTextNodes = Array.from(element.childNodes).filter(
+      (node) => node.nodeType === Node.TEXT_NODE
+    );
 
-    const directText = directTextNodes
-      .map(node => node.textContent?.trim() ?? '')
-      .join(' ');
+    const directText = directTextNodes.map((node) => node.textContent?.trim() ?? '').join(' ');
 
     // If no direct text nodes, use full textContent as fallback
     // This handles cases like <td><button>18</button></td> where text is in child element

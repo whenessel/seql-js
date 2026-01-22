@@ -30,8 +30,8 @@ interface ElementIdentityDescriptor {
 type ElementIdentityQuery = string;
 
 // Пример
-const eiq: ElementIdentityQuery = 
-  "footer[.text-card-foreground] > div[.container]#1 > ul#2 > li#3 > svg[.lucide-mail]#1 > rect#1";
+const eiq: ElementIdentityQuery =
+  'footer[.text-card-foreground] > div[.container]#1 > ul#2 > li#3 > svg[.lucide-mail]#1 > rect#1';
 ```
 
 ---
@@ -85,6 +85,7 @@ EIQ → resolve() → Element[] // NO AST!
 ## 📦 ЭТАП 1: rrweb Recording
 
 ### Задача
+
 Записать DOM snapshot с идентификаторами элементов для будущего resolve.
 
 ### Процесс
@@ -94,14 +95,14 @@ EIQ → resolve() → Element[] // NO AST!
 function serializeNodeWithEID(node: Node): SerializedNode {
   // 1. Генерируем EID (canonical format)
   const eid: ElementIdentityDescriptor = generateEID(node);
-  
+
   // 2. Сериализуем EID в ноду
   const serialized = {
     ...serializeNode(node),
     eid: eid, // ← Полный EID (JSON)
-    eiq: stringifySEQL(eid) // ← Опционально для инспекции/дебага
+    eiq: stringifySEQL(eid), // ← Опционально для инспекции/дебага
   };
-  
+
   return serialized;
 }
 ```
@@ -125,6 +126,7 @@ function serializeNodeWithEID(node: Node): SerializedNode {
 ```
 
 **Важно**:
+
 - EID хранится полностью (source of truth)
 - EIQ опционально (для human-readability)
 
@@ -133,6 +135,7 @@ function serializeNodeWithEID(node: Node): SerializedNode {
 ## 📊 ЭТАП 2: Analytics Runtime (GA)
 
 ### Задача
+
 При клике/вводе отправить идентификатор элемента в аналитику.
 
 ### Процесс
@@ -142,10 +145,10 @@ function serializeNodeWithEID(node: Node): SerializedNode {
 function trackInteraction(element: Element, eventType: string) {
   // 1. Получаем EID из rrweb snapshot или генерируем заново
   const eid: ElementIdentityDescriptor = getEIDForElement(element);
-  
+
   // 2. Stringify в EIQ (compact format для GA)
   const eiq: ElementIdentityQuery = stringifySEQL(eid);
-  
+
   // 3. Отправляем в GA
   gtag('event', eventType, {
     element_identity: eiq, // ← Компактная строка
@@ -164,6 +167,7 @@ function trackInteraction(element: Element, eventType: string) {
 ```
 
 **Преимущества EIQ для GA**:
+
 - ✅ Компактнее JSON (лимиты payload)
 - ✅ Человекочитаем (легко дебажить в GA UI)
 - ✅ Можно использовать как dimension/key
@@ -176,6 +180,7 @@ function trackInteraction(element: Element, eventType: string) {
 ## 🗄️ ЭТАП 3: Backend Aggregation
 
 ### Задача
+
 Агрегировать события по элементам для построения тепловой карты.
 
 ### Процесс
@@ -192,11 +197,11 @@ interface AnalyticsEvent {
 // Группировка по EIQ
 const heatmapData = events.reduce((acc, event) => {
   const key = event.eiq; // EIQ как ключ
-  
+
   acc[key] = acc[key] || { count: 0, sessions: new Set() };
   acc[key].count++;
   acc[key].sessions.add(event.session_id);
-  
+
   return acc;
 }, {});
 
@@ -223,6 +228,7 @@ const heatmapData = events.reduce((acc, event) => {
 ## 🎬 ЭТАП 4: Player Replay
 
 ### Задача
+
 Отобразить тепловую карту на воспроизводимом DOM из rrweb snapshot.
 
 ### Процесс
@@ -230,32 +236,27 @@ const heatmapData = events.reduce((acc, event) => {
 ```typescript
 // В rrweb player
 class HeatmapRenderer {
-  
   async renderHeatmap(snapshot: RRWebSnapshot, analyticsData: HeatmapData) {
     for (const [eiq, stats] of Object.entries(analyticsData)) {
-      
       // 1. Parse EIQ → EID
       const eid: ElementIdentityDescriptor = parseSEQL(eiq);
-      
+
       // 2. Resolve EID в rrdom
       const elements = await resolve(eid, snapshot.dom);
-      
+
       if (elements.length > 0) {
         // 3. Отрисовка тепловой карты
         this.highlightElement(elements[0], {
           intensity: stats.count,
           color: this.getHeatColor(stats.count),
-          tooltip: `${stats.count} clicks, ${stats.sessions} sessions`
+          tooltip: `${stats.count} clicks, ${stats.sessions} sessions`,
         });
       }
     }
   }
-  
+
   // Resolve работает ТОЛЬКО с EID
-  async resolve(
-    eid: ElementIdentityDescriptor, 
-    dom: RRDOMSnapshot
-  ): Promise<Element[]> {
+  async resolve(eid: ElementIdentityDescriptor, dom: RRDOMSnapshot): Promise<Element[]> {
     // Внутренняя логика resolver
     // Использует EID.anchor, EID.path, EID.target
     // Применяет constraints и fallback
@@ -265,6 +266,7 @@ class HeatmapRenderer {
 ```
 
 **Критически важно**:
+
 - ✅ EIQ всегда парсится обратно в EID
 - ✅ Resolve работает только с EID
 - ✅ EIQ никогда не используется напрямую
@@ -291,47 +293,48 @@ stringifySEQL(eid1) === stringifySEQL(eid2); // ✅ ВСЕГДА true
 // Один EID → один EIQ (нет альтернативных представлений)
 
 // ❌ НЕПРАВИЛЬНО (два варианта для одного EID)
-"footer > ul > li#3"
-"footer>ul>li#3"
+'footer > ul > li#3';
+'footer>ul>li#3';
 
 // ✅ ПРАВИЛЬНО (только один канонический формат)
-"footer > ul > li#3"
+'footer > ul > li#3';
 ```
 
 ### 3. Версионированным
 
 ```typescript
 // EIQ должен содержать версию протокола
-const eiq = "v1:footer > ul > li#3";
+const eiq = 'v1:footer > ul > li#3';
 //           ↑↑
 //           версия
 
 // При изменении формата версия меняется
-const eiq_v2 = "v2:footer[role=contentinfo] > ul > li:nth(3)";
+const eiq_v2 = 'v2:footer[role=contentinfo] > ul > li:nth(3)';
 ```
 
 ### 4. Stable-sorted
 
 ```typescript
 // Атрибуты и классы в стабильном порядке
-"div[.class-a.class-b][role=button]" // ✅ Всегда в алфавитном порядке
-"div[.class-b.class-a][role=button]" // ❌ Другой порядок = другой EIQ
+'div[.class-a.class-b][role=button]'; // ✅ Всегда в алфавитном порядке
+'div[.class-b.class-a][role=button]'; // ❌ Другой порядок = другой EIQ
 ```
 
 ### 5. Без PII (Personally Identifiable Information)
 
 ```typescript
 // ❌ НЕПРАВИЛЬНО (содержит email)
-"footer > ul > li[text='info@maresereno.com']"
+"footer > ul > li[text='info@maresereno.com']";
 
 // ✅ ПРАВИЛЬНО (только структурные признаки)
-"footer > ul > li#3 > svg[.lucide-mail] > rect"
+'footer > ul > li#3 > svg[.lucide-mail] > rect';
 
 // Или с хешем
-"footer > ul > li[text-hash='7bf591b2']"
+"footer > ul > li[text-hash='7bf591b2']";
 ```
 
 **Почему важно**:
+
 - Аналитика не должна содержать PII
 - GDPR compliance
 - Безопасность данных
@@ -376,16 +379,18 @@ function resolve(eid: ElementIdentityDescriptor, dom: Document): Element[] {
 // ❌ НЕПРАВИЛЬНО (потеря данных)
 const serialized = {
   type: 2,
-  tagName: "rect",
-  eiq: "footer > ul > li#3 > svg > rect" // Только строка!
+  tagName: 'rect',
+  eiq: 'footer > ul > li#3 > svg > rect', // Только строка!
 };
 
 // ✅ ПРАВИЛЬНО (EID как source of truth)
 const serialized = {
   type: 2,
-  tagName: "rect",
-  eid: { /* полный EID */ },
-  eiq: "footer > ul > li#3 > svg > rect" // Опционально
+  tagName: 'rect',
+  eid: {
+    /* полный EID */
+  },
+  eiq: 'footer > ul > li#3 > svg > rect', // Опционально
 };
 ```
 
@@ -395,12 +400,12 @@ const serialized = {
 
 ```typescript
 // ❌ НЕПРАВИЛЬНО (не детерминировано)
-const eiq1 = "footer > ul > li#3";
-const eiq2 = "footer>ul>li#3"; // Разные строки!
-const eiq3 = "footer > ul > li:nth-child(3)";
+const eiq1 = 'footer > ul > li#3';
+const eiq2 = 'footer>ul>li#3'; // Разные строки!
+const eiq3 = 'footer > ul > li:nth-child(3)';
 
 // ✅ ПРАВИЛЬНО (канонический формат)
-const eiq = "footer > ul > li#3"; // Всегда одинаковый
+const eiq = 'footer > ul > li#3'; // Всегда одинаковый
 ```
 
 ---
@@ -412,13 +417,13 @@ const eiq = "footer > ul > li#3"; // Всегда одинаковый
 ```typescript
 /**
  * Converts EID to canonical string representation (EIQ)
- * 
+ *
  * Requirements:
  * - Deterministic (same EID → same EIQ)
  * - Canonical (one EID → one EIQ)
  * - Versioned (includes protocol version)
  * - PII-safe (no personal data)
- * 
+ *
  * @param eid - Element Identity Descriptor
  * @returns SEQL Selector (canonical string)
  */
@@ -432,7 +437,7 @@ function stringifySEQL(eid: ElementIdentityDescriptor): ElementIdentityQuery {
 ```typescript
 /**
  * Parses EIQ string back to EID structure
- * 
+ *
  * @param eiq - SEQL Selector (string)
  * @returns Element Identity Descriptor
  * @throws {ParseError} if EIQ is malformed or version unsupported
@@ -447,17 +452,14 @@ function parseSEQL(eiq: ElementIdentityQuery): ElementIdentityDescriptor {
 ```typescript
 /**
  * Resolves EID to actual DOM elements
- * 
+ *
  * IMPORTANT: Only accepts EID, never raw EIQ string
- * 
+ *
  * @param eid - Element Identity Descriptor (canonical format)
  * @param root - Root element or document to search in
  * @returns Array of matched elements with confidence scores
  */
-function resolve(
-  eid: ElementIdentityDescriptor, 
-  root: Document | Element
-): ResolveResult {
+function resolve(eid: ElementIdentityDescriptor, root: Document | Element): ResolveResult {
   // Implementation...
 }
 ```
@@ -480,7 +482,7 @@ function isCompatibleVersion(version: string): boolean;
 
 ### Добавить в SPECIFICATION.md
 
-```markdown
+````markdown
 ## 2. Format Distinction
 
 ### 2.1 Element Identity Descriptor (EID)
@@ -500,6 +502,7 @@ interface ElementIdentityDescriptor {
   meta: Metadata;
 }
 ```
+````
 
 ### 2.2 SEQL Selector (EIQ)
 
@@ -508,6 +511,7 @@ interface ElementIdentityDescriptor {
 **Usage**: Between systems (analytics, storage, aggregation)
 
 **Requirements**:
+
 - Deterministic
 - Canonical
 - Versioned
@@ -525,6 +529,7 @@ Pipeline: EIQ → parse() → EID → resolve() → Element[]
 
 **EIQ is NEVER interpreted directly.**
 **Always: parse → EID → logic.**
+
 ```
 
 ---
@@ -532,16 +537,18 @@ Pipeline: EIQ → parse() → EID → resolve() → Element[]
 ## 🎯 ИТОГОВАЯ ФОРМУЛА
 
 ```
+
 ┌────────────────────────────────────────────────────┐
-│                                                    │
-│  EID — это то, что система понимает               │
-│  EIQ — это то, что системы обменивают             │
-│                                                    │
-│  EID = Understanding                               │
-│  EIQ = Communication                               │
-│                                                    │
+│ │
+│ EID — это то, что система понимает │
+│ EIQ — это то, что системы обменивают │
+│ │
+│ EID = Understanding │
+│ EIQ = Communication │
+│ │
 └────────────────────────────────────────────────────┘
-```
+
+````
 
 ### Правила работы
 
@@ -609,7 +616,7 @@ snapshot.nodes[123].eiq = stringifySEQL(eid); // Optional
 element.addEventListener('click', () => {
   const eid = getEIDForElement(element);
   const eiq = stringifySEQL(eid);
-  
+
   gtag('event', 'click', {
     element_identity: eiq // "footer > ul > li#3 > svg > rect"
   });
@@ -625,10 +632,10 @@ const grouped = groupBy(analytics, event => event.element_identity);
 for (const [eiq, stats] of Object.entries(grouped)) {
   const eid = parseSEQL(eiq); // EIQ → EID
   const elements = resolve(eid, rrdom); // EID → Element[]
-  
+
   highlightElement(elements[0], stats);
 }
-```
+````
 
 ---
 
@@ -642,6 +649,7 @@ EID остаётся источником истины внутри систем
 ```
 
 **Преимущества**:
+
 - ✅ Компактность для GA
 - ✅ Человекочитаемость
 - ✅ Простота передачи
@@ -649,12 +657,14 @@ EID остаётся источником истины внутри систем
 - ✅ Отделение concerns
 
 **Критически важно**:
+
 - 🔒 EIQ всегда парсится в EID перед resolve
 - 🔒 Детерминированность и каноничность EIQ
 - 🔒 Версионирование протокола
 - 🔒 Отсутствие PII
 
 **Формула успеха**:
+
 ```
 EID = Understanding (AST, logic)
 EIQ = Communication (string, transport)

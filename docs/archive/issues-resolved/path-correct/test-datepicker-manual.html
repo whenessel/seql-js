@@ -1,107 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Date Picker Selector Test</title>
-  <style>
-    body {
-      font-family: 'Courier New', monospace;
-      padding: 30px;
-      max-width: 900px;
-      margin: 0 auto;
-      background: #f9f9f9;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #333;
-      border-bottom: 3px solid #007bff;
-      padding-bottom: 10px;
-    }
-    .step {
-      margin: 20px 0;
-      padding: 15px;
-      background: #e7f3ff;
-      border-left: 4px solid #007bff;
-      border-radius: 4px;
-    }
-    .step h3 {
-      margin-top: 0;
-      color: #007bff;
-    }
-    button {
-      padding: 12px 24px;
-      font-size: 16px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin: 5px;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    .code-block {
-      background: #2d2d2d;
-      color: #f8f8f2;
-      padding: 15px;
-      border-radius: 5px;
-      overflow-x: auto;
-      margin: 10px 0;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .warning {
-      background: #fff3cd;
-      border-left-color: #ffc107;
-      color: #856404;
-    }
-    .success {
-      background: #d4edda;
-      border-left-color: #28a745;
-      color: #155724;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🧪 DOM-DSL Date Picker Test</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Date Picker Selector Test</title>
+    <style>
+      body {
+        font-family: 'Courier New', monospace;
+        padding: 30px;
+        max-width: 900px;
+        margin: 0 auto;
+        background: #f9f9f9;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        border-bottom: 3px solid #007bff;
+        padding-bottom: 10px;
+      }
+      .step {
+        margin: 20px 0;
+        padding: 15px;
+        background: #e7f3ff;
+        border-left: 4px solid #007bff;
+        border-radius: 4px;
+      }
+      .step h3 {
+        margin-top: 0;
+        color: #007bff;
+      }
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+      .code-block {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 10px 0;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .warning {
+        background: #fff3cd;
+        border-left-color: #ffc107;
+        color: #856404;
+      }
+      .success {
+        background: #d4edda;
+        border-left-color: #28a745;
+        color: #155724;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 DOM-DSL Date Picker Test</h1>
 
-    <div class="step warning">
-      <h3>⚠️ Important Instructions</h3>
-      <p>This test needs to run on the actual website. Follow these steps:</p>
-      <ol>
-        <li>Click the button below to open the test website</li>
-        <li>Click on "Check-out Date" to open the date picker</li>
-        <li>Open DevTools Console (F12 or Cmd+Option+I)</li>
-        <li>Copy and paste the test script from below into the console</li>
-        <li>Press Enter to run the test</li>
-      </ol>
-    </div>
+      <div class="step warning">
+        <h3>⚠️ Important Instructions</h3>
+        <p>This test needs to run on the actual website. Follow these steps:</p>
+        <ol>
+          <li>Click the button below to open the test website</li>
+          <li>Click on "Check-out Date" to open the date picker</li>
+          <li>Open DevTools Console (F12 or Cmd+Option+I)</li>
+          <li>Copy and paste the test script from below into the console</li>
+          <li>Press Enter to run the test</li>
+        </ol>
+      </div>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <button onclick="openTestSite()">
-        🌐 Open Test Website
-      </button>
-      <button onclick="copyScript()">
-        📋 Copy Test Script
-      </button>
-    </div>
+      <div style="text-align: center; margin: 30px 0">
+        <button onclick="openTestSite()">🌐 Open Test Website</button>
+        <button onclick="copyScript()">📋 Copy Test Script</button>
+      </div>
 
-    <div class="step">
-      <h3>📝 Test Script</h3>
-      <p>Copy this entire script and paste it into the browser console on the test website:</p>
-      <div class="code-block" id="scriptContent">
-<textarea id="scriptText" readonly style="width: 100%; height: 400px; background: transparent; color: #f8f8f2; border: none; font-family: 'Courier New', monospace; font-size: 13px; resize: vertical;">(function() {
+      <div class="step">
+        <h3>📝 Test Script</h3>
+        <p>Copy this entire script and paste it into the browser console on the test website:</p>
+        <div class="code-block" id="scriptContent">
+          <textarea
+            id="scriptText"
+            readonly
+            style="
+              width: 100%;
+              height: 400px;
+              background: transparent;
+              color: #f8f8f2;
+              border: none;
+              font-family: 'Courier New', monospace;
+              font-size: 13px;
+              resize: vertical;
+            "
+          >
+(function() {
   console.log('=== Date Picker Selector Test ===\n');
 
   function testDateCell(dateText) {
@@ -192,40 +202,44 @@
 
   return { result18, result31 };
 })();
-</textarea>
+</textarea
+          >
+        </div>
+      </div>
+
+      <div class="step success">
+        <h3>✅ Expected Results</h3>
+        <p>If the fixes are working correctly, you should see:</p>
+        <ul>
+          <li>✅ Date 18: PASS</li>
+          <li>✅ Date 31: PASS</li>
+          <li>
+            Both selectors using <code>:nth-child()</code> instead of <code>:nth-of-type()</code>
+          </li>
+          <li>Each selector matching exactly 1 element</li>
+        </ul>
       </div>
     </div>
 
-    <div class="step success">
-      <h3>✅ Expected Results</h3>
-      <p>If the fixes are working correctly, you should see:</p>
-      <ul>
-        <li>✅ Date 18: PASS</li>
-        <li>✅ Date 31: PASS</li>
-        <li>Both selectors using <code>:nth-child()</code> instead of <code>:nth-of-type()</code></li>
-        <li>Each selector matching exactly 1 element</li>
-      </ul>
-    </div>
-
-  </div>
-
-  <script>
-    function openTestSite() {
-      window.open('https://appsurify.github.io/modern-seaside-stay/', '_blank');
-    }
-
-    function copyScript() {
-      const textarea = document.getElementById('scriptText');
-      textarea.select();
-      textarea.setSelectionRange(0, 99999); // For mobile
-
-      try {
-        document.execCommand('copy');
-        alert('✅ Script copied to clipboard!\n\nNow:\n1. Switch to the test website tab\n2. Open console (F12)\n3. Paste and press Enter');
-      } catch (err) {
-        alert('Failed to copy. Please select the text manually and copy it.');
+    <script>
+      function openTestSite() {
+        window.open('https://appsurify.github.io/modern-seaside-stay/', '_blank');
       }
-    }
-  </script>
-</body>
+
+      function copyScript() {
+        const textarea = document.getElementById('scriptText');
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile
+
+        try {
+          document.execCommand('copy');
+          alert(
+            '✅ Script copied to clipboard!\n\nNow:\n1. Switch to the test website tab\n2. Open console (F12)\n3. Paste and press Enter'
+          );
+        } catch (err) {
+          alert('Failed to copy. Please select the text manually and copy it.');
+        }
+      }
+    </script>
+  </body>
 </html>

@@ -29,10 +29,12 @@ if (targetCandidates.length > 0) {
 ### Example: Date 31
 
 **Найденные элементы:**
+
 - `targetCandidates[0]` = Button "31" в Row 1, Cell 4 (декабрь, серая) ← выбирается
 - `targetCandidates[1]` = Button "31" в Row 5, Cell 7 (январь, активная) ← нужная!
 
 **Result:**
+
 - Генерируется селектор для неправильного элемента
 - Селектор: `tr:nth-child(1) > td:nth-child(4)`
 - Должен быть: `tr:nth-child(5) > td:nth-child(7)`
@@ -44,6 +46,7 @@ if (targetCandidates.length > 0) {
 DSL содержит **описательную** информацию (tag, classes, attributes, text), но **не содержит позиционную** информацию (nth-child индексы).
 
 При резолюции DSL обратно в selector:
+
 1. ✅ Anchor находится правильно (table)
 2. ❌ Target ищется только по тексту → находится первый с таким текстом
 3. ❌ Path строится от anchor к неправильному target
@@ -161,11 +164,13 @@ private scorePathMatch(
 ```
 
 **Pros:**
+
 - ✅ Работает с текущей структурой DSL
 - ✅ Выбирает наиболее подходящий элемент
 - ✅ Не ломает существующие тесты
 
 **Cons:**
+
 - Немного сложнее реализация
 
 ### Option 2: Store nth-child in DSL during generation
@@ -178,7 +183,7 @@ export interface PathNode {
   tag: string;
   semantics: DslSemantics;
   score: number;
-  nthChild?: number;  // ← NEW
+  nthChild?: number; // ← NEW
 }
 ```
 
@@ -210,10 +215,12 @@ buildPath(anchor: Element, target: Element, extractor: SemanticExtractor) {
 ```
 
 **Pros:**
+
 - ✅ Самое точное решение
 - ✅ Селекторы всегда правильные
 
 **Cons:**
+
 - ❌ Изменяет структуру DSL (breaking change)
 - ❌ Увеличивает размер DSL
 - ❌ DSL становится менее portable (зависит от конкретной структуры DOM)
@@ -245,10 +252,12 @@ private findTargetWithinAnchor(
 ```
 
 **Pros:**
+
 - ✅ Простая реализация
 - ✅ Помогает в календарях
 
 **Cons:**
+
 - ❌ Не решает общую проблему
 - ❌ Специфично для date pickers
 - ❌ Могут быть другие случаи дублирующихся элементов

@@ -7,7 +7,7 @@ export default defineConfig({
       entry: './src/index.ts',
       name: 'SeqlJS',
       formats: ['es', 'umd'],
-      fileName: (format) => format === 'es' ? 'seql-js.js' : 'seql-js.umd.cjs'
+      fileName: (format) => (format === 'es' ? 'seql-js.js' : 'seql-js.umd.cjs'),
     },
     sourcemap: true,
     target: 'es2020',
@@ -15,15 +15,15 @@ export default defineConfig({
     rollupOptions: {
       external: [],
       output: {
-        globals: {}
-      }
-    }
+        globals: {},
+      },
+    },
   },
   plugins: [
     dts({
       rollupTypes: true,
       insertTypesEntry: true,
-      include: ['src/**/*.ts']
-    })
-  ]
+      include: ['src/**/*.ts'],
+    }),
+  ],
 });
