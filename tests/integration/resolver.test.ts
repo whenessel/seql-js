@@ -435,4 +435,320 @@ describe('resolver', () => {
       expect(selector).toContain('span');
     });
   });
+
+  describe('Fallback Scenarios', () => {
+    it('should use anchor-only fallback when target not found', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      doc.body.appendChild(form);
+
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      form.appendChild(button);
+
+      const eid = generateEID(button)!;
+      // Remove button from DOM
+      button.remove();
+
+      eid.fallback.onMissing = 'anchor-only';
+      const result = resolve(eid, doc, { enableFallback: true });
+
+      expect(result.status).toBe('degraded-fallback');
+      expect(result.elements).toHaveLength(1);
+      expect(result.elements[0]).toBe(form); // Should return anchor
+      expect(result.confidence).toBeLessThan(eid.meta.confidence);
+    });
+
+    it('should use best-score fallback for multiple matches', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      const button1 = doc.createElement('button');
+      button1.textContent = 'Submit';
+      button1.id = 'submit-1';
+      const button2 = doc.createElement('button');
+      button2.textContent = 'Submit';
+      button2.id = 'submit-2';
+      form.appendChild(button1);
+      form.appendChild(button2);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button1)!;
+      eid.fallback.onMultiple = 'best-score';
+
+      const result = resolve(eid, doc);
+
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+      // Should select element with best score (likely button1 with id)
+      expect(result.elements[0].id).toBe('submit-1');
+    });
+
+    it('should use allow-multiple fallback for multiple matches', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      const button1 = doc.createElement('button');
+      button1.textContent = 'Submit';
+      const button2 = doc.createElement('button');
+      button2.textContent = 'Submit';
+      form.appendChild(button1);
+      form.appendChild(button2);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button1)!;
+      eid.fallback.onMultiple = 'allow-multiple';
+
+      const result = resolve(eid, doc);
+
+      expect(result.status).toBe('success');
+      expect(result.elements.length).toBeGreaterThanOrEqual(1);
+      // Confidence may be degraded or same depending on fallback handler logic
+      expect(result.confidence).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe('Performance', () => {
+    it('should resolve quickly with many candidates', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      for (let i = 0; i < 100; i++) {
+        const button = doc.createElement('button');
+        button.textContent = `Button ${i}`;
+        form.appendChild(button);
+      }
+      doc.body.appendChild(form);
+
+      const targetButton = form.children[50] as HTMLButtonElement;
+      const eid = generateEID(targetButton)!;
+
+      const start = performance.now();
+      const result = resolve(eid, doc);
+      const duration = performance.now() - start;
+
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+      expect(duration).toBeLessThan(100); // Should complete in < 100ms
+    });
+
+    it('should limit candidates with maxCandidates option', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      for (let i = 0; i < 200; i++) {
+        const button = doc.createElement('button');
+        button.textContent = 'Submit';
+        form.appendChild(button);
+      }
+      doc.body.appendChild(form);
+
+      const targetButton = form.children[0] as HTMLButtonElement;
+      const eid = generateEID(targetButton)!;
+
+      const start = performance.now();
+      const result = resolve(eid, doc, { maxCandidates: 50 });
+      const duration = performance.now() - start;
+
+      expect(result.status).toBe('success');
+      expect(duration).toBeLessThan(100); // Should be faster with limit
+    });
+  });
+
+  describe('DOM Variations', () => {
+    it('should resolve after DOM structure changes', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      form.appendChild(button);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button)!;
+
+      // Add wrapper div
+      const wrapper = doc.createElement('div');
+      wrapper.className = 'wrapper';
+      form.insertBefore(wrapper, button);
+      wrapper.appendChild(button);
+
+      const result = resolve(eid, doc);
+
+      // Should still resolve despite structure change
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+    });
+
+    it('should resolve with dynamic classes added', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      form.appendChild(button);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button)!;
+
+      // Add dynamic class
+      button.classList.add('active', 'focused');
+
+      const result = resolve(eid, doc);
+
+      // Should still resolve (dynamic classes filtered)
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+    });
+
+    it('should resolve with attributes changed', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      form.appendChild(button);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button)!;
+
+      // Change state attributes
+      button.setAttribute('disabled', 'true');
+      button.setAttribute('aria-selected', 'true');
+
+      const result = resolve(eid, doc);
+
+      // Should still resolve (state attributes filtered)
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+    });
+  });
+
+  describe('Resilience', () => {
+    it('should handle missing anchor gracefully', () => {
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      form.appendChild(button);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button)!;
+      // Remove anchor
+      form.remove();
+
+      const result = resolve(eid, doc, { enableFallback: false });
+
+      expect(result.status).toBe('error');
+      expect(result.elements).toHaveLength(0);
+    });
+
+    it('should handle invalid CSS selector gracefully', () => {
+      const form = doc.createElement('form');
+      form.id = 'login[form'; // Invalid ID
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      form.appendChild(button);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button)!;
+
+      const result = resolve(eid, doc);
+
+      // Should handle gracefully (jsdom may or may not throw on invalid selector)
+      expect(['error', 'degraded-fallback', 'success']).toContain(result.status);
+    });
+
+    it('should handle empty document', () => {
+      const emptyDoc = document.implementation.createHTMLDocument('Empty');
+      const eid: ElementIdentity = {
+        version: '1.0',
+        anchor: {
+          tag: 'form',
+          semantics: { id: 'nonexistent' },
+          score: 0.9,
+        },
+        path: [],
+        target: {
+          tag: 'button',
+          semantics: {},
+          score: 0.8,
+        },
+        meta: {
+          confidence: 0.85,
+          generatedAt: Date.now(),
+        },
+        constraints: [],
+        fallback: {
+          onMissing: 'none',
+          onMultiple: 'first',
+        },
+      };
+
+      const result = resolve(eid, emptyDoc, { enableFallback: false });
+
+      expect(result.status).toBe('error');
+      expect(result.elements).toHaveLength(0);
+    });
+  });
+
+  describe('Complex Structures', () => {
+    it('should resolve in deeply nested structure', () => {
+      let current = doc.body;
+      for (let i = 0; i < 10; i++) {
+        const div = doc.createElement('div');
+        div.className = `level-${i}`;
+        current.appendChild(div);
+        current = div;
+      }
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      current.appendChild(button);
+
+      const eid = generateEID(button)!;
+
+      const result = resolve(eid, doc);
+
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+      expect(result.elements[0]).toBe(button);
+    });
+
+    it('should resolve in shadow DOM-like structure', () => {
+      const container = doc.createElement('div');
+      container.id = 'shadow-container';
+      const form = doc.createElement('form');
+      form.id = 'login-form';
+      const button = doc.createElement('button');
+      button.textContent = 'Submit';
+      form.appendChild(button);
+      container.appendChild(form);
+      doc.body.appendChild(container);
+
+      const eid = generateEID(button)!;
+
+      const result = resolve(eid, container); // Resolve within container
+
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+      expect(result.elements[0]).toBe(button);
+    });
+
+    it('should resolve with multiple forms and similar buttons', () => {
+      for (let i = 0; i < 5; i++) {
+        const form = doc.createElement('form');
+        form.id = `form-${i}`;
+        const button = doc.createElement('button');
+        button.textContent = 'Submit';
+        form.appendChild(button);
+        doc.body.appendChild(form);
+      }
+
+      const targetForm = doc.getElementById('form-2')!;
+      const targetButton = targetForm.querySelector('button')!;
+      const eid = generateEID(targetButton)!;
+
+      const result = resolve(eid, doc);
+
+      expect(result.status).toBe('success');
+      expect(result.elements).toHaveLength(1);
+      // Should resolve to one of the buttons (anchor context should help)
+      const resolvedFormId = result.elements[0].closest('form')?.id;
+      expect(resolvedFormId).toBeDefined();
+      expect(['form-0', 'form-1', 'form-2', 'form-3', 'form-4']).toContain(resolvedFormId);
+    });
+  });
 });

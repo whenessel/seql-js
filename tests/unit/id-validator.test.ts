@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   isDynamicId,
   hasDynamicIdReference,
+  isStableId,
   ID_REFERENCE_ATTRIBUTES,
 } from '../../src/utils/id-validator';
 
@@ -124,5 +125,55 @@ describe('ID_REFERENCE_ATTRIBUTES', () => {
 
   it('should NOT contain role', () => {
     expect(ID_REFERENCE_ATTRIBUTES.has('role')).toBe(false);
+  });
+});
+
+describe('isStableId', () => {
+  it('should return false for null', () => {
+    expect(isStableId(null)).toBe(false);
+  });
+
+  it('should return false for undefined', () => {
+    expect(isStableId(undefined)).toBe(false);
+  });
+
+  it('should return false for empty string', () => {
+    expect(isStableId('')).toBe(false);
+  });
+
+  it('should return true for stable ID', () => {
+    expect(isStableId('user-profile')).toBe(true);
+  });
+
+  it('should return false for dynamic ID', () => {
+    expect(isStableId('input-123')).toBe(false);
+  });
+
+  it('should return true for semantic ID', () => {
+    expect(isStableId('login-form')).toBe(true);
+  });
+
+  it('should return false for UUID', () => {
+    expect(isStableId('550e8400-e29b-41d4-a716-446655440000')).toBe(false);
+  });
+});
+
+describe('isDynamicId - hash-like edge cases', () => {
+  it('should detect hash with only lowercase and numbers', () => {
+    expect(isDynamicId('css1a2b3c4d')).toBe(true);
+  });
+
+  it('should detect hash with mixed case', () => {
+    expect(isDynamicId('scBdVaJaXy')).toBe(true); // 10 chars: 'sc' + 'BdVaJaXy' (8 chars)
+  });
+
+  it('should NOT detect short hash without digits or uppercase', () => {
+    // Pattern requires 8+ chars after 1-3 letter prefix AND (digits OR uppercase)
+    expect(isDynamicId('cssabcdefgh')).toBe(false);
+  });
+
+  it('should NOT detect hash shorter than 9 chars total', () => {
+    // Pattern requires 1-3 prefix + 8+ additional = at least 9 chars total
+    expect(isDynamicId('scBdVaJa')).toBe(false); // Only 8 chars: 'sc' + 'BdVaJa'
   });
 });

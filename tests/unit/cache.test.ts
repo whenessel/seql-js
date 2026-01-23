@@ -405,6 +405,71 @@ describe('EIDCache', () => {
       expect(cache.getEIDHitRate()).toBeCloseTo(2 / 3, 2);
     });
 
+    it('should calculate selector hit rate', () => {
+      const button = doc.createElement('button');
+      doc.body.appendChild(button);
+
+      // 1 miss, 0 hits = 0% hit rate
+      cache.getSelectorResults('button');
+      expect(cache.getSelectorHitRate()).toBe(0);
+
+      // 1 miss, 1 hit = 50% hit rate
+      cache.setSelectorResults('button', [button]);
+      cache.getSelectorResults('button');
+      expect(cache.getSelectorHitRate()).toBe(0.5);
+
+      // 1 miss, 2 hits = 66.67% hit rate
+      cache.getSelectorResults('button');
+      expect(cache.getSelectorHitRate()).toBeCloseTo(2 / 3, 2);
+    });
+
+    it('should calculate anchor hit rate', () => {
+      const button = doc.createElement('button');
+      doc.body.appendChild(button);
+
+      const anchorResult: AnchorResult = {
+        element: doc.body,
+        score: 0.5,
+        tier: 'A',
+        depth: 1,
+      };
+
+      // 1 miss, 0 hits = 0% hit rate
+      cache.getAnchor(button);
+      expect(cache.getAnchorHitRate()).toBe(0);
+
+      // 1 miss, 1 hit = 50% hit rate
+      cache.setAnchor(button, anchorResult);
+      cache.getAnchor(button);
+      expect(cache.getAnchorHitRate()).toBe(0.5);
+
+      // 1 miss, 2 hits = 66.67% hit rate
+      cache.getAnchor(button);
+      expect(cache.getAnchorHitRate()).toBeCloseTo(2 / 3, 2);
+    });
+
+    it('should calculate semantics hit rate', () => {
+      const button = doc.createElement('button');
+      doc.body.appendChild(button);
+
+      const semantics: ElementSemantics = {
+        id: 'test-button',
+      };
+
+      // 1 miss, 0 hits = 0% hit rate
+      cache.getSemantics(button);
+      expect(cache.getSemanticsHitRate()).toBe(0);
+
+      // 1 miss, 1 hit = 50% hit rate
+      cache.setSemantics(button, semantics);
+      cache.getSemantics(button);
+      expect(cache.getSemanticsHitRate()).toBe(0.5);
+
+      // 1 miss, 2 hits = 66.67% hit rate
+      cache.getSemantics(button);
+      expect(cache.getSemanticsHitRate()).toBeCloseTo(2 / 3, 2);
+    });
+
     it('should calculate overall hit rate', () => {
       const button = doc.createElement('button');
       doc.body.appendChild(button);

@@ -132,5 +132,54 @@ describe('AttributeCleaner', () => {
         ).toBe('/page#12345678');
       });
     });
+
+    describe('dynamic hash patterns', () => {
+      it('should detect hash with 5+ digits as dynamic', () => {
+        expect(cleanAttributeValue('href', '/page#12345')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#123456789')).toBe('/page');
+      });
+
+      it('should detect hex hash 8+ characters as dynamic', () => {
+        expect(cleanAttributeValue('href', '/page#abcd1234')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#ABCDEF12')).toBe('/page');
+      });
+
+      it('should detect dynamic keywords in hash', () => {
+        expect(cleanAttributeValue('href', '/page#session')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#token-value')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#temp123')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#random-id')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#timestamp')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#nonce')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#cache-key')).toBe('/page');
+      });
+
+      it('should detect only-digits hash as dynamic', () => {
+        expect(cleanAttributeValue('href', '/page#123')).toBe('/page');
+        expect(cleanAttributeValue('href', '/page#1')).toBe('/page');
+      });
+
+      it('should preserve short semantic hash', () => {
+        expect(cleanAttributeValue('href', '/page#top')).toBe('/page#top');
+        expect(cleanAttributeValue('href', '/page#nav')).toBe('/page#nav');
+        expect(cleanAttributeValue('href', '/page#footer')).toBe('/page#footer');
+      });
+    });
+
+    describe('url edge cases', () => {
+      it('should handle empty hash', () => {
+        expect(cleanAttributeValue('href', '/page#')).toBe('/page');
+      });
+
+      it('should handle URLs with only hash', () => {
+        expect(cleanAttributeValue('href', '#section')).toBe('#section');
+        expect(cleanAttributeValue('href', '#12345')).toBe('');
+      });
+
+      it('should handle http URLs', () => {
+        expect(cleanAttributeValue('href', 'http://example.com/page')).toBe('http://example.com/page');
+        expect(cleanAttributeValue('href', 'http://example.com/page?id=1')).toBe('http://example.com/page?id=1');
+      });
+    });
   });
 });

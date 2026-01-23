@@ -5,7 +5,7 @@
   "author": "Artem Demidenko <ar.demidenko@gmail.com>",
   "scripts": {
     "types:check": "tsc --noEmit",
-    "build": "vite build",
+    "build": "yarn types:check && vite build",
     "build:watch": "vite build --watch",
     "test": "vitest run --project unit --project integration",
     "test:watch": "vitest --project unit --project integration",
@@ -14,6 +14,7 @@
     "test:unit:coverage": "vitest run --config vitest.config.unit.ts --coverage",
     "test:integration": "vitest run --config vitest.config.integration.ts",
     "test:integration:coverage": "vitest run --config vitest.config.integration.ts --coverage",
+    "test:benchmark": "vitest run --config vitest.config.benchmark.ts",
     "extension:prepare": "yarn build && mkdir -p extensions/chrome/lib && cp dist/seql-js.umd.cjs extensions/chrome/lib/",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
