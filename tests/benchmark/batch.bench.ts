@@ -34,7 +34,9 @@ describe('Benchmark: Batch Operations', () => {
     console.log(`Total time: ${totalTime.toFixed(2)}ms`);
     console.log(`Average time per element: ${result.stats.avgTimePerElementMs.toFixed(4)}ms`);
     console.log(`Cache hit rate: ${(result.stats.cacheHitRate * 100).toFixed(2)}%`);
-    console.log(`Throughput: ${((result.stats.totalElements / totalTime) * 1000).toFixed(2)} elements/sec\n`);
+    console.log(
+      `Throughput: ${((result.stats.totalElements / totalTime) * 1000).toFixed(2)} elements/sec\n`
+    );
 
     expect(totalTime).toBeLessThan(3000); // 3 seconds max
   });
@@ -107,7 +109,9 @@ describe('Benchmark: Batch Operations', () => {
     console.log(`Failed: ${result.stats.failed}`);
     console.log(`Total time: ${totalTime.toFixed(2)}ms`);
     console.log(`Average time per element: ${result.stats.avgTimePerElementMs.toFixed(4)}ms`);
-    console.log(`Throughput: ${((result.stats.totalElements / totalTime) * 1000).toFixed(2)} elements/sec\n`);
+    console.log(
+      `Throughput: ${((result.stats.totalElements / totalTime) * 1000).toFixed(2)} elements/sec\n`
+    );
 
     expect(totalTime).toBeLessThan(5000); // 5 seconds max
   });

@@ -70,7 +70,9 @@ describe('Benchmark: EID Resolution', () => {
     const avgTime = resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length;
     const minTime = Math.min(...resolutionTimes);
     const maxTime = Math.max(...resolutionTimes);
-    const medianTime = resolutionTimes.sort((a, b) => a - b)[Math.floor(resolutionTimes.length / 2)];
+    const medianTime = resolutionTimes.sort((a, b) => a - b)[
+      Math.floor(resolutionTimes.length / 2)
+    ];
 
     console.log('--- Resolution Results ---');
     console.log(`Total EIDs resolved: ${eids.length}`);
@@ -81,8 +83,12 @@ describe('Benchmark: EID Resolution', () => {
     console.log(`Median time: ${medianTime.toFixed(4)}ms`);
     console.log(`Throughput: ${((eids.length / totalResTime) * 1000).toFixed(2)} resolutions/sec`);
     console.log(`\n--- Resolution Quality ---`);
-    console.log(`Exact Success: ${successCount} (${((successCount / eids.length) * 100).toFixed(2)}%)`);
-    console.log(`Degraded Success: ${degradedCount} (${((degradedCount / eids.length) * 100).toFixed(2)}%)`);
+    console.log(
+      `Exact Success: ${successCount} (${((successCount / eids.length) * 100).toFixed(2)}%)`
+    );
+    console.log(
+      `Degraded Success: ${degradedCount} (${((degradedCount / eids.length) * 100).toFixed(2)}%)`
+    );
     console.log(`Failed: ${failedCount} (${((failedCount / eids.length) * 100).toFixed(2)}%)\n`);
 
     // Benchmark should pass if it finishes within a reasonable time
@@ -102,7 +108,9 @@ describe('Benchmark: EID Resolution', () => {
     `;
 
     const elements = Array.from(document.body.querySelectorAll('*')) as HTMLElement[];
-    const eids = elements.map((el) => ({ element: el, eid: generateEID(el)! })).filter((e) => e.eid);
+    const eids = elements
+      .map((el) => ({ element: el, eid: generateEID(el)! }))
+      .filter((e) => e.eid);
 
     console.log(`\n📊 Benchmark: Simple DOM Resolution`);
     console.log(`Found ${eids.length} EIDs\n`);
@@ -125,7 +133,9 @@ describe('Benchmark: EID Resolution', () => {
     console.log(`EIDs per iteration: ${eids.length}`);
     console.log(`Total time: ${totalTime.toFixed(2)}ms`);
     console.log(`Average time per resolution: ${avgTime.toFixed(4)}ms`);
-    console.log(`Throughput: ${((iterations * eids.length) / totalTime * 1000).toFixed(2)} resolutions/sec\n`);
+    console.log(
+      `Throughput: ${(((iterations * eids.length) / totalTime) * 1000).toFixed(2)} resolutions/sec\n`
+    );
 
     expect(totalTime).toBeLessThan(2000); // 2 seconds max
   });

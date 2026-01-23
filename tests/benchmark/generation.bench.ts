@@ -67,7 +67,9 @@ describe('Benchmark: EID Generation', () => {
     console.log(`Min time: ${minTime.toFixed(4)}ms`);
     console.log(`Max time: ${maxTime.toFixed(4)}ms`);
     console.log(`Median time: ${medianTime.toFixed(4)}ms`);
-    console.log(`Throughput: ${((elements.length / totalGenTime) * 1000).toFixed(2)} elements/sec\n`);
+    console.log(
+      `Throughput: ${((elements.length / totalGenTime) * 1000).toFixed(2)} elements/sec\n`
+    );
 
     // Benchmark should pass if it finishes within a reasonable time
     expect(totalGenTime).toBeLessThan(5000); // 5 seconds max
@@ -108,7 +110,9 @@ describe('Benchmark: EID Generation', () => {
     console.log(`Elements per iteration: ${elements.length}`);
     console.log(`Total time: ${totalTime.toFixed(2)}ms`);
     console.log(`Average time per element: ${avgTime.toFixed(4)}ms`);
-    console.log(`Throughput: ${((iterations * elements.length) / totalTime * 1000).toFixed(2)} elements/sec\n`);
+    console.log(
+      `Throughput: ${(((iterations * elements.length) / totalTime) * 1000).toFixed(2)} elements/sec\n`
+    );
 
     expect(totalTime).toBeLessThan(2000); // 2 seconds max
   });

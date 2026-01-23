@@ -337,7 +337,9 @@ describe('Constraints Evaluation - Integration', () => {
       expect(result.status).toBe('success');
       expect(result.elements).toHaveLength(1);
       // Should match top-most button
-      expect(result.elements[0].closest('.product-card')?.getAttribute('style')).toContain('top: 10px');
+      expect(result.elements[0].closest('.product-card')?.getAttribute('style')).toContain(
+        'top: 10px'
+      );
     });
 
     it('should handle overlapping modal dialogs using position constraint', () => {

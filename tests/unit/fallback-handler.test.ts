@@ -119,7 +119,9 @@ describe('FallbackHandler', () => {
 
       expect(result.status).toBe('error');
       // jsdom may not throw on invalid selector, so it might return 'anchor-not-found' instead
-      expect(['invalid-anchor-selector', 'anchor-not-found']).toContain(result.meta?.degradationReason);
+      expect(['invalid-anchor-selector', 'anchor-not-found']).toContain(
+        result.meta?.degradationReason
+      );
       // Should contain error message
       expect(result.warnings.length).toBeGreaterThan(0);
     });
@@ -597,10 +599,7 @@ describe('FallbackHandler', () => {
     });
 
     it('should degrade to 0.7x for first strategy', () => {
-      const elements = [
-        document.createElement('button'),
-        document.createElement('button'),
-      ];
+      const elements = [document.createElement('button'), document.createElement('button')];
 
       mockEID.fallback.onMultiple = 'first';
       mockEID.meta.confidence = 0.8;
@@ -611,10 +610,7 @@ describe('FallbackHandler', () => {
     });
 
     it('should degrade to 0.5x for allow-multiple', () => {
-      const elements = [
-        document.createElement('button'),
-        document.createElement('button'),
-      ];
+      const elements = [document.createElement('button'), document.createElement('button')];
 
       mockEID.fallback.onMultiple = 'allow-multiple';
       mockEID.meta.confidence = 0.75;

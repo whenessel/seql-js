@@ -17,7 +17,7 @@ describe('ConstraintsEvaluator', () => {
     ];
   });
 
-  function createMockElement(text: string, tag: string = 'div'): Element {
+  function createMockElement(text: string, tag = 'div'): Element {
     const element = document.createElement(tag);
     element.textContent = text;
     document.body.appendChild(element);
@@ -48,8 +48,8 @@ describe('ConstraintsEvaluator', () => {
       const elements = [
         createMockElement('Submit'),
         createMockElement('Submitt'), // distance = 1 (extra 't')
-        createMockElement('Submi'),   // distance = 1 (missing 't')
-        createMockElement('Cancel'),  // distance > 3
+        createMockElement('Submi'), // distance = 1 (missing 't')
+        createMockElement('Cancel'), // distance > 3
       ];
 
       const constraint: Constraint = {
@@ -61,17 +61,17 @@ describe('ConstraintsEvaluator', () => {
       const result = evaluator.applyConstraint(elements, constraint);
 
       expect(result).toHaveLength(3);
-      expect(result.map(el => el.textContent)).toContain('Submit');
-      expect(result.map(el => el.textContent)).toContain('Submitt');
-      expect(result.map(el => el.textContent)).toContain('Submi');
-      expect(result.map(el => el.textContent)).not.toContain('Cancel');
+      expect(result.map((el) => el.textContent)).toContain('Submit');
+      expect(result.map((el) => el.textContent)).toContain('Submitt');
+      expect(result.map((el) => el.textContent)).toContain('Submi');
+      expect(result.map((el) => el.textContent)).not.toContain('Cancel');
     });
 
     it('should filter beyond maxDistance', () => {
       const elements = [
         createMockElement('kitten'),
         createMockElement('sitting'), // distance = 3
-        createMockElement('cat'),     // distance > 3
+        createMockElement('cat'), // distance > 3
       ];
 
       const constraint: Constraint = {
@@ -83,15 +83,12 @@ describe('ConstraintsEvaluator', () => {
       const result = evaluator.applyConstraint(elements, constraint);
 
       expect(result).toHaveLength(2);
-      expect(result.map(el => el.textContent)).toContain('kitten');
-      expect(result.map(el => el.textContent)).toContain('sitting');
+      expect(result.map((el) => el.textContent)).toContain('kitten');
+      expect(result.map((el) => el.textContent)).toContain('sitting');
     });
 
     it('should handle empty text content', () => {
-      const elements = [
-        createMockElement(''),
-        createMockElement('Submit'),
-      ];
+      const elements = [createMockElement(''), createMockElement('Submit')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -126,9 +123,7 @@ describe('ConstraintsEvaluator', () => {
   describe('Levenshtein Distance Algorithm', () => {
     // Testing the algorithm indirectly through text-proximity constraint
     it('should return 0 for identical strings', () => {
-      const elements = [
-        createMockElement('test'),
-      ];
+      const elements = [createMockElement('test')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -142,10 +137,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should calculate single insertion: "cat" → "cats" = 1', () => {
-      const elements = [
-        createMockElement('cat'),
-        createMockElement('cats'),
-      ];
+      const elements = [createMockElement('cat'), createMockElement('cats')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -156,14 +148,11 @@ describe('ConstraintsEvaluator', () => {
       const result = evaluator.applyConstraint(elements, constraint);
 
       expect(result).toHaveLength(2);
-      expect(result.map(el => el.textContent)).toContain('cats');
+      expect(result.map((el) => el.textContent)).toContain('cats');
     });
 
     it('should calculate single deletion: "cats" → "cat" = 1', () => {
-      const elements = [
-        createMockElement('cats'),
-        createMockElement('cat'),
-      ];
+      const elements = [createMockElement('cats'), createMockElement('cat')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -174,7 +163,7 @@ describe('ConstraintsEvaluator', () => {
       const result = evaluator.applyConstraint(elements, constraint);
 
       expect(result).toHaveLength(2);
-      expect(result.map(el => el.textContent)).toContain('cat');
+      expect(result.map((el) => el.textContent)).toContain('cat');
     });
 
     it('should calculate single substitution: "cat" → "bat" = 1', () => {
@@ -193,15 +182,12 @@ describe('ConstraintsEvaluator', () => {
       const result = evaluator.applyConstraint(elements, constraint);
 
       expect(result).toHaveLength(3);
-      expect(result.map(el => el.textContent)).toContain('bat');
-      expect(result.map(el => el.textContent)).toContain('hat');
+      expect(result.map((el) => el.textContent)).toContain('bat');
+      expect(result.map((el) => el.textContent)).toContain('hat');
     });
 
     it('should calculate multiple operations: "kitten" → "sitting" = 3', () => {
-      const elements = [
-        createMockElement('kitten'),
-        createMockElement('sitting'),
-      ];
+      const elements = [createMockElement('kitten'), createMockElement('sitting')];
 
       // Test exact distance
       const constraint: Constraint = {
@@ -213,14 +199,11 @@ describe('ConstraintsEvaluator', () => {
       const result = evaluator.applyConstraint(elements, constraint);
 
       expect(result).toHaveLength(2);
-      expect(result.map(el => el.textContent)).toContain('sitting');
+      expect(result.map((el) => el.textContent)).toContain('sitting');
     });
 
     it('should handle empty string edge cases', () => {
-      const elements = [
-        createMockElement(''),
-        createMockElement('test'),
-      ];
+      const elements = [createMockElement(''), createMockElement('test')];
 
       // Empty to "test" = 4 characters
       const constraint: Constraint = {
@@ -258,10 +241,7 @@ describe('ConstraintsEvaluator', () => {
       const longString1 = 'a'.repeat(100) + 'b'.repeat(50);
       const longString2 = 'a'.repeat(100) + 'c'.repeat(50); // distance = 50
 
-      const elements = [
-        createMockElement(longString1),
-        createMockElement(longString2),
-      ];
+      const elements = [createMockElement(longString1), createMockElement(longString2)];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -281,8 +261,8 @@ describe('ConstraintsEvaluator', () => {
         createMockElement('kitten'),
         createMockElement('sitting'),
         createMockElement('kittens'), // distance = 1
-        createMockElement('kitty'),   // distance = 2
-        createMockElement('cat'),     // distance > 3
+        createMockElement('kitty'), // distance = 2
+        createMockElement('cat'), // distance > 3
       ];
 
       // Test exact distance = 3
@@ -296,11 +276,11 @@ describe('ConstraintsEvaluator', () => {
 
       // Should include kitten (0), kittens (1), kitty (2), sitting (3)
       expect(result).toHaveLength(4);
-      expect(result.map(el => el.textContent)).toContain('kitten');
-      expect(result.map(el => el.textContent)).toContain('sitting');
-      expect(result.map(el => el.textContent)).toContain('kittens');
-      expect(result.map(el => el.textContent)).toContain('kitty');
-      expect(result.map(el => el.textContent)).not.toContain('cat');
+      expect(result.map((el) => el.textContent)).toContain('kitten');
+      expect(result.map((el) => el.textContent)).toContain('sitting');
+      expect(result.map((el) => el.textContent)).toContain('kittens');
+      expect(result.map((el) => el.textContent)).toContain('kitty');
+      expect(result.map((el) => el.textContent)).not.toContain('cat');
     });
 
     it('should handle Unicode characters correctly', () => {
@@ -333,22 +313,40 @@ describe('ConstraintsEvaluator', () => {
 
       // Top-Left: { top: 10, left: 10 }
       mockElements[0].getBoundingClientRect = vi.fn().mockReturnValue({
-        top: 10, left: 10, right: 110, bottom: 50,
-        width: 100, height: 40, x: 10, y: 10,
+        top: 10,
+        left: 10,
+        right: 110,
+        bottom: 50,
+        width: 100,
+        height: 40,
+        x: 10,
+        y: 10,
         toJSON: () => ({}),
       });
 
       // Top-Right: { top: 10, left: 200 }
       mockElements[1].getBoundingClientRect = vi.fn().mockReturnValue({
-        top: 10, left: 200, right: 300, bottom: 50,
-        width: 100, height: 40, x: 200, y: 10,
+        top: 10,
+        left: 200,
+        right: 300,
+        bottom: 50,
+        width: 100,
+        height: 40,
+        x: 200,
+        y: 10,
         toJSON: () => ({}),
       });
 
       // Bottom-Left: { top: 100, left: 10 }
       mockElements[2].getBoundingClientRect = vi.fn().mockReturnValue({
-        top: 100, left: 10, right: 110, bottom: 140,
-        width: 100, height: 40, x: 10, y: 100,
+        top: 100,
+        left: 10,
+        right: 110,
+        bottom: 140,
+        width: 100,
+        height: 40,
+        x: 10,
+        y: 100,
         toJSON: () => ({}),
       });
     });
@@ -395,10 +393,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should handle getBoundingClientRect errors', () => {
-      const elements = [
-        createMockElement('Element 1'),
-        createMockElement('Element 2'),
-      ];
+      const elements = [createMockElement('Element 1'), createMockElement('Element 2')];
 
       // First element throws error
       elements[0].getBoundingClientRect = vi.fn().mockImplementation(() => {
@@ -407,8 +402,14 @@ describe('ConstraintsEvaluator', () => {
 
       // Second element returns normal rect
       elements[1].getBoundingClientRect = vi.fn().mockReturnValue({
-        top: 10, left: 10, right: 110, bottom: 50,
-        width: 100, height: 40, x: 10, y: 10,
+        top: 10,
+        left: 10,
+        right: 110,
+        bottom: 50,
+        width: 100,
+        height: 40,
+        x: 10,
+        y: 10,
         toJSON: () => ({}),
       });
 
@@ -432,7 +433,7 @@ describe('ConstraintsEvaluator', () => {
       ];
 
       // All elements throw errors
-      elements.forEach(el => {
+      elements.forEach((el) => {
         el.getBoundingClientRect = vi.fn().mockImplementation(() => {
           throw new Error('getBoundingClientRect failed');
         });
@@ -452,10 +453,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should handle getBoundingClientRect errors for left-most strategy', () => {
-      const elements = [
-        createMockElement('Element 1'),
-        createMockElement('Element 2'),
-      ];
+      const elements = [createMockElement('Element 1'), createMockElement('Element 2')];
 
       // First element throws error, second succeeds
       elements[0].getBoundingClientRect = vi.fn().mockImplementation(() => {
@@ -463,8 +461,14 @@ describe('ConstraintsEvaluator', () => {
       });
 
       elements[1].getBoundingClientRect = vi.fn().mockReturnValue({
-        top: 10, left: 20, right: 120, bottom: 50,
-        width: 100, height: 40, x: 20, y: 10,
+        top: 10,
+        left: 20,
+        right: 120,
+        bottom: 50,
+        width: 100,
+        height: 40,
+        x: 20,
+        y: 10,
         toJSON: () => ({}),
       });
 
@@ -485,10 +489,7 @@ describe('ConstraintsEvaluator', () => {
 
     it('should use jsdom-extended getBoundingClientRect values without mocking', () => {
       // jsdom-extended provides fixed values (100x50) via vitest.setup.ts
-      const elements = [
-        createMockElement('Element 1'),
-        createMockElement('Element 2'),
-      ];
+      const elements = [createMockElement('Element 1'), createMockElement('Element 2')];
 
       // Don't mock getBoundingClientRect - use jsdom-extended defaults
       const constraint: Constraint = {
@@ -621,10 +622,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should trim whitespace in text content before comparison', () => {
-      const elements = [
-        createMockElement('  Submit  '),
-        createMockElement('Submit'),
-      ];
+      const elements = [createMockElement('  Submit  '), createMockElement('Submit')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -638,10 +636,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should normalize text with leading whitespace', () => {
-      const elements = [
-        createMockElement('   Submit'),
-        createMockElement('Submit'),
-      ];
+      const elements = [createMockElement('   Submit'), createMockElement('Submit')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -655,10 +650,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should normalize text with trailing whitespace', () => {
-      const elements = [
-        createMockElement('Submit   '),
-        createMockElement('Submit'),
-      ];
+      const elements = [createMockElement('Submit   '), createMockElement('Submit')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -672,10 +664,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should normalize text with multiple spaces', () => {
-      const elements = [
-        createMockElement('Submit  Form'),
-        createMockElement('Submit Form'),
-      ];
+      const elements = [createMockElement('Submit  Form'), createMockElement('Submit Form')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -690,10 +679,7 @@ describe('ConstraintsEvaluator', () => {
     });
 
     it('should handle whitespace-only text', () => {
-      const elements = [
-        createMockElement('   '),
-        createMockElement('Submit'),
-      ];
+      const elements = [createMockElement('   '), createMockElement('Submit')];
 
       const constraint: Constraint = {
         type: 'text-proximity',
@@ -706,8 +692,8 @@ describe('ConstraintsEvaluator', () => {
       // Whitespace-only trimmed to empty string, distance from '' to 'Submit' = 6
       // Since maxDistance = 10, both should be included
       expect(result).toHaveLength(2);
-      expect(result.map(el => el.textContent)).toContain('Submit');
-      expect(result.map(el => el.textContent)).toContain('   ');
+      expect(result.map((el) => el.textContent)).toContain('Submit');
+      expect(result.map((el) => el.textContent)).toContain('   ');
     });
 
     it('should handle null textContent with trim', () => {

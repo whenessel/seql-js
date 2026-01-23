@@ -14,9 +14,7 @@ describe('Validator', () => {
         semantics: { id: 'login-form' },
         score: 0.9,
       },
-      path: [
-        { tag: 'div', semantics: { classes: ['container'] }, score: 0.7 },
-      ],
+      path: [{ tag: 'div', semantics: { classes: ['container'] }, score: 0.7 }],
       target: {
         tag: 'button',
         semantics: { text: { raw: 'Submit', normalized: 'Submit' } },
@@ -707,12 +705,7 @@ describe('Validator', () => {
       });
 
       it('should narrow type in array filter', () => {
-        const values: unknown[] = [
-          createValidEID(),
-          { invalid: true },
-          createValidEID(),
-          'string',
-        ];
+        const values: unknown[] = [createValidEID(), { invalid: true }, createValidEID(), 'string'];
 
         const eids = values.filter(isEID);
 

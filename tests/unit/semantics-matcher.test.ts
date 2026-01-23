@@ -616,10 +616,7 @@ describe('SemanticsMatcher', () => {
     });
 
     it('should handle empty semantics (match all)', () => {
-      const elements = [
-        document.createElement('button'),
-        document.createElement('div'),
-      ];
+      const elements = [document.createElement('button'), document.createElement('div')];
 
       const semantics: ElementSemantics = {};
 

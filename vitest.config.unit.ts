@@ -13,18 +13,18 @@ export default mergeConfig(
         reporter: ['lcov'],
         reportsDirectory: '.coverage/unit/',
         exclude: [
-          '**/index.ts',           // Re-export файлы
-          '**/*.d.ts',            // TypeScript type definitions
-          '**/types/**',          // Типы и интерфейсы
-          '**/constants.ts',      // Константы (если не содержат логику)
-          'vitest.setup.ts',      // Bootstrap файлы
-          'vitest.config*.ts',    // Конфигурации
+          '**/index.ts', // Re-export файлы
+          '**/*.d.ts', // TypeScript type definitions
+          '**/types/**', // Типы и интерфейсы
+          '**/constants.ts', // Константы (если не содержат логику)
+          'vitest.setup.ts', // Bootstrap файлы
+          'vitest.config*.ts', // Конфигурации
         ],
         thresholds: {
-          statements: 80,  // Рекомендуемый диапазон: 80-90%
-          branches: 75,     // Рекомендуемый диапазон: 70-85%
-          functions: 80,    // Рекомендуемый диапазон: 80-90%
-          lines: 80,        // Рекомендуемый диапазон: 80-90%
+          statements: 80, // Рекомендуемый диапазон: 80-90%
+          branches: 75, // Рекомендуемый диапазон: 70-85%
+          functions: 80, // Рекомендуемый диапазон: 80-90%
+          lines: 80, // Рекомендуемый диапазон: 80-90%
         },
       },
       name: { label: 'unit', color: 'green' },

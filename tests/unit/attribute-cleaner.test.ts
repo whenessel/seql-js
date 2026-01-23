@@ -177,8 +177,12 @@ describe('AttributeCleaner', () => {
       });
 
       it('should handle http URLs', () => {
-        expect(cleanAttributeValue('href', 'http://example.com/page')).toBe('http://example.com/page');
-        expect(cleanAttributeValue('href', 'http://example.com/page?id=1')).toBe('http://example.com/page?id=1');
+        expect(cleanAttributeValue('href', 'http://example.com/page')).toBe(
+          'http://example.com/page'
+        );
+        expect(cleanAttributeValue('href', 'http://example.com/page?id=1')).toBe(
+          'http://example.com/page?id=1'
+        );
       });
     });
   });

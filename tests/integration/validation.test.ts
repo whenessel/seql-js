@@ -276,13 +276,7 @@ describe('Validation - Integration', () => {
       const button = document.querySelector('button')!;
       const eid = generateEID(button)!;
 
-      const values: unknown[] = [
-        eid,
-        { invalid: true },
-        eid,
-        'string',
-        null,
-      ];
+      const values: unknown[] = [eid, { invalid: true }, eid, 'string', null];
 
       const validEIDs = values.filter(isEID);
 

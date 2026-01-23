@@ -324,9 +324,7 @@ describe('generateEID', () => {
       // Anchor should not be degraded (form is Tier A), but path might be
       // Check actual result
       if (result!.meta.degraded && result!.meta.degradationReason) {
-        expect(['no-semantic-anchor', 'path-degraded']).toContain(
-          result!.meta.degradationReason
-        );
+        expect(['no-semantic-anchor', 'path-degraded']).toContain(result!.meta.degradationReason);
       }
     });
 

@@ -215,9 +215,7 @@ describe('AnchorFinder', () => {
       form.setAttribute('aria-label', 'Login form');
       const score = finder.scoreAnchor(form);
 
-      expect(score).toBeGreaterThanOrEqual(
-        ANCHOR_SCORE.SEMANTIC_TAG + ANCHOR_SCORE.ARIA_LABEL
-      );
+      expect(score).toBeGreaterThanOrEqual(ANCHOR_SCORE.SEMANTIC_TAG + ANCHOR_SCORE.ARIA_LABEL);
     });
 
     it('should add bonus for aria-labelledby', () => {
@@ -225,9 +223,7 @@ describe('AnchorFinder', () => {
       form.setAttribute('aria-labelledby', 'form-title');
       const score = finder.scoreAnchor(form);
 
-      expect(score).toBeGreaterThanOrEqual(
-        ANCHOR_SCORE.SEMANTIC_TAG + ANCHOR_SCORE.ARIA_LABEL
-      );
+      expect(score).toBeGreaterThanOrEqual(ANCHOR_SCORE.SEMANTIC_TAG + ANCHOR_SCORE.ARIA_LABEL);
     });
 
     it('should add bonus for stable ID', () => {

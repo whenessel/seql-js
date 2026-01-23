@@ -199,7 +199,9 @@ describe('SvgFingerprinter', () => {
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', 'M0 0 L10 10 L20 20 L30 30 L40 40 L50 50 L60 60 L70 70');
 
-      const hash = fingerprinter.computePathHash('M0 0 L10 10 L20 20 L30 30 L40 40 L50 50 L60 60 L70 70');
+      const hash = fingerprinter.computePathHash(
+        'M0 0 L10 10 L20 20 L30 30 L40 40 L50 50 L60 60 L70 70'
+      );
       const hashTruncated = fingerprinter.computePathHash('M0 0 L10 10 L20 20 L30 30 L40 40');
 
       expect(hash).toBe(hashTruncated);
@@ -414,7 +416,10 @@ describe('SvgFingerprinter', () => {
 
     it('should detect animateTransform', () => {
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      const animateTransform = document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform');
+      const animateTransform = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'animateTransform'
+      );
       rect.appendChild(animateTransform);
       svg.appendChild(rect);
 
@@ -511,9 +516,13 @@ describe('SvgFingerprinter', () => {
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       rect.setAttribute('width', '100');
       rect.setAttribute('height', '50');
-      
+
       // Create element without ownerDocument.defaultView
-      const orphanDoc = document.implementation.createDocument('http://www.w3.org/2000/svg', 'svg', null);
+      const orphanDoc = document.implementation.createDocument(
+        'http://www.w3.org/2000/svg',
+        'svg',
+        null
+      );
       const orphanRect = orphanDoc.createElementNS('http://www.w3.org/2000/svg', 'rect');
       orphanRect.setAttribute('width', '100');
       orphanRect.setAttribute('height', '50');

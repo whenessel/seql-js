@@ -379,9 +379,7 @@ describe('PathBuilder', () => {
       const result = builder.buildPath(root, button, extractor);
 
       // Find the "item" div containing the button
-      const itemNode = result.path.find((node) =>
-        node.semantics.classes?.includes('item')
-      );
+      const itemNode = result.path.find((node) => node.semantics.classes?.includes('item'));
 
       if (itemNode) {
         expect(itemNode.nthChild).toBe(3); // Third child (1-based)
@@ -414,9 +412,7 @@ describe('PathBuilder', () => {
 
       const result = builder.buildPath(root, button, extractor);
 
-      const itemNode = result.path.find((node) =>
-        node.semantics.classes?.includes('item')
-      );
+      const itemNode = result.path.find((node) => node.semantics.classes?.includes('item'));
 
       if (itemNode) {
         // Should be second child (after span)
@@ -466,9 +462,8 @@ describe('PathBuilder', () => {
       const result = builder.buildPath(root, firstButton, extractor);
 
       // Should include data-testid div to disambiguate
-      const hasDataTestId = result.path.some((node) =>
-        node.semantics.attributes &&
-        ('data-testid' in node.semantics.attributes)
+      const hasDataTestId = result.path.some(
+        (node) => node.semantics.attributes && 'data-testid' in node.semantics.attributes
       );
       expect(hasDataTestId).toBe(true);
     });
@@ -514,7 +509,7 @@ describe('PathBuilder', () => {
       // Verify path maintains DOM order
       const tags = result.path.map((node) => node.tag);
       const sectionIndex = tags.indexOf('section');
-      const divIndices = tags.map((tag, i) => tag === 'div' ? i : -1).filter((i) => i !== -1);
+      const divIndices = tags.map((tag, i) => (tag === 'div' ? i : -1)).filter((i) => i !== -1);
 
       if (sectionIndex !== -1 && divIndices.length > 0) {
         // section should come before any divs in the path
@@ -735,7 +730,13 @@ describe('PathBuilder', () => {
   describe('All Semantic Tags', () => {
     // Test major semantic tags that should always be included
     const majorSemanticTags = [
-      'article', 'aside', 'footer', 'header', 'main', 'nav', 'section',
+      'article',
+      'aside',
+      'footer',
+      'header',
+      'main',
+      'nav',
+      'section',
       'form',
     ];
 
@@ -977,9 +978,8 @@ describe('PathBuilder', () => {
       const result = builder.buildPath(root, firstButton, extractor);
 
       // Should add data-testid div to disambiguate
-      const hasDataTestId = result.path.some((node) =>
-        node.semantics.attributes &&
-        ('data-testid' in node.semantics.attributes)
+      const hasDataTestId = result.path.some(
+        (node) => node.semantics.attributes && 'data-testid' in node.semantics.attributes
       );
       expect(hasDataTestId).toBe(true);
     });

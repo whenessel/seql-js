@@ -376,7 +376,9 @@ describe('batch-generator', () => {
       // Should be called at intervals (not every element)
       expect(progressCalls.length).toBeGreaterThan(0);
       // Final call should be (total, total)
-      expect(progressCalls[progressCalls.length - 1][0]).toBe(progressCalls[progressCalls.length - 1][1]);
+      expect(progressCalls[progressCalls.length - 1][0]).toBe(
+        progressCalls[progressCalls.length - 1][1]
+      );
     });
 
     it('should call progress callback even if progressInterval is larger than total', () => {
@@ -397,7 +399,9 @@ describe('batch-generator', () => {
 
       // Should still call final progress callback
       expect(progressCalls.length).toBeGreaterThan(0);
-      expect(progressCalls[progressCalls.length - 1][0]).toBe(progressCalls[progressCalls.length - 1][1]);
+      expect(progressCalls[progressCalls.length - 1][0]).toBe(
+        progressCalls[progressCalls.length - 1][1]
+      );
     });
 
     it('should not call progress callback if not provided', () => {
@@ -747,7 +751,9 @@ describe('batch-generator', () => {
       });
 
       expect(result.stats.totalElements).toBeGreaterThan(0);
-      expect(result.stats.successful + result.stats.failed).toBeLessThanOrEqual(result.stats.totalElements);
+      expect(result.stats.successful + result.stats.failed).toBeLessThanOrEqual(
+        result.stats.totalElements
+      );
     });
   });
 

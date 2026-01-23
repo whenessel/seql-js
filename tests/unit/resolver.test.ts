@@ -244,7 +244,11 @@ describe('Resolver', () => {
       // Use a text constraint that won't match any button
       mockEID.target.semantics = { text: { raw: 'SpecificText', normalized: 'SpecificText' } };
       mockEID.constraints = [
-        { type: 'text-proximity', params: { reference: 'XYZ-NoMatch', maxDistance: 0 }, priority: 1 },
+        {
+          type: 'text-proximity',
+          params: { reference: 'XYZ-NoMatch', maxDistance: 0 },
+          priority: 1,
+        },
       ];
 
       const options: ResolverOptions = { enableFallback: false };
@@ -262,7 +266,11 @@ describe('Resolver', () => {
       `;
 
       mockEID.constraints = [
-        { type: 'text-proximity', params: { reference: 'NonExistent', maxDistance: 0 }, priority: 1 },
+        {
+          type: 'text-proximity',
+          params: { reference: 'NonExistent', maxDistance: 0 },
+          priority: 1,
+        },
       ];
 
       const options: ResolverOptions = { enableFallback: true };
@@ -584,7 +592,11 @@ describe('Resolver', () => {
       `;
 
       mockEID.constraints = [
-        { type: 'text-proximity', params: { reference: 'NonExistent', maxDistance: 0 }, priority: 1 },
+        {
+          type: 'text-proximity',
+          params: { reference: 'NonExistent', maxDistance: 0 },
+          priority: 1,
+        },
       ];
 
       const options: ResolverOptions = { enableFallback: false };
@@ -593,7 +605,7 @@ describe('Resolver', () => {
       // Phase 4 eliminates all candidates
       expect(result.status).toBe('error');
       expect(result.meta?.degradationReason).toBe('over-constrained');
-      expect(result.warnings.some(w => w.includes('Constraints eliminated'))).toBe(true);
+      expect(result.warnings.some((w) => w.includes('Constraints eliminated'))).toBe(true);
     });
   });
 
