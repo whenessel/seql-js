@@ -22,7 +22,9 @@ function generateEID(target: Element, options?: GeneratorOptions): ElementIdenti
 ### Returns
 
 - **`ElementIdentity`** - EID JSON object with anchor, path, target, and constraints
-- **`null`** - If generation failed (element lacks semantic features or isn't connected to DOM)
+- **`null`** - Only if element is invalid (null, disconnected, or no ownerDocument)
+
+**Since v1.3.0**: Always returns an EID for valid DOM elements (even with low semantics). Low confidence is indicated via `meta.confidence` field.
 
 ### Generator Options
 
@@ -30,11 +32,13 @@ function generateEID(target: Element, options?: GeneratorOptions): ElementIdenti
 interface GeneratorOptions {
   maxPathDepth?: number; // Max depth for path building (default: 10)
   enableSvgFingerprint?: boolean; // Enable SVG fingerprinting (default: true)
-  confidenceThreshold?: number; // Min confidence threshold (default: 0.1)
+  confidenceThreshold?: number; // Min confidence threshold (default: 0.0, v1.3.0+)
   fallbackToBody?: boolean; // Use <body> if no anchor found (default: true)
   cache?: EIDCache; // Custom cache instance (default: global cache)
 }
 ```
+
+**Note (v1.3.0)**: `confidenceThreshold` default changed from `0.1` to `0.0`. Elements below threshold now return EID with low `meta.confidence` instead of `null`.
 
 ### Examples
 
@@ -51,8 +55,11 @@ if (eid) {
   console.log('Anchor tag:', eid.anchor.tag);
   console.log('Target tag:', eid.target.tag);
   console.log('Confidence:', eid.meta.confidence);
-} else {
-  console.warn('Could not generate EID for this element');
+  
+  // v1.3.0+: Check confidence if quality matters
+  if (eid.meta.confidence < 0.3) {
+    console.warn('Low confidence EID - consider alternative identification');
+  }
 }
 ```
 

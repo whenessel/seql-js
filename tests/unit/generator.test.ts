@@ -450,4 +450,166 @@ describe('generateEID', () => {
       expect(result!.target.tag).toBe('rect');
     });
   });
+
+  describe('Always-generate guarantee (confidenceThreshold: 0.0)', () => {
+    it('should always generate EID for elements with minimal semantics', () => {
+      document.body.innerHTML = `
+        <div id="root">
+          <div class="flex min-h-screen">
+            <button>Click</button>
+          </div>
+        </div>
+      `;
+
+      const div = document.querySelector('#root > div')!;
+      const result = generateEID(div);
+
+      expect(result).not.toBeNull();
+      expect(result!.meta.confidence).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should generate EID for plain div with only utility classes', () => {
+      document.body.innerHTML = `
+        <div id="app">
+          <div class="w-full h-full flex flex-col">Text</div>
+        </div>
+      `;
+
+      const div = document.querySelector('#app > div')!;
+      const result = generateEID(div);
+
+      expect(result).not.toBeNull();
+      // Should have low but non-zero confidence
+      expect(result!.meta.confidence).toBeGreaterThan(0);
+    });
+
+    it('should generate EID for div child of degraded anchor', () => {
+      document.body.innerHTML = `
+        <div id="root">
+          <div>
+            <span>Content</span>
+          </div>
+        </div>
+      `;
+
+      const div = document.querySelector('#root > div')!;
+      const result = generateEID(div);
+
+      expect(result).not.toBeNull();
+      expect(result!.anchor.tag).toBe('div');
+      expect(result!.anchor.semantics.id).toBe('root');
+      expect(result!.meta.degraded).toBe(true);
+    });
+
+    it('should generate EID with nthChild for disambiguation', () => {
+      document.body.innerHTML = `
+        <div id="container">
+          <div>First</div>
+          <div>Second</div>
+          <div>Third</div>
+        </div>
+      `;
+
+      const secondDiv = document.querySelectorAll('#container > div')[1];
+      const result = generateEID(secondDiv);
+
+      expect(result).not.toBeNull();
+      expect(result!.target.nthChild).toBe(2);
+      expect(result!.meta.confidence).toBeGreaterThan(0);
+    });
+
+    it('should indicate low confidence via meta field', () => {
+      document.body.innerHTML = `
+        <div>
+          <div>
+            <div></div>
+          </div>
+        </div>
+      `;
+
+      const innerDiv = document.querySelector('div div div')!;
+      const result = generateEID(innerDiv);
+
+      expect(result).not.toBeNull();
+      // Confidence should be low but EID should still be generated
+      expect(result!.meta.confidence).toBeLessThan(0.3);
+      expect(result!.meta.confidence).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe('STABLE_ID weight increase (0.1 → 0.25)', () => {
+    it('should give higher confidence to anchors with stable ID', () => {
+      document.body.innerHTML = `
+        <div id="root">
+          <button>Click</button>
+        </div>
+      `;
+
+      const button = document.querySelector('button')!;
+      const result = generateEID(button);
+
+      expect(result).not.toBeNull();
+      // Anchor should have id="root" which is stable
+      expect(result!.anchor.semantics.id).toBe('root');
+      // Anchor score should be higher now (0.25 for STABLE_ID)
+      expect(result!.anchor.score).toBeGreaterThanOrEqual(0.25);
+    });
+
+    it('should calculate correct anchor score for element with stable ID', () => {
+      document.body.innerHTML = `
+        <div id="app" class="container">
+          <span>Content</span>
+        </div>
+      `;
+
+      const span = document.querySelector('span')!;
+      const result = generateEID(span);
+
+      expect(result).not.toBeNull();
+      expect(result!.anchor.semantics.id).toBe('app');
+      // Anchor score only includes STABLE_ID (0.25), not classes
+      // Classes are stored in semantics but don't contribute to anchor.score
+      expect(result!.anchor.score).toBeCloseTo(0.25, 2);
+    });
+
+    it('should pass confidence threshold for #root + minimal target', () => {
+      document.body.innerHTML = `
+        <div id="root">
+          <div class="min-h-screen flex flex-col">
+            <p>Text</p>
+          </div>
+        </div>
+      `;
+
+      const div = document.querySelector('#root > div')!;
+      const result = generateEID(div);
+
+      expect(result).not.toBeNull();
+      // This is the actual case from the bug report
+      // With STABLE_ID=0.25 and confidenceThreshold=0.0, it should generate
+      expect(result!.anchor.semantics.id).toBe('root');
+      expect(result!.meta.confidence).toBeGreaterThan(0);
+    });
+
+    it('should handle common app container IDs', () => {
+      const containerIds = ['root', 'app', 'main', 'content'];
+
+      containerIds.forEach((id) => {
+        document.body.innerHTML = `
+          <div id="${id}">
+            <div>
+              <button>Action</button>
+            </div>
+          </div>
+        `;
+
+        const button = document.querySelector('button')!;
+        const result = generateEID(button);
+
+        expect(result).not.toBeNull();
+        expect(result!.anchor.semantics.id).toBe(id);
+        expect(result!.anchor.score).toBeGreaterThanOrEqual(0.25);
+      });
+    });
+  });
 });

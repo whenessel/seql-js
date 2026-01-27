@@ -136,7 +136,7 @@ const selector = generateSEQL(
   {
     maxPathDepth: 5, // Limit path depth (default: 10)
     enableSvgFingerprint: true, // Enable SVG fingerprinting (default: true)
-    confidenceThreshold: 0.1, // Minimum confidence score (default: 0.1)
+    confidenceThreshold: 0.3, // Minimum confidence score (default: 0.0, v1.3.0+)
   },
   {
     verbose: false, // Compact selector format (default: false)

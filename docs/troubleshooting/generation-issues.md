@@ -6,38 +6,67 @@ Troubleshooting EID generation problems.
 
 **Problem**: `generateEID()` returns `null`
 
+**Since v1.3.0**: `generateEID` only returns `null` for **invalid elements**. Valid elements always get an EID (low confidence is indicated via `meta.confidence`).
+
 **Causes & Solutions**:
 
 1. **Element not connected to DOM**
 
    ```typescript
    const orphan = document.createElement('div');
-   generateEID(orphan); // Returns null
+   generateEID(orphan); // Returns null - not in DOM
 
    // Solution: Ensure element is in document
    document.body.appendChild(orphan);
-   generateEID(orphan); // Now works
+   generateEID(orphan); // ✓ Now returns EID
    ```
 
-2. **Element lacks semantic features**
+2. **Element has no ownerDocument**
 
    ```typescript
-   const generic = document.createElement('div');
-   generateEID(generic); // May return null
-
-   // Solution: Add semantic attributes
-   generic.setAttribute('role', 'region');
-   generateEID(generic); // Now works
+   const element = document.createElement('div');
+   Object.defineProperty(element, 'ownerDocument', { value: null });
+   generateEID(element); // Returns null - invalid state
    ```
 
-3. **Confidence below threshold**
+3. **Confidence below threshold** (explicit filter)
 
    ```typescript
-   generateEID(element, { confidenceThreshold: 0.9 }); // May return null
+   // v1.3.0+: Must explicitly set threshold to filter low-confidence
+   generateEID(element, { confidenceThreshold: 0.5 }); // May return null
 
-   // Solution: Lower threshold or improve element semantics
-   generateEID(element, { confidenceThreshold: 0.1 });
+   // Default behavior (threshold: 0.0) - always returns EID
+   const eid = generateEID(element);
+   if (eid && eid.meta.confidence < 0.5) {
+     console.warn('Low confidence:', eid.meta.confidence);
+   }
    ```
+
+### Migration from v1.2.0
+
+**Old behavior** (v1.2.0 and earlier):
+
+```typescript
+const eid = generateEID(element);
+if (!eid) {
+  console.log('Element has low semantic quality');
+}
+```
+
+**New behavior** (v1.3.0+):
+
+```typescript
+const eid = generateEID(element);
+if (eid && eid.meta.confidence < 0.1) {
+  console.log('Element has low semantic quality');
+}
+
+// OR restore old behavior
+const eid = generateEID(element, { confidenceThreshold: 0.1 });
+if (!eid) {
+  console.log('Element has low semantic quality');
+}
+```
 
 ## Low Confidence
 

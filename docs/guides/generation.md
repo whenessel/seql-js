@@ -23,10 +23,14 @@ generateEID(element, { maxPathDepth: 5 }); // Shorter paths
 
 ### Confidence Threshold
 
-Set minimum quality:
+**Since v1.3.0**: Default is `0.0` (always generate EID). Set explicit threshold to filter low-confidence:
 
 ```typescript
-generateEID(element, { confidenceThreshold: 0.3 }); // Higher quality only
+// v1.3.0+ default: Always returns EID
+const eid = generateEID(element); // confidence threshold: 0.0
+
+// Explicit filtering for high-quality only
+const eid = generateEID(element, { confidenceThreshold: 0.3 }); // May return null
 ```
 
 ### SVG Fingerprinting
@@ -43,11 +47,16 @@ generateEID(element, { enableSvgFingerprint: false }); // Skip SVG
 const eid = generateEID(element);
 
 if (!eid) {
-  // Generation failed - element lacks semantics or not connected
-  console.warn('Cannot generate EID');
+  // v1.3.0+: Only happens for invalid elements (disconnected, null, etc.)
+  console.warn('Invalid element - cannot generate EID');
 } else {
   console.log('Confidence:', eid.meta.confidence);
   console.log('Degraded:', eid.meta.degraded);
+  
+  // Check confidence quality (v1.3.0+)
+  if (eid.meta.confidence < 0.3) {
+    console.warn('Low confidence - element has minimal semantics');
+  }
 
   if (eid.meta.degraded) {
     console.warn('Reason:', eid.meta.degradationReason);

@@ -335,5 +335,116 @@ describe('Scorer', () => {
       // = 0.3 + 0.165 + 0.14 + 0.08 = 0.685
       expect(confidence).toBeCloseTo(0.685, 2);
     });
+
+    it('should use increased STABLE_ID weight (0.25) in anchor scoring', () => {
+      // Create EID where anchor has stable ID
+      const eid: ElementIdentity = {
+        version: '1.0',
+        anchor: {
+          tag: 'div',
+          semantics: { id: 'root' },
+          // Anchor score only from STABLE_ID: 0.25 (not 0.75)
+          // Anchor scoring doesn't include "base score", only specific bonuses
+          score: 0.25,
+          degraded: true, // tier C
+        },
+        path: [],
+        target: {
+          tag: 'div',
+          semantics: {},
+          // Minimal target: 0.5 (base only)
+          score: 0.5,
+        },
+        meta: {
+          confidence: 0,
+          generatedAt: Date.now(),
+        },
+        constraints: [],
+        fallback: {
+          onMissing: 'none',
+          onMultiple: 'first',
+        },
+      };
+
+      const confidence = calculateConfidence(eid, 0);
+
+      // 0.25 * 0.4 + 0.5 * 0.3 + 0.5 * 0.2 + 0 * 0.1 - 0.2 (degradation)
+      // = 0.1 + 0.15 + 0.1 + 0 - 0.2 = 0.35 - 0.2 = 0.15
+      expect(confidence).toBeCloseTo(0.15, 2);
+      expect(confidence).toBeGreaterThan(0); // Should pass threshold 0.0
+    });
+
+    it('should calculate confidence for #root + minimal target scenario', () => {
+      // Real-world case: <div id="root"> as anchor, plain <div> as target
+      const eid: ElementIdentity = {
+        version: '1.0',
+        anchor: {
+          tag: 'div',
+          semantics: { id: 'root', classes: [] },
+          // Score: 0.5 (base) + 0.25 (stable id) = 0.75
+          score: 0.75,
+          degraded: true,
+        },
+        path: [],
+        target: {
+          tag: 'div',
+          semantics: { classes: [] }, // utility classes filtered out
+          // Score: 0.5 (base only, no semantic features)
+          score: 0.5,
+          nthChild: 2,
+        },
+        meta: {
+          confidence: 0,
+          generatedAt: Date.now(),
+        },
+        constraints: [],
+        fallback: {
+          onMissing: 'none',
+          onMultiple: 'first',
+        },
+      };
+
+      const confidence = calculateConfidence(eid, 0);
+
+      // 0.75 * 0.4 + 0.5 * 0.3 + 0.5 * 0.2 - 0.2
+      // = 0.3 + 0.15 + 0.1 - 0.2 = 0.35
+      expect(confidence).toBeCloseTo(0.35, 2);
+      expect(confidence).toBeGreaterThan(0.1); // Old threshold
+    });
+
+    it('should pass 0.0 threshold with low but non-zero confidence', () => {
+      // Minimal case: degraded anchor + no semantics
+      const eid: ElementIdentity = {
+        version: '1.0',
+        anchor: {
+          tag: 'div',
+          semantics: {},
+          score: 0.5, // base only
+          degraded: true,
+        },
+        path: [],
+        target: {
+          tag: 'div',
+          semantics: {},
+          score: 0.5, // base only
+        },
+        meta: {
+          confidence: 0,
+          generatedAt: Date.now(),
+        },
+        constraints: [],
+        fallback: {
+          onMissing: 'none',
+          onMultiple: 'first',
+        },
+      };
+
+      const confidence = calculateConfidence(eid, 0);
+
+      // 0.5 * 0.4 + 0.5 * 0.3 + 0.5 * 0.2 - 0.2
+      // = 0.2 + 0.15 + 0.1 - 0.2 = 0.25
+      expect(confidence).toBeCloseTo(0.25, 2);
+      expect(confidence).toBeGreaterThanOrEqual(0); // Should pass 0.0 threshold
+    });
   });
 });

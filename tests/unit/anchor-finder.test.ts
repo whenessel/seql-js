@@ -499,4 +499,80 @@ describe('AnchorFinder', () => {
       });
     });
   });
+
+  describe('STABLE_ID scoring weight (0.25)', () => {
+    it('should score stable ID with weight 0.25', () => {
+      document.body.innerHTML = `
+        <div id="root">
+          <button>Click</button>
+        </div>
+      `;
+
+      const button = document.querySelector('button')!;
+      const result = finder.findAnchor(button);
+
+      expect(result).not.toBeNull();
+      expect(result!.element.id).toBe('root');
+      // Score should be 0.25 for STABLE_ID (no other bonuses)
+      expect(result!.score).toBeCloseTo(0.25, 2);
+      expect(result!.tier).toBe('C');
+    });
+
+    it('should combine STABLE_ID with other bonuses', () => {
+      document.body.innerHTML = `
+        <div id="app" role="main" aria-label="Application">
+          <button>Click</button>
+        </div>
+      `;
+
+      const button = document.querySelector('button')!;
+      const result = finder.findAnchor(button);
+
+      expect(result).not.toBeNull();
+      // Should use role="main" which is Tier B, not Tier C
+      // Role main gives tier B, so score should be ROLE(0.3) + ARIA_LABEL(0.1) + STABLE_ID(0.25) = 0.65
+      expect(result!.score).toBeGreaterThan(0.5);
+      expect(result!.tier).toBe('B'); // role="main" is Tier B
+    });
+
+    it('should score common container IDs correctly', () => {
+      const containerIds = ['root', 'app', 'main', 'content'];
+
+      containerIds.forEach((id) => {
+        document.body.innerHTML = `
+          <div id="${id}">
+            <button>Action</button>
+          </div>
+        `;
+
+        const button = document.querySelector('button')!;
+        const result = finder.findAnchor(button);
+
+        expect(result).not.toBeNull();
+        expect(result!.element.id).toBe(id);
+        // All these IDs should be considered stable and score 0.25
+        expect(result!.score).toBeGreaterThanOrEqual(0.25);
+      });
+    });
+
+    it('should give higher score to stable ID than test markers', () => {
+      document.body.innerHTML = `
+        <div>
+          <div id="app">
+            <div data-testid="container">
+              <button>Click</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const button = document.querySelector('button')!;
+      const result = finder.findAnchor(button);
+
+      expect(result).not.toBeNull();
+      // Should prefer #app (STABLE_ID: 0.25) over data-testid (TEST_MARKER: 0.05)
+      expect(result!.element.id).toBe('app');
+      expect(result!.score).toBeCloseTo(0.25, 2);
+    });
+  });
 });

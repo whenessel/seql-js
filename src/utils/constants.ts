@@ -45,12 +45,18 @@ export const CONFIDENCE_WEIGHTS = {
 /**
  * Anchor scoring weights
  * Following SPECIFICATION.md §7
+ *
+ * @remarks
+ * STABLE_ID increased from 0.1 to 0.25 to give proper weight to elements
+ * with stable identifiers like #root, #app. These are common anchor points
+ * in modern web applications and deserve higher confidence than the previous
+ * weight suggested.
  */
 export const ANCHOR_SCORE = {
   SEMANTIC_TAG: 0.5,
   ROLE: 0.3,
   ARIA_LABEL: 0.1,
-  STABLE_ID: 0.1,
+  STABLE_ID: 0.25,
   TEST_MARKER: 0.05,
   DEPTH_PENALTY_THRESHOLD: 5,
   DEPTH_PENALTY_FACTOR: 0.05,
@@ -264,12 +270,20 @@ export const IGNORED_ATTRIBUTES = new Set([
 /**
  * Default generator options
  * Note: cache is optional and not included in defaults
+ *
+ * @remarks
+ * confidenceThreshold set to 0.0 to ensure generateEID always returns an EID
+ * for valid DOM elements. Low confidence is indicated via meta.confidence field,
+ * allowing callers to decide whether to use the EID rather than preventing
+ * generation entirely. This ensures elements with minimal semantics (e.g., plain
+ * div with utility classes) can still be identified using positional information
+ * (nthChild).
  */
 export const DEFAULT_GENERATOR_OPTIONS: Omit<Required<GeneratorOptions>, 'cache'> &
   Pick<GeneratorOptions, 'cache'> = {
   maxPathDepth: MAX_PATH_DEPTH,
   enableSvgFingerprint: true,
-  confidenceThreshold: 0.1,
+  confidenceThreshold: 0.0,
   fallbackToBody: true,
   includeUtilityClasses: false,
   source: 'dom-dsl',

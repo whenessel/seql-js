@@ -1,6 +1,6 @@
 # SEQL Documentation
 
-Complete documentation for seql-js v1.1.0.
+Complete documentation for seql-js v1.3.0.
 
 ## For Users
 
@@ -10,6 +10,7 @@ Start here if you're using SEQL in your project:
 - **[API Reference](./api/)** - Complete API documentation
 - **[Examples](./examples/)** - Practical code examples
 - **[Guides](./guides/)** - In-depth topics
+- **[Migration Guide v1.3.0](./guides/migration-v1.3.0.md)** - Upgrading from v1.2.0 ⭐
 - **[Troubleshooting](./troubleshooting/)** - Common issues and solutions
 
 ## For Contributors
@@ -52,6 +53,7 @@ Previous documentation versions are preserved in [archive/](./archive/):
 
 ## Version History
 
+- **v1.3.0** (2026-01-27): Always-generate guarantee, improved stable ID scoring
 - **v1.1.0** (2026-01-22): nth-child positioning, documentation restructuring
 - **v1.0.3** (2026-01-21): Attribute stability filtering
 - **v1.0.0** (2025-01-15): Initial stable release
