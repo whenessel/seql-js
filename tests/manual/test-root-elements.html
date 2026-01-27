@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Test page for root elements" />
+    <title>Root Elements Test</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      .test-result {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+      .pass {
+        background: #d4edda;
+      }
+      .fail {
+        background: #f8d7da;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Root Elements Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+      import { generateEID } from '../../dist/seql-js.js';
+      import { CssGenerator } from '../../dist/seql-js.js';
+
+      const cssGenerator = new CssGenerator();
+      const results = document.getElementById('results');
+
+      function addResult(name, passed, details) {
+        const div = document.createElement('div');
+        div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+        div.innerHTML = `
+        <strong>${passed ? '✓' : '✗'} ${name}</strong><br>
+        ${details}
+      `;
+        results.appendChild(div);
+      }
+
+      // Test 1: HTML element
+      try {
+        const html = document.documentElement;
+        const eid = generateEID(html);
+        const selector = cssGenerator.buildSelector(eid);
+        const resolved = document.querySelector(selector);
+
+        addResult(
+          'HTML element',
+          selector === 'html' && resolved === html,
+          `Selector: ${selector}<br>Resolves correctly: ${resolved === html}`
+        );
+      } catch (e) {
+        addResult('HTML element', false, e.message);
+      }
+
+      // Test 2: HEAD element
+      try {
+        const head = document.head;
+        const eid = generateEID(head);
+        const selector = cssGenerator.buildSelector(eid);
+        const resolved = document.querySelector(selector);
+
+        addResult(
+          'HEAD element',
+          selector.includes('html') && selector.includes('head') && resolved === head,
+          `Selector: ${selector}<br>Resolves correctly: ${resolved === head}`
+        );
+      } catch (e) {
+        addResult('HEAD element', false, e.message);
+      }
+
+      // Test 3: BODY element
+      try {
+        const body = document.body;
+        const eid = generateEID(body);
+        const selector = cssGenerator.buildSelector(eid);
+        const resolved = document.querySelector(selector);
+
+        addResult(
+          'BODY element',
+          selector.includes('html') && selector.includes('body') && resolved === body,
+          `Selector: ${selector}<br>Resolves correctly: ${resolved === body}`
+        );
+      } catch (e) {
+        addResult('BODY element', false, e.message);
+      }
+
+      // Test 4: META element
+      try {
+        const meta = document.querySelector('meta[name="description"]');
+        const eid = generateEID(meta);
+        const selector = cssGenerator.buildSelector(eid);
+        const resolved = document.querySelector(selector);
+
+        addResult(
+          'META element',
+          selector.includes('html') &&
+            selector.includes('head') &&
+            selector.includes('meta') &&
+            resolved === meta,
+          `Selector: ${selector}<br>Resolves correctly: ${resolved === meta}`
+        );
+      } catch (e) {
+        addResult('META element', false, e.message);
+      }
+
+      // Test 5: TITLE element
+      try {
+        const title = document.querySelector('title');
+        const eid = generateEID(title);
+        const selector = cssGenerator.buildSelector(eid);
+        const resolved = document.querySelector(selector);
+
+        addResult(
+          'TITLE element',
+          selector.includes('html') &&
+            selector.includes('head') &&
+            selector.includes('title') &&
+            resolved === title,
+          `Selector: ${selector}<br>Resolves correctly: ${resolved === title}`
+        );
+      } catch (e) {
+        addResult('TITLE element', false, e.message);
+      }
+    </script>
+  </body>
+</html>

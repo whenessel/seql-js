@@ -1,6 +1,26 @@
 import type { EIDVersion, GeneratorOptions, ResolverOptions } from '../types';
 
 /**
+ * Root DOM elements that require special handling
+ * These elements are at the top of the DOM tree
+ */
+export const ROOT_ELEMENTS = new Set(['html', 'head', 'body']);
+
+/**
+ * Elements that typically appear inside <head>
+ * These require special anchor handling (anchor = html)
+ */
+export const HEAD_ELEMENTS = new Set([
+  'title',
+  'meta',
+  'link',
+  'style',
+  'script',
+  'base',
+  'noscript',
+]);
+
+/**
  * EID specification version
  */
 export const EID_VERSION: EIDVersion = '1.0';

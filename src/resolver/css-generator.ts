@@ -74,6 +74,42 @@ export class CssGenerator {
     eid: ElementIdentity,
     options?: BuildSelectorOptions
   ): string | BuildSelectorResult {
+    // Special case 1: target is <html>
+    if (eid.target.tag === 'html') {
+      const selector = 'html';
+      if (!options?.ensureUnique) {
+        return selector;
+      }
+      return {
+        selector,
+        isUnique: true,
+        usedNthOfType: false,
+        extraClassesAdded: 0,
+      };
+    }
+
+    // Special case 2: anchor is html and path is empty (target is head or body)
+    if (eid.anchor.tag === 'html' && eid.path.length === 0) {
+      const targetSelector = this.buildNodeSelector(eid.target.tag, eid.target.semantics);
+      const selector = `html > ${targetSelector}`;
+
+      if (!options?.ensureUnique) {
+        return selector;
+      }
+
+      return {
+        selector,
+        isUnique: this.isUnique(selector, options.root ?? document),
+        usedNthOfType: false,
+        extraClassesAdded: 0,
+      };
+    }
+
+    // Special case 3: anchor is html and path[0] is head
+    if (eid.anchor.tag === 'html' && eid.path.length > 0 && eid.path[0].tag === 'head') {
+      return this.buildHeadSelector(eid, options);
+    }
+
     // FIX 1: Check if anchor and target are the same element
     const isAnchorSameAsTarget =
       eid.path.length === 0 &&
@@ -1261,5 +1297,64 @@ export class CssGenerator {
    */
   private isSvgChildElement(tag: string): boolean {
     return (SVG_CHILD_ELEMENTS as readonly string[]).includes(tag);
+  }
+
+  /**
+   * Builds CSS selector for elements inside <head>.
+   * Uses child combinator (>) for strict structure: html > head > ... > target
+   * @param eid - Element Identity with anchor=html and path[0]=head
+   * @param options - Optional uniqueness control settings
+   * @returns CSS selector string or BuildSelectorResult
+   * @remarks
+   * This method handles the special case where elements are inside <head>.
+   * The selector always uses child combinators for strict parent-child relationships.
+   * @example
+   * For <html><head><meta name="description"></head></html>
+   * Returns: "html > head > meta[name='description']"
+   */
+  private buildHeadSelector(
+    eid: ElementIdentity,
+    options?: BuildSelectorOptions
+  ): string | BuildSelectorResult {
+    const parts: string[] = ['html'];
+
+    // Add head and remaining path nodes
+    for (const node of eid.path) {
+      let nodeSelector = this.buildNodeSelector(node.tag, node.semantics);
+
+      // Add nth-child if available for disambiguation
+      if (node.nthChild !== undefined) {
+        nodeSelector += `:nth-child(${node.nthChild})`;
+      }
+
+      parts.push(nodeSelector);
+    }
+
+    // Add target
+    let targetSelector = this.buildNodeSelector(eid.target.tag, eid.target.semantics);
+
+    // Add nth-child if available
+    if (eid.target.nthChild !== undefined) {
+      targetSelector += `:nth-child(${eid.target.nthChild})`;
+    }
+
+    parts.push(targetSelector);
+
+    // Use child combinator (>) for strict structure
+    const selector = parts.join(' > ');
+
+    if (!options?.ensureUnique) {
+      return selector;
+    }
+
+    // Check uniqueness
+    const isUnique = this.isUnique(selector, options.root ?? document);
+
+    return {
+      selector,
+      isUnique,
+      usedNthOfType: selector.includes(':nth-'),
+      extraClassesAdded: 0,
+    };
   }
 }

@@ -1,6 +1,6 @@
 import type { PathNode, GeneratorOptions } from '../types';
 import type { SemanticExtractor } from './semantic-extractor';
-import { SEMANTIC_TAGS, MAX_PATH_DEPTH, PATH_SCORE } from '../utils/constants';
+import { SEMANTIC_TAGS, MAX_PATH_DEPTH, PATH_SCORE, ROOT_ELEMENTS } from '../utils/constants';
 import { isUtilityClass } from '../utils/class-filter';
 import { isDynamicId } from '../utils/id-validator';
 import type { EIDCache } from '../utils/eid-cache';
@@ -39,8 +39,28 @@ export class PathBuilder {
    * @param target - Target element (end)
    * @param extractor - Semantic extractor instance
    * @returns Path build result with nodes and degradation info
+   * @remarks
+   * Special handling for root elements:
+   * - If anchor is html and target is head/body: returns empty path
+   * - If anchor is html and target is inside head: builds path through head
    */
   buildPath(anchor: Element, target: Element, extractor: SemanticExtractor): PathBuildResult {
+    const anchorTag = anchor.tagName.toLowerCase();
+    const targetTag = target.tagName.toLowerCase();
+
+    // Special case 1: anchor is html and target is head or body (direct children)
+    if (anchorTag === 'html' && (targetTag === 'head' || targetTag === 'body')) {
+      return {
+        path: [],
+        degraded: false,
+      };
+    }
+
+    // Special case 2: anchor is html and target is inside head
+    if (anchorTag === 'html' && this.isInsideHead(target)) {
+      return this.buildHeadPath(anchor, target, extractor);
+    }
+
     const rawPath: Element[] = [];
     let current: Element | null = target.parentElement;
 
@@ -52,6 +72,16 @@ export class PathBuilder {
 
     // Check for depth overflow (SPECIFICATION.md §8)
     const depthOverflow = rawPath.length >= this.maxDepth && current !== anchor;
+
+    // Validate that we actually reached the anchor (if not depth overflow)
+    if (!depthOverflow && current !== anchor) {
+      console.warn('[PathBuilder] Target is not a descendant of anchor');
+      return {
+        path: [],
+        degraded: true,
+        degradationReason: 'target-not-descendant-of-anchor',
+      };
+    }
 
     // Filter noise elements, keeping semantic ones
     let filteredPath = this.filterNoise(rawPath);
@@ -300,5 +330,99 @@ export class PathBuilder {
     }
 
     return false;
+  }
+
+  /**
+   * Checks if element is inside <head> section.
+   * Stops at <body> to avoid false positives.
+   * @param element - Element to check
+   * @returns True if element is inside head, false otherwise
+   * @remarks
+   * Traverses up the DOM tree until finding head or body.
+   * Returns false if body is encountered first.
+   */
+  private isInsideHead(element: Element): boolean {
+    let current: Element | null = element.parentElement;
+    while (current) {
+      const tag = current.tagName.toLowerCase();
+      if (tag === 'head') return true;
+      if (tag === 'body') return false;
+      current = current.parentElement;
+    }
+    return false;
+  }
+
+  /**
+   * Builds path from html to target through head element.
+   * Always includes head in the path for correct CSS selector generation.
+   * @param htmlElement - The html element (anchor)
+   * @param target - Target element inside head
+   * @param extractor - Semantic extractor instance
+   * @returns Path build result with head and intermediate nodes
+   * @example
+   * For <html><head><meta name="description"></head></html>
+   * Returns path: [head]
+   */
+  private buildHeadPath(
+    htmlElement: Element,
+    target: Element,
+    extractor: SemanticExtractor
+  ): PathBuildResult {
+    const rawPath: Element[] = [];
+    let current: Element | null = target.parentElement;
+
+    // Build path from target up to html (excluding html itself)
+    while (current && current !== htmlElement) {
+      rawPath.unshift(current);
+      current = current.parentElement;
+    }
+
+    // Validate that we reached html
+    if (current !== htmlElement) {
+      return {
+        path: [],
+        degraded: true,
+        degradationReason: 'target-not-descendant-of-html',
+      };
+    }
+
+    // For head elements, we always want to include head in path for correct selector
+    // Path should be: [head, ...other elements]
+    const headIndex = rawPath.findIndex((el) => el.tagName.toLowerCase() === 'head');
+
+    if (headIndex === -1) {
+      // Should not happen if isInsideHead was true, but handle gracefully
+      return {
+        path: [],
+        degraded: true,
+        degradationReason: 'head-not-found-in-path',
+      };
+    }
+
+    // Convert all elements in path to PathNodes
+    const pathNodes = rawPath.map((el) => {
+      const parent = el.parentElement;
+      let nthChild: number | undefined;
+
+      if (parent) {
+        const siblings = Array.from(parent.children);
+        const index = siblings.indexOf(el);
+        if (index !== -1) {
+          nthChild = index + 1;
+        }
+      }
+
+      return {
+        tag: el.tagName.toLowerCase(),
+        semantics: extractor.extract(el),
+        score: extractor.scoreElement(el),
+        nthChild,
+      };
+    });
+
+    return {
+      path: pathNodes,
+      degraded: false,
+    };
   }
 }

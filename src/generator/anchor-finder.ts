@@ -4,6 +4,7 @@ import {
   ROLE_ANCHOR_VALUES,
   MAX_PATH_DEPTH,
   ANCHOR_SCORE,
+  ROOT_ELEMENTS,
 } from '../utils/constants';
 import { isDynamicId } from '../utils/id-validator';
 import type { EIDCache } from '../utils/eid-cache';
@@ -36,6 +37,11 @@ export class AnchorFinder {
    * Finds the best anchor element for the target
    * @param target - Target element to find anchor for
    * @returns Anchor result or null if not found
+   * @remarks
+   * Special handling for root elements (html, head, body):
+   * - For html: returns html itself as anchor
+   * - For head or elements inside head: returns html as anchor
+   * - For body: returns html as anchor
    */
   findAnchor(target: Element): AnchorResult | null {
     // Check cache first
@@ -43,6 +49,51 @@ export class AnchorFinder {
       const cached = this.cache.getAnchor(target);
       if (cached !== undefined) {
         return cached;
+      }
+    }
+
+    const targetTag = target.tagName.toLowerCase();
+    const doc = target.ownerDocument;
+
+    // Special case 1: target is <html>
+    if (targetTag === 'html') {
+      const result: AnchorResult = {
+        element: target,
+        score: 1.0,
+        tier: 'A',
+        depth: 0,
+      };
+      this.cacheResult(target, result);
+      return result;
+    }
+
+    // Special case 2: target is <head> or inside <head>
+    if (targetTag === 'head' || this.isInsideHead(target)) {
+      const htmlElement = doc?.documentElement;
+      if (htmlElement) {
+        const result: AnchorResult = {
+          element: htmlElement,
+          score: 1.0,
+          tier: 'A',
+          depth: 0,
+        };
+        this.cacheResult(target, result);
+        return result;
+      }
+    }
+
+    // Special case 3: target is <body>
+    if (targetTag === 'body') {
+      const htmlElement = doc?.documentElement;
+      if (htmlElement) {
+        const result: AnchorResult = {
+          element: htmlElement,
+          score: 1.0,
+          tier: 'A',
+          depth: 0,
+        };
+        this.cacheResult(target, result);
+        return result;
       }
     }
 
@@ -172,5 +223,39 @@ export class AnchorFinder {
     }
 
     return 'C';
+  }
+
+  /**
+   * Checks if element is inside <head> section.
+   * Stops at <body> to avoid false positives.
+   * @param element - Element to check
+   * @returns True if element is inside head, false otherwise
+   * @remarks
+   * Traverses up the DOM tree until finding head or body.
+   * Returns false if body is encountered first.
+   * @example
+   * const meta = document.querySelector('meta');
+   * if (isInsideHead(meta)) { ... }
+   */
+  private isInsideHead(element: Element): boolean {
+    let current: Element | null = element.parentElement;
+    while (current) {
+      const tag = current.tagName.toLowerCase();
+      if (tag === 'head') return true;
+      if (tag === 'body') return false;
+      current = current.parentElement;
+    }
+    return false;
+  }
+
+  /**
+   * Caches the anchor result for the target element
+   * @param target - Target element
+   * @param result - Anchor result to cache
+   */
+  private cacheResult(target: Element, result: AnchorResult): void {
+    if (this.cache) {
+      this.cache.setAnchor(target, result);
+    }
   }
 }
