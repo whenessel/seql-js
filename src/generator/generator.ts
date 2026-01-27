@@ -40,6 +40,16 @@ export function generateEID(
     return cachedEID;
   }
 
+  const targetTag = target.tagName.toLowerCase();
+
+  // Fast-path for <html> element
+  if (targetTag === 'html') {
+    const semanticExtractor = new SemanticExtractor(opts, cache);
+    const htmlEID = generateHtmlEID(target, opts, semanticExtractor, cache);
+    cache.setEID(target, htmlEID);
+    return htmlEID;
+  }
+
   const anchorFinder = new AnchorFinder(opts, cache);
   const pathBuilder = new PathBuilder(opts, cache);
   const semanticExtractor = new SemanticExtractor(opts, cache);
@@ -184,4 +194,66 @@ function getDegradationReason(
     return pathResult.degradationReason;
   }
   return undefined;
+}
+
+/**
+ * Generates EID for <html> element (special case).
+ * The html element is unique by definition, so anchor = target = html.
+ * @param htmlElement - The html DOM element
+ * @param options - Generation options
+ * @param extractor - Semantic extractor instance
+ * @param cache - EID cache instance
+ * @returns Element identity for html element
+ * @remarks
+ * This is a fast-path that bypasses normal anchor finding.
+ * The html element is the root of the document and serves as its own anchor.
+ * Confidence is always 1.0 and degraded is always false.
+ * @example
+ * const html = document.documentElement;
+ * const eid = generateHtmlEID(html, options, extractor, cache);
+ * // Returns EID with anchor = target = html, path = []
+ */
+function generateHtmlEID(
+  htmlElement: Element,
+  opts: Required<Omit<GeneratorOptions, 'cache'>> & Pick<GeneratorOptions, 'cache'>,
+  extractor: SemanticExtractor,
+  cache: ReturnType<typeof getGlobalCache>
+): ElementIdentity {
+  const htmlSemantics = extractor.extract(htmlElement);
+
+  // Html element has no parent, so no nth-child
+  const htmlNode = {
+    tag: 'html',
+    semantics: htmlSemantics,
+    score: 1.0,
+    degraded: false,
+    nthChild: undefined,
+  };
+
+  const constraints: Constraint[] = [];
+
+  const fallback: FallbackRules = {
+    onMultiple: 'best-score',
+    onMissing: 'anchor-only',
+    maxDepth: 3,
+  };
+
+  const eid: ElementIdentity = {
+    version: EID_VERSION,
+    anchor: htmlNode,
+    path: [],
+    target: htmlNode,
+    constraints,
+    fallback,
+    meta: {
+      confidence: 1.0,
+      generatedAt: new Date().toISOString(),
+      generator: `dom-eid@${EID_VERSION}`,
+      source: opts.source,
+      degraded: false,
+      degradationReason: undefined,
+    },
+  };
+
+  return eid;
 }
