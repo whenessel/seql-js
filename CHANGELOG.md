@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-01-27
+
+### Changed
+
+- **Always-Generate Guarantee**: `generateEID` now always returns an EID for valid DOM elements
+  - Default `confidenceThreshold` reduced from `0.1` to `0.0`
+  - Low confidence is indicated via `meta.confidence` field rather than preventing generation
+  - Allows callers to decide whether to use low-confidence EIDs based on their use case
+  - Elements with minimal semantics (e.g., plain div with utility classes) can still be identified using positional information (`nthChild`)
+  - **Breaking change**: Previous behavior would return `null` for low-confidence elements. Code relying on `null` return values should check `meta.confidence` instead.
+
+- **Improved Stable ID Scoring**: Increased weight for stable ID anchors
+  - `ANCHOR_SCORE.STABLE_ID` increased from `0.1` to `0.25` (150% increase)
+  - Better confidence for common container IDs (`#root`, `#app`, `#main`, `#content`)
+  - More accurate reflection of the importance of stable identifiers in modern web applications
+  - Anchor elements with stable IDs now receive appropriate scoring weight in confidence calculation
+
+### Tests
+
+- Added 17 new comprehensive tests (100% pass rate)
+  - 9 tests for always-generate guarantee validation
+  - 8 tests for STABLE_ID weight verification across different scenarios
+- All 909 existing tests pass with no regressions
+- Total test suite: 926 tests passing
+
+### Documentation
+
+- Updated `ANCHOR_SCORE` constant with detailed `@remarks` explaining the STABLE_ID weight increase
+- Updated `DEFAULT_GENERATOR_OPTIONS` with comprehensive explanation of confidenceThreshold=0.0 rationale
+- Added inline documentation for new behavior and implications
+
 ## [1.1.0] - 2026-01-22
 
 ### Added
