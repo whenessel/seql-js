@@ -9,7 +9,7 @@ export interface GeneratorOptions {
   maxPathDepth?: number;
   /** Enable SVG fingerprinting (default: true) */
   enableSvgFingerprint?: boolean;
-  /** Minimum confidence to return EID (default: 0.3) */
+  /** Minimum confidence to return EID (default: 0.0) */
   confidenceThreshold?: number;
   /** Fallback to body if no anchor found (default: true) */
   fallbackToBody?: boolean;

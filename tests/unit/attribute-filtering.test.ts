@@ -80,17 +80,17 @@ describe('Attribute Filtering', () => {
       expect(isStableAttribute('data-user-id', 'abc')).toBe(true);
     });
 
-    it('should include data-* ending with -id', () => {
+    it('should include data-* ending with -id (non-analytics)', () => {
       expect(isStableAttribute('data-custom-id', '123')).toBe(true);
-      expect(isStableAttribute('data-tracking-id', 'track-123')).toBe(true);
-      expect(isStableAttribute('data-analytics-id', 'ga-456')).toBe(true);
+      expect(isStableAttribute('data-order-id', 'order-123')).toBe(true);
+      expect(isStableAttribute('data-session-id', 'sess-456')).toBe(true);
     });
 
-    it('should include other data-* attributes by default', () => {
+    it('should include other data-* attributes by default (non-analytics)', () => {
       expect(isStableAttribute('data-custom', 'value')).toBe(true);
-      expect(isStableAttribute('data-analytics', 'click')).toBe(true);
       expect(isStableAttribute('data-section', 'header')).toBe(true);
-      expect(isStableAttribute('data-category', 'electronics')).toBe(true);
+      expect(isStableAttribute('data-region', 'main')).toBe(true);
+      expect(isStableAttribute('data-module', 'navigation')).toBe(true);
     });
   });
 
@@ -166,6 +166,134 @@ describe('Attribute Filtering', () => {
       expect(isStableAttribute('DATA-TESTID', 'value')).toBe(false);
       expect(isStableAttribute('ARIA-LABEL', 'value')).toBe(false);
       expect(isStableAttribute('NAME', 'value')).toBe(false);
+    });
+  });
+
+  describe('Analytics attribute filtering', () => {
+    describe('Google Analytics / GTM', () => {
+      it('should exclude data-ga* patterns', () => {
+        expect(isStableAttribute('data-ga-click', 'event')).toBe(false);
+        expect(isStableAttribute('data-gtm-event', 'click')).toBe(false);
+        expect(isStableAttribute('data-google-analytics', 'UA-123')).toBe(false);
+        expect(isStableAttribute('data-layer-event', 'purchase')).toBe(false);
+        expect(isStableAttribute('data-event-name', 'signup')).toBe(false);
+      });
+
+      it('should exclude GA exact-match attributes', () => {
+        expect(isStableAttribute('data-category', 'electronics')).toBe(false);
+        expect(isStableAttribute('data-action', 'click')).toBe(false);
+        expect(isStableAttribute('data-label', 'banner')).toBe(false);
+        expect(isStableAttribute('data-value', '100')).toBe(false);
+      });
+    });
+
+    describe('Yandex Metrica', () => {
+      it('should exclude Yandex patterns', () => {
+        expect(isStableAttribute('data-yandex-counter', '123')).toBe(false);
+        expect(isStableAttribute('data-ym-goal', 'purchase')).toBe(false);
+        expect(isStableAttribute('data-metrika-event', 'click')).toBe(false);
+      });
+    });
+
+    describe('Session Recording tools', () => {
+      it('should exclude Hotjar patterns', () => {
+        expect(isStableAttribute('data-hj-ignore', 'true')).toBe(false);
+        expect(isStableAttribute('data-hotjar-track', 'yes')).toBe(false);
+      });
+
+      it('should exclude FullStory patterns', () => {
+        expect(isStableAttribute('data-fs-element', 'button')).toBe(false);
+      });
+
+      it('should exclude Mouseflow patterns', () => {
+        expect(isStableAttribute('data-mouseflow-track', 'yes')).toBe(false);
+        expect(isStableAttribute('data-mf-click', 'event')).toBe(false);
+      });
+
+      it('should exclude Smartlook patterns', () => {
+        expect(isStableAttribute('data-smartlook-ignore', 'true')).toBe(false);
+        expect(isStableAttribute('data-sl-event', 'click')).toBe(false);
+      });
+    });
+
+    describe('A/B Testing tools', () => {
+      it('should exclude Optimizely patterns', () => {
+        expect(isStableAttribute('data-optimizely-variation', 'A')).toBe(false);
+      });
+
+      it('should exclude VWO patterns', () => {
+        expect(isStableAttribute('data-vwo-test', '123')).toBe(false);
+      });
+
+      it('should exclude Google Optimize patterns', () => {
+        expect(isStableAttribute('data-optimize-experiment', 'exp1')).toBe(false);
+      });
+    });
+
+    describe('Social / Ad Pixels', () => {
+      it('should exclude Facebook pixel patterns', () => {
+        expect(isStableAttribute('data-fb-event', 'PageView')).toBe(false);
+        expect(isStableAttribute('data-facebook-pixel', '123')).toBe(false);
+      });
+
+      it('should exclude TikTok pixel patterns', () => {
+        expect(isStableAttribute('data-tt-event', 'ViewContent')).toBe(false);
+      });
+
+      it('should exclude LinkedIn pixel patterns', () => {
+        expect(isStableAttribute('data-li-pixel', '456')).toBe(false);
+      });
+    });
+
+    describe('Generic tracking patterns', () => {
+      it('should exclude generic tracking patterns', () => {
+        expect(isStableAttribute('data-track-event', 'click')).toBe(false);
+        expect(isStableAttribute('data-tracking-code', 'abc')).toBe(false);
+        expect(isStableAttribute('data-click-tracking', 'yes')).toBe(false);
+        expect(isStableAttribute('data-impression-id', '123')).toBe(false);
+        expect(isStableAttribute('data-conversion-value', '50')).toBe(false);
+        expect(isStableAttribute('data-segment-event', 'signup')).toBe(false);
+        expect(isStableAttribute('data-analytics-enabled', 'true')).toBe(false);
+      });
+    });
+
+    describe('Edge cases: analytics *-id patterns', () => {
+      it('should exclude analytics-id and tracking-id (analytics prefix wins)', () => {
+        // BREAKING CHANGE: These were previously allowed, now blocked
+        expect(isStableAttribute('data-tracking-id', 'track-123')).toBe(false);
+        expect(isStableAttribute('data-analytics-id', 'ga-456')).toBe(false);
+        expect(isStableAttribute('data-ga-id', 'UA-123')).toBe(false);
+        expect(isStableAttribute('data-event-id', 'evt-789')).toBe(false);
+        expect(isStableAttribute('data-impression-id', 'imp-456')).toBe(false);
+      });
+
+      it('should still allow non-analytics *-id patterns', () => {
+        expect(isStableAttribute('data-product-id', '12345')).toBe(true);
+        expect(isStableAttribute('data-user-id', 'abc')).toBe(true);
+        expect(isStableAttribute('data-custom-id', '123')).toBe(true);
+        expect(isStableAttribute('data-entity-id', '456')).toBe(true);
+        expect(isStableAttribute('data-order-id', '789')).toBe(true);
+      });
+    });
+
+    describe('Test attributes remain protected', () => {
+      it('should still include all test attributes despite any conflicts', () => {
+        expect(isStableAttribute('data-testid', 'btn')).toBe(true);
+        expect(isStableAttribute('data-test', 'submit')).toBe(true);
+        expect(isStableAttribute('data-qa', 'form')).toBe(true);
+        expect(isStableAttribute('data-cy', 'input')).toBe(true);
+        expect(isStableAttribute('data-automation-id', 'link')).toBe(true);
+      });
+    });
+
+    describe('Semantic data-* attributes remain allowed', () => {
+      it('should allow semantic data attributes that do not match analytics patterns', () => {
+        expect(isStableAttribute('data-role', 'admin')).toBe(true);
+        expect(isStableAttribute('data-type', 'primary')).toBe(true);
+        // Note: data-status is excluded as it's a state attribute
+        expect(isStableAttribute('data-feature', 'enabled')).toBe(true);
+        expect(isStableAttribute('data-module', 'navigation')).toBe(true);
+      });
     });
   });
 });

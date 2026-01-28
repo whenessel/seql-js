@@ -96,6 +96,64 @@ export const DATA_ID_PATTERNS = [
 ] as const;
 
 /**
+ * Analytics and tracking data-* prefixes to exclude
+ * These are used by third-party analytics tools and change based on
+ * tracking configuration, not element identity
+ */
+export const ANALYTICS_DATA_PREFIXES = [
+  // Google Analytics / GTM
+  'data-ga',
+  'data-gtm',
+  'data-google',
+  'data-layer',
+  'data-event',
+
+  // Yandex Metrica
+  'data-yandex',
+  'data-ym',
+  'data-metrika',
+
+  // A/B Testing
+  'data-optimizely',
+  'data-vwo',
+  'data-optimize',
+
+  // Session Recording
+  'data-hj',
+  'data-hotjar',
+  'data-fs',
+  'data-mouseflow',
+  'data-mf',
+  'data-smartlook',
+  'data-sl',
+
+  // Social / Ad Pixels
+  'data-fb',
+  'data-facebook',
+  'data-tt',
+  'data-li',
+
+  // Generic Tracking
+  'data-track',
+  'data-tracking',
+  'data-click',
+  'data-impression',
+  'data-conversion',
+  'data-segment',
+  'data-analytics',
+] as const;
+
+/**
+ * Exact-match analytics attributes (potential semantic conflicts)
+ */
+export const ANALYTICS_EXACT_ATTRIBUTES = [
+  'data-category', // Google Analytics category
+  'data-action', // Google Analytics action
+  'data-label', // Google Analytics label
+  'data-value', // Google Analytics value
+] as const;
+
+/**
  * Standard HTML attributes that are stable
  */
 export const HTML_STABLE_ATTRIBUTES = [
@@ -155,6 +213,16 @@ export function isStableAttribute(name: string, value: string): boolean {
 
   // Whitelist data-* ID patterns (exact match)
   if ((DATA_ID_PATTERNS as readonly string[]).includes(name)) return true;
+
+  // Blacklist analytics prefixes (BEFORE -id suffix check)
+  if (ANALYTICS_DATA_PREFIXES.some((prefix) => name.startsWith(prefix))) {
+    return false;
+  }
+
+  // Blacklist analytics exact-match attributes
+  if ((ANALYTICS_EXACT_ATTRIBUTES as readonly string[]).includes(name)) {
+    return false;
+  }
 
   // Whitelist data-* ending with -id
   if (name.startsWith('data-') && name.endsWith('-id')) return true;

@@ -216,10 +216,10 @@ describe('Generator - Attribute Filtering Integration', () => {
       expect(hasIdAttr).toBe(true);
     });
 
-    it('should include generic data-* attributes', () => {
+    it('should include generic data-* attributes (non-analytics)', () => {
       const div = doc.createElement('div');
-      div.setAttribute('data-category', 'electronics');
       div.setAttribute('data-section', 'header');
+      div.setAttribute('data-region', 'main');
       div.textContent = 'Section';
       doc.body.appendChild(div);
 
@@ -229,6 +229,128 @@ describe('Generator - Attribute Filtering Integration', () => {
 
       // Generic data-* attributes may or may not be included based on priority
       // This test just ensures no error is thrown
+    });
+  });
+
+  describe('Analytics attribute filtering', () => {
+    it('should exclude analytics attributes from generated EID', () => {
+      const form = doc.createElement('form');
+      form.id = 'checkout-form';
+
+      const button = doc.createElement('button');
+      button.setAttribute('data-testid', 'submit-btn'); // STABLE ✓
+      button.setAttribute('data-ga-event', 'purchase'); // ANALYTICS ✗
+      button.setAttribute('data-tracking-id', 'track-123'); // ANALYTICS ✗
+      button.setAttribute('data-category', 'checkout'); // ANALYTICS ✗
+      button.setAttribute('aria-label', 'Submit Order'); // STABLE ✓
+      button.textContent = 'Submit';
+
+      form.appendChild(button);
+      doc.body.appendChild(form);
+
+      const eid = generateEID(button);
+
+      expect(eid).not.toBeNull();
+
+      const eidStr = JSON.stringify(eid);
+
+      // Stable attributes should be present
+      expect(eidStr).toContain('submit-btn');
+      expect(eidStr).toContain('Submit');
+
+      // Analytics attributes should be excluded
+      expect(eidStr).not.toContain('data-ga-event');
+      expect(eidStr).not.toContain('purchase');
+      expect(eidStr).not.toContain('track-123');
+      expect(eidStr).not.toContain('data-category');
+    });
+
+    it('should handle mixed tracking and semantic attributes', () => {
+      const div = doc.createElement('div');
+      div.setAttribute('data-product-id', '12345'); // STABLE ✓
+      div.setAttribute('data-ga-click', 'product-click'); // ANALYTICS ✗
+      div.setAttribute('data-hj-suppress', 'true'); // ANALYTICS ✗
+      div.setAttribute('role', 'article'); // STABLE ✓
+      doc.body.appendChild(div);
+
+      const eid = generateEID(div);
+
+      expect(eid).not.toBeNull();
+
+      const eidStr = JSON.stringify(eid);
+
+      // Semantic attributes included
+      expect(eidStr).toContain('12345');
+      expect(eidStr).toContain('article');
+
+      // Analytics excluded
+      expect(eidStr).not.toContain('data-ga-click');
+      expect(eidStr).not.toContain('data-hj-suppress');
+    });
+
+    it('should filter Yandex Metrica attributes', () => {
+      const link = doc.createElement('a');
+      link.setAttribute('href', '/product'); // STABLE ✓
+      link.setAttribute('data-yandex-goal', 'click-product'); // ANALYTICS ✗
+      link.setAttribute('data-ym-event', 'interaction'); // ANALYTICS ✗
+      link.setAttribute('data-testid', 'product-link'); // STABLE ✓
+      link.textContent = 'View Product';
+      doc.body.appendChild(link);
+
+      const eid = generateEID(link);
+
+      expect(eid).not.toBeNull();
+
+      const eidStr = JSON.stringify(eid);
+
+      expect(eidStr).toContain('product');
+      expect(eidStr).not.toContain('yandex');
+      expect(eidStr).not.toContain('data-ym');
+    });
+
+    it('should handle complex forms with multiple analytics tools', () => {
+      const input = doc.createElement('input');
+      input.setAttribute('type', 'email'); // STABLE ✓
+      input.setAttribute('name', 'user-email'); // STABLE ✓
+      input.setAttribute('data-qa', 'email-input'); // STABLE ✓
+      input.setAttribute('data-gtm-event', 'email-entered'); // ANALYTICS ✗
+      input.setAttribute('data-optimizely-element', 'form1'); // ANALYTICS ✗
+      input.setAttribute('data-fb-track', 'Lead'); // ANALYTICS ✗
+      doc.body.appendChild(input);
+
+      const eid = generateEID(input);
+
+      expect(eid).not.toBeNull();
+
+      const eidStr = JSON.stringify(eid);
+
+      expect(eidStr).toContain('email');
+      expect(eidStr).toContain('user-email');
+      expect(eidStr).not.toContain('gtm');
+      expect(eidStr).not.toContain('optimizely');
+      expect(eidStr).not.toContain('data-fb-track');
+    });
+
+    it('should preserve resolution stability without analytics attributes', () => {
+      // This test verifies that EIDs generated without analytics attributes
+      // can still be resolved correctly
+      const button = doc.createElement('button');
+      button.setAttribute('data-testid', 'action-btn');
+      button.setAttribute('data-track-click', 'campaign-123'); // will be filtered
+      button.textContent = 'Click Me';
+      doc.body.appendChild(button);
+
+      const eid = generateEID(button);
+
+      expect(eid).not.toBeNull();
+
+      // Verify EID doesn't contain analytics
+      const eidStr = JSON.stringify(eid);
+      expect(eidStr).not.toContain('track-click');
+      expect(eidStr).not.toContain('campaign-123');
+
+      // Verify core stable attributes are present
+      expect(eidStr).toContain('action-btn');
     });
   });
 
