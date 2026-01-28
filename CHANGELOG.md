@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-01-28
+
+### Added
+
+- Comprehensive analytics attribute filtering to improve EID stability
+- Support for filtering Google Analytics, GTM, Yandex Metrica, Hotjar, FullStory, Mouseflow, Smartlook, Optimizely, VWO, Facebook Pixel, TikTok Pixel, LinkedIn Pixel attributes
+- 28 new analytics prefix patterns and 4 exact-match patterns for filtering third-party tracking data
+- Analytics attributes are now excluded from EID generation to prevent instability across marketing campaigns and tracking configuration changes
+
+### Changed
+
+- **BREAKING**: `data-tracking-id` and `data-analytics-id` are now filtered out (analytics prefix takes precedence over `-id` suffix rule)
+- **BREAKING**: `data-category`, `data-action`, `data-label`, `data-value` are now filtered out (Google Analytics standard attributes)
+- Analytics prefix matching now takes precedence over generic data-*-id suffix rule for better stability
+
+### Tests
+
+- Added 50+ new unit tests for analytics attribute filtering (100% pass rate)
+- Added 5 new integration tests for end-to-end analytics filtering validation
+- All 932 tests passing (772 unit + 160 integration)
+
+### Migration
+
+If using `data-tracking-id` or `data-analytics-id` for semantic identification, rename to:
+
+- `data-component-id` for component identifiers
+- `data-entity-id` for entity identifiers
+- `data-testid` for test automation
+
+If using Google Analytics standard attributes for semantic purposes:
+
+- Replace `data-category` with `data-product-category` or similar semantic alternatives
+- Replace `data-action` with `data-action-type` or similar
+- Replace `data-label` with semantic HTML or `aria-label`
+- Replace `data-value` with `data-amount`, `data-price`, or similar
+
+See `docs/specification/attribute-filtering.md` for full migration guide.
+
 ## [1.3.0] - 2026-01-27
 
 ### Changed
