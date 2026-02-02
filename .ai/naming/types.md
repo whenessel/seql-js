@@ -6,7 +6,8 @@ Naming conventions for types, interfaces, and type aliases.
 
 - **PascalCase**: Capitalize first letter of each word
 - **Descriptive**: Name should clearly indicate the type's purpose
-- **No prefixes**: Avoid I/T prefixes (no IUser, TData)
+- **No prefixes**: **STRICTLY FORBIDDEN** - Never use I/T prefixes (no IUser, TData, IUserProfile, TApiResponse)
+- **Suffixes by purpose**: Use appropriate suffixes (Params, Options, Result, State, Config)
 
 ## Basic Rules
 
@@ -90,7 +91,7 @@ interface DatabaseConfig {
 
 ### Params
 
-For parameter objects:
+For parameter objects (commonly used in React/API calls):
 
 ```typescript
 interface CreateUserParams {
@@ -102,6 +103,28 @@ interface QueryParams {
   limit?: number;
   offset?: number;
 }
+
+interface FetchOptions {
+  includeDeleted?: boolean;
+  sortBy?: string;
+}
+```
+
+### State
+
+For React/Redux state types:
+
+```typescript
+interface UserState {
+  currentUser: User | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+type AuthState = {
+  isAuthenticated: boolean;
+  token: string | null;
+};
 ```
 
 ## Interfaces vs Type Aliases
@@ -227,11 +250,19 @@ interface CreateUserParams {
 ### Bad
 
 ```typescript
-interface IUserProfile { ... }            // I prefix
-interface user_profile { ... }             // snake_case
-interface ApiOpts { ... }                  // Abbreviation
-type ProcessRes = ...;                     // Abbreviation
-interface CreateUserP { ... }              // Abbreviation
+// ❌ STRICTLY FORBIDDEN - Prefixes
+interface IUserProfile { ... }            // I prefix - NEVER USE
+type TApiResponse = { ... };              // T prefix - NEVER USE
+interface IUser { ... }                   // I prefix - NEVER USE
+
+// ❌ Wrong case
+interface user_profile { ... }            // snake_case
+type api-response = { ... };              // kebab-case
+
+// ❌ Abbreviations
+interface ApiOpts { ... }                 // Use ApiOptions
+type ProcessRes = ...;                    // Use ProcessResult
+interface CreateUserP { ... }             // Use CreateUserParams
 ```
 
 ## Type vs Interface

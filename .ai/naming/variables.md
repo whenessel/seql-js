@@ -184,6 +184,11 @@ Use descriptive names when destructuring:
 ```typescript
 const { userName, email } = user;
 const { totalPrice, itemCount } = order;
+
+// React props destructuring
+function UserCard({ userName, isActive, onEdit }: UserCardProps) {
+  // ...
+}
 ```
 
 ### Forbidden
@@ -191,6 +196,53 @@ const { totalPrice, itemCount } = order;
 ```typescript
 const { name: n, email: e } = user; // Single letters
 const { totalPrice: tp } = order; // Abbreviation
+```
+
+## React-Specific Variables
+
+### Component Props
+
+Props follow the same camelCase rules:
+
+```typescript
+interface ButtonProps {
+  onClick: () => void;
+  isDisabled?: boolean;
+  variant?: 'primary' | 'secondary';
+  children: React.ReactNode;
+}
+```
+
+### State Variables
+
+```typescript
+// Using useState
+const [userName, setUserName] = useState('');
+const [isLoading, setIsLoading] = useState(false);
+const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+
+// State setter should be 'set' + state variable name (PascalCase)
+const [user, setUser] = useState<User | null>(null);
+```
+
+### CSS-in-JS / Styled Components
+
+For styled component variables, use PascalCase (they are components):
+
+```typescript
+const HeaderWrapper = styled.header`
+  display: flex;
+  padding: 1rem;
+`;
+
+const StyledButton = styled.button`
+  background: blue;
+`;
+
+// Usage
+<HeaderWrapper>
+  <StyledButton>Click me</StyledButton>
+</HeaderWrapper>
 ```
 
 ## Constants

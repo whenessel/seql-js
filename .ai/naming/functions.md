@@ -5,7 +5,7 @@ Naming conventions for functions and methods.
 ## Format
 
 - **camelCase**: Start with lowercase, capitalize subsequent words
-- **Verb-based**: Function names should start with a verb
+- **Verb-based**: Function names should start with a verb (except React hooks which start with `use`)
 - **Descriptive**: Name should clearly indicate what the function does
 
 ## Verb Patterns
@@ -100,6 +100,32 @@ isValid(data: unknown): boolean
 hasPermission(user: User, action: string): boolean
 canEdit(user: User, resource: Resource): boolean
 shouldRetry(error: Error): boolean
+```
+
+### React Hooks
+
+**MANDATORY**: All React hooks must start with `use` prefix.
+
+```typescript
+// Custom hooks
+useFetchUser(userId: string): { user: User | null; isLoading: boolean; error: Error | null }
+useFormHandler<T>(initialValues: T): { values: T; handleChange: (...) => void; handleSubmit: (...) => void }
+useWindowSize(): { width: number; height: number }
+useDebounce<T>(value: T, delay: number): T
+useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void]
+```
+
+**Forbidden for hooks**:
+
+```typescript
+// ❌ Missing 'use' prefix
+fetchUser(userId: string) { ... }         // Must be useFetchUser
+formHandler() { ... }                     // Must be useFormHandler
+
+// ❌ Too generic
+useData() { ... }                         // Too vague - use useFetchUser, useFetchOrders, etc.
+useStuff() { ... }                        // Too vague - be specific
+useHook() { ... }                         // Redundant - all hooks start with 'use'
 ```
 
 ## Function Types

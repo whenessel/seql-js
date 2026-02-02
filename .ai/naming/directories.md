@@ -15,7 +15,9 @@ Naming conventions for project directories and folder structure.
 ```
 services/          // Collection of service classes
 types/             // Type definitions
-components/        // UI components
+components/        // UI components (React)
+pages/             // Page-level components (React)
+hooks/             // Custom React hooks
 handlers/          // Event/request handlers
 processors/        // Data processors
 validators/        // Validation functions
@@ -140,6 +142,35 @@ src/
   data-models/     // Data model definitions
   error-handlers/  // Error handling logic
 ```
+
+### React Component Organization
+
+For large components with sub-components, use directory structure:
+
+```
+components/
+  navbar/
+    index.tsx              // Main component export
+    navbar-links.tsx       // Sub-component
+    navbar-dropdown.tsx    // Sub-component
+    navbar.types.ts        // Component-specific types
+    navbar.module.css      // Styles (if CSS Modules)
+    navbar.test.tsx        // Tests
+
+  user-card/
+    index.tsx              // Main UserCard component
+    user-card-header.tsx   // Sub-component
+    user-card-footer.tsx   // Sub-component
+    user-card.types.ts     // Types
+    user-card.test.tsx     // Tests
+```
+
+**Rules for component directories**:
+
+- Directory name matches component name (kebab-case)
+- Main component in `index.tsx`
+- Sub-components prefixed with parent name: `navbar-links.tsx`, `navbar-dropdown.tsx`
+- Related files use component name prefix: `navbar.types.ts`, `navbar.module.css`
 
 ## Examples
 
