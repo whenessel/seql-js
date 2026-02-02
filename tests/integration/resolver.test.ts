@@ -348,7 +348,7 @@ describe('resolver', () => {
     it('should build correct CSS selector from DSL', () => {
       const generator = new CssGenerator();
 
-      const dsl: DslIdentity = {
+      const dsl: unknown = {
         version: '1.0',
         anchor: {
           tag: 'form',
@@ -389,7 +389,7 @@ describe('resolver', () => {
     it('should filter out invalid arbitrary classes from selector', () => {
       const generator = new CssGenerator();
 
-      const dsl: DslIdentity = {
+      const dsl: unknown = {
         version: '1.0',
         anchor: {
           tag: 'footer',

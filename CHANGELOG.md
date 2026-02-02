@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-02-02
+
+### Added
+
+- **Iframe Support**: Cross-document operation utilities for working with iframes and nested contexts
+  - New `document-context.ts` utility module with `getOwnerDocument()`, `validateDocumentContext()`, and `getQueryRoot()` helpers
+  - `root` parameter in generator and resolver options for explicit document context specification
+  - Enables EID generation and resolution in iframe elements, avoiding cross-document errors
+- **Chrome DevTools Extension Enhancements**:
+  - Context switching UI for working with iframe content
+  - Automatic iframe detection with debounce logic and periodic rescanning
+  - Improved iframe context building with centralized `buildContextPrefix()` function
+- **LLM Documentation**: New `llms/` directory with optimized documentation for Large Language Models
+  - Chakra UI v3 documentation (components, styling, theming, migration guide) - 109,023 lines
+  - seql-js library documentation (full spec and friendly guide) - 7,930 lines
+- **Comprehensive Development Guidelines**: New `.ai/` directory structure with strict naming conventions and rules
+  - Feature documentation requirements (`feature-docs.md`, `issue-docs.md`)
+  - API SDK read-only policy for `src/api/sdk` protection
+  - React, CSS modules, hooks, store slices, and test naming conventions
+  - English-only content language requirements
+
+### Changed
+
+- **Lenient Matching Confidence**: Refined confidence scoring to apply 20% degradation penalty for lenient matches in `resolver.ts:338-342`
+- **Unique Selector Generation**: Improved CSS selector generation with proper `root` parameter fallback to `document` in `css-generator.ts:34`
+- **Batch Generator**: Updated to support `root` parameter for cross-document batch operations
+
+### Tests
+
+- Added comprehensive iframe test coverage (75+ new tests):
+  - `tests/iframe-integration.test.ts` - Integration tests for iframe resolution scenarios
+  - `tests/iframe-support.test.ts` - Unit tests for cross-document operations and validation
+  - `tests/unit/seql-parser.test.ts` - SEQL selector parsing validation
+  - `tests/manual/test-iframe-manual.html` - Manual testing page with nested iframes
+- All 1,002 tests passing (previous: 932 tests)
+
+### Documentation
+
+- **Chrome Extension Guide**: Added comprehensive setup and usage instructions in `README.md` and `extensions/chrome/README.md`
+  - Installation steps for unpacked extension
+  - Feature descriptions (EID generation, SEQL resolution, iframe support)
+  - Context switching and debugging workflows
+- **Development Setup**: Updated `docs/contributing/development-setup.md` with Chrome extension commands
+- **Improved Readability**: Added spacing in README files for better visual clarity
+
+### Migration
+
+No breaking changes. The `root` parameter is optional and backward compatible. To use iframe support:
+
+```typescript
+import { generateEID, resolve } from '@whenessel/seql-js';
+
+// Get iframe element and its document
+const iframe = document.querySelector('iframe');
+const iframeDoc = iframe.contentDocument;
+
+// Generate EID for element inside iframe
+const element = iframeDoc.querySelector('.some-element');
+const eid = generateEID(element, { root: iframeDoc });
+
+// Resolve EID within iframe context
+const resolved = resolve(eid, { root: iframeDoc });
+```
+
+See Chrome DevTools extension panel for interactive examples.
+
 ## [1.4.0] - 2026-01-28
 
 ### Added
@@ -148,7 +214,10 @@ See git history for changes before this version.
 
 ---
 
-[Unreleased]: https://github.com/whenessel/seql-js/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/whenessel/seql-js/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/whenessel/seql-js/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/whenessel/seql-js/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/whenessel/seql-js/compare/v1.1.0...v1.3.0
 [1.1.0]: https://github.com/whenessel/seql-js/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/whenessel/seql-js/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/whenessel/seql-js/releases/tag/v1.0.2
