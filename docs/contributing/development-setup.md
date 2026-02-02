@@ -17,6 +17,8 @@ yarn install
 
 ## Development Commands
 
+### Core Library
+
 ```bash
 # Build library
 yarn build
@@ -37,6 +39,21 @@ yarn types:check
 yarn test:coverage
 ```
 
+### Chrome Extension
+
+```bash
+# Build library and prepare extension
+yarn extension:prepare
+
+# Load extension in Chrome
+# 1. Open chrome://extensions/
+# 2. Enable "Developer mode"
+# 3. Click "Load unpacked"
+# 4. Select extensions/chrome/ directory
+```
+
+See [Chrome Extension README](../../extensions/chrome/README.md) for detailed extension documentation.
+
 ## Project Structure
 
 ```
@@ -48,6 +65,8 @@ seql-js/
 │   └── utils/          # Utilities
 ├── tests/              # Test files
 ├── docs/               # Documentation
+├── extensions/         # Browser extensions
+│   └── chrome/        # Chrome DevTools extension
 ├── dist/               # Build output
 └── package.json
 ```

@@ -146,6 +146,28 @@ Manage the LRU cache to improve performance for frequent generations/resolutions
 - `src/resolver/`: Logic for resolving EID JSON back to DOM elements.
 - `src/types/`: Core type definitions for EIDs, Semantics, and Constraints.
 - `src/utils/`: Shared utilities, constants, and scoring algorithms.
+- `extensions/chrome/`: Chrome DevTools extension for visual SEQL inspection.
+
+## Developer Tools
+
+### Chrome DevTools Extension
+
+The SEQL Inspector extension provides visual tooling for working with SEQL selectors directly in Chrome DevTools.
+
+**Features:**
+- Generate SEQL selectors for all elements or pick individual elements
+- Full iframe support with automatic detection and context switching
+- Live search and resolution testing
+- Interactive element highlighting and inspection
+- Tree view with grouping and filtering
+
+**Installation:**
+```bash
+yarn extension:prepare
+# Then load extensions/chrome/ as unpacked extension in Chrome
+```
+
+See [Chrome Extension README](extensions/chrome/README.md) for detailed documentation.
 
 ## Scripts
 
@@ -154,6 +176,7 @@ Manage the LRU cache to improve performance for frequent generations/resolutions
 - `yarn test:watch`: Run tests in watch mode.
 - `yarn test:coverage`: Run tests with coverage report.
 - `yarn types:check`: Run TypeScript type checking.
+- `yarn extension:prepare`: Build library and prepare Chrome extension.
 - `npx vitest <path>`: Run a specific test file.
 
 ## Documentation
