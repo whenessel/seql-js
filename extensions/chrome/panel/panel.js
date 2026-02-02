@@ -18,6 +18,7 @@
     iframes: [], // Array of {index, id, name, src, label, accessible}
     selectedIframeIndex: -1, // -1 = main document, 0+ = iframe index
     currentDocumentContext: 'main', // 'main' | 'iframe-0' | 'iframe-1' etc.
+    iframeDetectionDebounce: null, // Debounce timer for iframe detection
   };
 
   // DOM Elements
@@ -49,6 +50,12 @@
   function init() {
     bindEvents();
     detectIframes();
+
+    // Re-scan iframes every 5 seconds to detect dynamically added ones
+    setInterval(() => {
+      detectIframes();
+    }, 5000);
+
     setStatus('Ready');
   }
 
@@ -71,6 +78,39 @@
   // Set status text
   function setStatus(text) {
     elements.statusText.textContent = text;
+  }
+
+  /**
+   * Builds context prefix code for iframe switching
+   * @param {number} iframeIndex - Iframe index (-1 for main document, 0+ for iframe)
+   * @param {boolean} returnBool - If true, return false on error instead of error object
+   * @returns {string} JavaScript code to set targetDoc variable
+   */
+  function buildContextPrefix(iframeIndex, returnBool = false) {
+    const errorReturn = returnBool
+      ? 'return false;'
+      : "return { error: 'Selected iframe is not accessible or does not exist.' };";
+
+    return iframeIndex === -1
+      ? 'const targetDoc = document;'
+      : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
+         if (!iframe || !iframe.contentDocument) {
+           ${errorReturn}
+         }
+         const targetDoc = iframe.contentDocument;`;
+  }
+
+  /**
+   * Schedules iframe detection with debouncing
+   */
+  function scheduleIframeDetection() {
+    if (state.iframeDetectionDebounce) {
+      clearTimeout(state.iframeDetectionDebounce);
+    }
+
+    state.iframeDetectionDebounce = setTimeout(() => {
+      detectIframes();
+    }, 500); // Wait 500ms before scanning
   }
 
   // Detect and catalog iframes in the page
@@ -211,14 +251,7 @@
 
     // Build context-aware code
     const iframeIndex = state.selectedIframeIndex;
-    const contextPrefix =
-      iframeIndex === -1
-        ? 'const targetDoc = document;'
-        : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
-           if (!iframe || !iframe.contentDocument) {
-             return { error: 'Selected iframe is not accessible or does not exist.' };
-           }
-           const targetDoc = iframe.contentDocument;`;
+    const contextPrefix = buildContextPrefix(iframeIndex);
 
     const code = `
       (function() {
@@ -368,16 +401,12 @@
     setStatus('Pick an element (click to select, Esc to cancel)...');
     elements.btnPickElement.disabled = true;
 
+    // Refresh iframe detection before picking
+    detectIframes();
+
     // Build context-aware code
     const iframeIndex = state.selectedIframeIndex;
-    const contextPrefix =
-      iframeIndex === -1
-        ? 'const targetDoc = document;'
-        : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
-           if (!iframe || !iframe.contentDocument) {
-             return { error: 'Selected iframe is not accessible or does not exist.' };
-           }
-           const targetDoc = iframe.contentDocument;`;
+    const contextPrefix = buildContextPrefix(iframeIndex);
 
     const code = `
       (function() {
@@ -835,12 +864,7 @@
 
     // Build context-aware code
     const iframeIndex = state.selectedIframeIndex;
-    const contextPrefix =
-      iframeIndex === -1
-        ? 'const targetDoc = document;'
-        : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
-           if (!iframe || !iframe.contentDocument) return false;
-           const targetDoc = iframe.contentDocument;`;
+    const contextPrefix = buildContextPrefix(iframeIndex, true);
 
     const code = `
       (function() {
@@ -867,12 +891,7 @@
 
     // Build context-aware code
     const iframeIndex = state.selectedIframeIndex;
-    const contextPrefix =
-      iframeIndex === -1
-        ? 'const targetDoc = document;'
-        : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
-           if (!iframe || !iframe.contentDocument) return false;
-           const targetDoc = iframe.contentDocument;`;
+    const contextPrefix = buildContextPrefix(iframeIndex, true);
 
     const code = `
       (function() {
@@ -920,12 +939,7 @@
 
     // Build context-aware code
     const iframeIndex = state.selectedIframeIndex;
-    const contextPrefix =
-      iframeIndex === -1
-        ? 'const targetDoc = document;'
-        : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
-           if (!iframe || !iframe.contentDocument) return false;
-           const targetDoc = iframe.contentDocument;`;
+    const contextPrefix = buildContextPrefix(iframeIndex, true);
 
     const code = `
       (function() {
@@ -968,14 +982,7 @@
   function resolveSearchQuery(query) {
     // Build context-aware code
     const iframeIndex = state.selectedIframeIndex;
-    const contextPrefix =
-      iframeIndex === -1
-        ? 'const targetDoc = document;'
-        : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
-           if (!iframe || !iframe.contentDocument) {
-             return { error: 'Selected iframe is not accessible or does not exist.' };
-           }
-           const targetDoc = iframe.contentDocument;`;
+    const contextPrefix = buildContextPrefix(iframeIndex);
 
     const code = `
       (function() {
