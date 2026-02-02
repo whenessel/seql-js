@@ -1,0 +1,305 @@
+<SYSTEM>LLM-friendly reference for @whenessel/seql-js (seql-js): semantic element identity and selectors for stable DOM identification. Based on this repo's docs and source code.</SYSTEM>
+
+# SEQL-JS LLM-Friendly Reference
+
+## Overview
+SEQL (Semantic Element Query Language) identifies DOM elements by semantic features
+instead of brittle CSS/XPath. It produces:
+- EID (ElementIdentity): JSON structure used for generation/resolution
+- SEQL Selector: compact string form for transport and storage
+
+Key properties:
+- Semantic-first (ARIA, semantic tags, stable attributes)
+- Deterministic and state-independent
+- Works across DOM refactors
+- PII-aware text handling (emails/phones/CC excluded from selector text)
+- TypeScript-first, no runtime deps
+
+## Install and import
+Package name in this repo: @whenessel/seql-js
+
+```bash
+npm install @whenessel/seql-js
+# or
+yarn add @whenessel/seql-js
+```
+
+```ts
+import {
+  generateSEQL,
+  resolveSEQL,
+  generateEID,
+  resolve,
+  parseSEQL,
+  stringifySEQL,
+} from '@whenessel/seql-js'
+```
+
+Note: Some docs/examples still show `seql-js` as the import. The scoped
+package name is `@whenessel/seql-js` in this repo.
+
+## Core concepts
+- Anchor: semantic root (form/main/nav/section/role=region, etc.)
+- Path: semantic traversal from anchor to target's parent
+- Target: element being identified
+- Constraints: disambiguation rules
+- Fallback: behavior for missing/ambiguous matches
+
+EID and SEQL Selector are equivalent:
+
+```
+Element -> generateEID() -> EID (JSON)
+EID -> stringifySEQL() -> SEQL Selector (string)
+SEQL Selector -> parseSEQL() -> EID
+EID -> resolve() -> ResolveResult
+SEQL Selector -> resolveSEQL() -> Element[]
+```
+
+## Quick start
+
+Generate/resolve string selector:
+```ts
+import { generateSEQL, resolveSEQL } from '@whenessel/seql-js'
+
+const button = document.querySelector('button[type="submit"]')
+const selector = generateSEQL(button)
+
+const matches = resolveSEQL(selector, document)
+```
+
+Generate/resolve EID:
+```ts
+import { generateEID, resolve } from '@whenessel/seql-js'
+
+const element = document.querySelector('input[name="email"]')
+const eid = generateEID(element)
+
+if (eid) {
+  const result = resolve(eid, document)
+  if (result.status === 'success') {
+    console.log(result.elements[0])
+  }
+}
+```
+
+## Public API (main exports)
+
+Core:
+- generateEID(target, options?) -> ElementIdentity | null
+- resolve(eid, dom, options?) -> ResolveResult
+
+SEQL string API:
+- generateSEQL(element, generatorOptions?, stringifyOptions?) -> string | null
+- resolveSEQL(selector, dom, options?) -> Element[]
+- parseSEQL(selector) -> ElementIdentity
+- stringifySEQL(eid, options?) -> string
+
+Validation:
+- validateEID(eid) -> ValidationResult
+- isEID(value) -> boolean
+
+Batch:
+- generateEIDBatch(options?) -> BatchResult
+- generateEIDForElements(elements, options?) -> BatchResult
+
+Cache:
+- createEIDCache(options?) -> EIDCache
+- getGlobalCache() -> EIDCache
+- resetGlobalCache() -> void
+
+Utilities and constants (selected):
+- normalizeText, filterClasses, calculateConfidence
+- EID_VERSION, DEFAULT_GENERATOR_OPTIONS, DEFAULT_RESOLVER_OPTIONS
+
+Advanced components:
+- AnchorFinder, PathBuilder, SemanticExtractor, SvgFingerprinter
+- CssGenerator, SemanticsMatcher, ConstraintsEvaluator, FallbackHandler
+
+## Options and defaults
+
+GeneratorOptions (src/types/options.ts + src/utils/constants.ts):
+```ts
+interface GeneratorOptions {
+  maxPathDepth?: number;           // default 10
+  enableSvgFingerprint?: boolean;  // default true
+  confidenceThreshold?: number;    // default 0.0
+  fallbackToBody?: boolean;        // default true
+  includeUtilityClasses?: boolean; // default false
+  source?: string;                 // default 'dom-dsl'
+  cache?: EIDCache;
+}
+```
+
+ResolverOptions:
+```ts
+interface ResolverOptions {
+  strictMode?: boolean;    // default false
+  enableFallback?: boolean; // default true
+  maxCandidates?: number;  // default 20
+}
+```
+
+StringifyOptions (src/utils/seql-parser.ts):
+```ts
+interface StringifyOptions {
+  maxClasses?: number;       // default 2
+  maxAttributes?: number;    // default 5
+  includeText?: boolean;     // default true
+  maxTextLength?: number;    // default 50
+  simplifyTarget?: boolean;  // default true
+  includeConstraints?: boolean; // default true
+}
+```
+
+BatchGeneratorOptions:
+```ts
+interface BatchGeneratorOptions {
+  root?: Element | Document;      // default document.body
+  filter?: string;                 // default '*'
+  limit?: number;                  // default Infinity
+  onProgress?: (current, total) => void;
+  progressInterval?: number;       // default 100
+  skipNonSemantic?: boolean;        // default true
+  generatorOptions?: GeneratorOptions;
+  cache?: EIDCache;
+  signal?: AbortSignal;
+}
+```
+
+EIDCacheOptions:
+```ts
+interface EIDCacheOptions {
+  maxSelectorCacheSize?: number;  // default 1000
+}
+```
+
+## Data structures
+
+ElementIdentity (EID):
+```ts
+interface ElementIdentity {
+  version: '1.0';
+  anchor: AnchorNode;
+  path: PathNode[];
+  target: TargetNode;
+  constraints: Constraint[];
+  fallback: {
+    onMultiple: 'allow-multiple' | 'best-score' | 'first';
+    onMissing: 'anchor-only' | 'strict' | 'none';
+    maxDepth: number;
+  };
+  meta: {
+    confidence: number; // 0..1
+    generatedAt: string; // ISO
+    generator: string;
+    source: string;
+    degraded: boolean;
+    degradationReason?: string;
+  };
+}
+```
+
+Nodes:
+```ts
+interface AnchorNode {
+  tag: string;
+  semantics: ElementSemantics;
+  score: number;    // 0..1
+  degraded: boolean;
+  nthChild?: number; // 1-based
+}
+
+type PathNode = {
+  tag: string;
+  semantics: ElementSemantics;
+  score: number;    // 0..1
+  nthChild?: number; // 1-based
+}
+
+type TargetNode = PathNode
+```
+
+Semantics:
+```ts
+interface ElementSemantics {
+  id?: string;
+  classes?: string[];
+  attributes?: Record<string, string>;
+  text?: { raw: string; normalized: string; matchMode?: 'exact' | 'partial' };
+  svg?: { shape: string; dHash?: string; geomHash?: string; hasAnimation: boolean; role?: string; titleText?: string };
+  role?: string;
+}
+```
+
+Constraints:
+- type: 'uniqueness' | 'text-proximity' | 'position'
+- params:
+  - uniqueness: { mode: 'strict' | 'best-score' | 'allow-multiple' }
+  - text-proximity: { reference: string; maxDistance: number }
+  - position: { strategy: 'top-most' | 'left-most' | 'first-in-dom' }
+
+ResolveResult:
+```ts
+interface ResolveResult {
+  status: 'success' | 'ambiguous' | 'error' | 'degraded-fallback';
+  elements: Element[];
+  warnings: string[];
+  confidence: number;
+  meta: { degraded: boolean; degradationReason?: string };
+}
+```
+
+## SEQL Selector format
+
+General form:
+```
+v1: <anchor> :: <path> > <target> {constraints}
+```
+
+Examples:
+```
+v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
+v1: nav.main[role="navigation"] :: ul.menu > li#2 > a[href="/about",text="About"]
+```
+
+Syntax notes:
+- Classes: `.class` (stable classes only)
+- Attributes: `[key="value",key2="value2"]`
+- nth-child: `#N` (1-based)
+- Constraints suffix: `{unique=true,pos=top-most,text="Login"}`
+
+Stringify behavior (important for predictability):
+- Attributes are sorted and capped by priority (id, data-testid, aria-*, name, href, type, etc.)
+- Text is included as `text="..."` only if non-PII and <= maxTextLength
+- Utility classes are excluded by default (enable via includeUtilityClasses)
+- Target simplification drops low-value attrs/classes if strong IDs exist
+
+Parsing:
+- `parseSEQL()` accepts `v1:` or `v1.0:` prefix
+- Returns an EID with default fallback rules and meta fields
+
+## Resolution algorithm (high level)
+1. CSS narrowing from EID
+2. Semantic filtering
+3. Uniqueness check
+4. Constraint application
+5. Fallback handling (anchor-only or best-score)
+
+`resolveSEQL()` returns only Element[] (no status). Use `resolve()` for detailed results.
+
+## Stability and filtering rules (high level)
+- State attributes (aria-selected, data-state, disabled, etc.) are excluded
+- Analytics/data tracking attributes and library data-* prefixes are excluded
+- Dynamic IDs are excluded (hashes, timestamps, framework-generated IDs)
+- Class filtering removes utility-only classes unless includeUtilityClasses is true
+
+## Where to look in this repo
+- docs/README.md: documentation map
+- docs/getting-started/: intro, concepts, basic usage
+- docs/api/: API reference (may lag behind latest code)
+- docs/specification/: formal EID and SEQL format
+- docs/guides/: generation, resolution, configuration, caching
+- src/index.ts: public exports
+- src/generator/: EID generation logic
+- src/resolver/: resolution logic
+- src/utils/: SEQL parser, caching, scoring, filters

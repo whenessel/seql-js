@@ -279,8 +279,8 @@ export const IGNORED_ATTRIBUTES = new Set([
  * div with utility classes) can still be identified using positional information
  * (nthChild).
  */
-export const DEFAULT_GENERATOR_OPTIONS: Omit<Required<GeneratorOptions>, 'cache'> &
-  Pick<GeneratorOptions, 'cache'> = {
+export const DEFAULT_GENERATOR_OPTIONS: Omit<Required<GeneratorOptions>, 'cache' | 'root'> &
+  Pick<GeneratorOptions, 'cache' | 'root'> = {
   maxPathDepth: MAX_PATH_DEPTH,
   enableSvgFingerprint: true,
   confidenceThreshold: 0.0,
@@ -292,7 +292,8 @@ export const DEFAULT_GENERATOR_OPTIONS: Omit<Required<GeneratorOptions>, 'cache'
 /**
  * Default resolver options
  */
-export const DEFAULT_RESOLVER_OPTIONS: Required<ResolverOptions> = {
+export const DEFAULT_RESOLVER_OPTIONS: Omit<Required<ResolverOptions>, 'root'> &
+  Pick<ResolverOptions, 'root'> = {
   strictMode: false,
   enableFallback: true,
   maxCandidates: 20,

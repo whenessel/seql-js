@@ -19,6 +19,21 @@ export interface GeneratorOptions {
   source?: string;
   /** Optional cache instance for performance optimization */
   cache?: EIDCache;
+  /**
+   * Root element or document for validation (optional).
+   *
+   * ⚠️ IMPORTANT: When working with iframes, pass iframe.contentDocument
+   * to ensure cross-document validation works correctly.
+   *
+   * @example
+   * // Main document
+   * generateEID(element, { root: document });
+   *
+   * // Iframe content
+   * const iframe = document.querySelector('iframe');
+   * generateEID(iframeElement, { root: iframe.contentDocument });
+   */
+  root?: Document | Element;
 }
 
 /**
@@ -32,4 +47,19 @@ export interface ResolverOptions {
   enableFallback?: boolean;
   /** Maximum candidates to consider (default: 20) */
   maxCandidates?: number;
+  /**
+   * Root element or document for CSS queries.
+   *
+   * ⚠️ IMPORTANT: When working with iframes, you MUST pass iframe.contentDocument
+   * as the root parameter. Otherwise, resolution will fail or return incorrect elements.
+   *
+   * @example
+   * // Main document
+   * resolve(eid, document, { root: document });
+   *
+   * // Iframe content
+   * const iframe = document.querySelector('iframe');
+   * resolve(eid, iframe.contentDocument, { root: iframe.contentDocument });
+   */
+  root?: Document | Element;
 }

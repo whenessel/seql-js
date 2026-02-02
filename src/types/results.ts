@@ -19,7 +19,20 @@ export interface ResolveResult {
   /** Metadata about resolution */
   meta: {
     degraded: boolean;
-    degradationReason?: string;
+    degradationReason?:
+      | 'not-found'
+      | 'strict-not-found'
+      | 'ambiguous'
+      | 'anchor-fallback'
+      | 'anchor-not-found'
+      | 'first-of-multiple'
+      | 'best-of-multiple'
+      | 'multiple-matches'
+      | 'over-constrained'
+      | 'relaxed-text-matching'
+      | 'invalid-context'
+      | 'invalid-selector'
+      | 'invalid-anchor-selector';
   };
 }
 

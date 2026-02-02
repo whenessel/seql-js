@@ -673,6 +673,21 @@ export function generateSEQL(
  *   highlightElement(elements[0]);
  * }
  * ```
+ *
+ * @example
+ * ```typescript
+ * // Working with iframes - pass iframe.contentDocument as both root and in options
+ * const iframe = document.querySelector('iframe');
+ * const iframeDoc = iframe.contentDocument;
+ * const selector = "v1: form#payment :: input[name=cardnumber]";
+ *
+ * // IMPORTANT: Pass contentDocument as root in options for correct resolution
+ * const elements = resolveSEQL(selector, iframeDoc, { root: iframeDoc });
+ *
+ * if (elements.length > 0) {
+ *   console.log('Found payment input in iframe:', elements[0]);
+ * }
+ * ```
  */
 export function resolveSEQL(
   selector: string,
@@ -681,7 +696,13 @@ export function resolveSEQL(
 ): Element[] {
   try {
     const eid = parseSEQL(selector);
-    const result = resolveInternal(eid, root, options);
+    // Merge root parameter into options for consistency
+    // The resolver will use the dom parameter as primary source of truth
+    const mergedOptions: ResolverOptions = {
+      ...options,
+      root: options?.root || root,
+    };
+    const result = resolveInternal(eid, root, mergedOptions);
     return result.elements || [];
   } catch (error) {
     // eslint-disable-next-line no-console
