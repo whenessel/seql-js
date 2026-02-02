@@ -5,12 +5,14 @@ Naming conventions for source files, test files, and configuration files.
 ## Format
 
 - **kebab-case**: All lowercase with hyphens separating words
-- **No dots**: Except for file extension
+- **No dots**: Except for file extension and test suffixes
 - **Descriptive**: File name should reflect its primary export or purpose
 
 ## Source Files
 
-### Allowed
+### Regular Files
+
+For services, utilities, and non-component code:
 
 ```
 user-service.ts
@@ -20,14 +22,57 @@ config-loader.ts
 error-handler.ts
 ```
 
+### React Component Files
+
+**Rule**: Component file name must match the exported component name (converted to kebab-case).
+
+```typescript
+// File: user-profile.tsx
+export function UserProfile() { ... }
+
+// File: login-form.tsx
+export function LoginForm() { ... }
+
+// File: button-primary.tsx
+export function ButtonPrimary() { ... }
+```
+
+**Extension Rules**:
+
+- Use `.tsx` for files containing JSX/React components
+- Use `.ts` for files containing only logic (no JSX)
+
+**Exceptions** (use PascalCase as-is):
+
+```
+App.tsx
+Routes.tsx
+```
+
+**Always use `index.tsx`** for directory-level exports:
+
+```
+components/
+  navbar/
+    index.tsx              // Main export
+    navbar-links.tsx       // Sub-component
+    navbar-styles.ts       // Styles
+```
+
 ### Forbidden
 
 ```
-UserService.ts          // PascalCase not allowed
+UserService.ts           // PascalCase (except App.tsx, Routes.tsx)
 userService.ts           // camelCase not allowed
 user_service.ts          // snake_case not allowed
 user.service.ts          // Multiple dots not allowed
-usr-svc.ts              // Abbreviations not allowed
+usr-svc.ts               // Abbreviations not allowed
+
+// React components - forbidden patterns
+userProfile.tsx          // camelCase for components
+user_profile.tsx         // snake_case
+UserProfileComponent.tsx // Redundant "Component" suffix
+UserProfile.tsx          // PascalCase (use kebab-case: user-profile.tsx)
 ```
 
 ## Test Files
@@ -85,10 +130,12 @@ global.d.ts
 
 ## Rules
 
-1. **One primary export per file**: File name should match the primary export
+1. **One primary export per file**: File name should match the primary export (kebab-case for components)
 2. **Consistent naming**: Related files should follow similar patterns
 3. **No abbreviations**: Use full words unless abbreviation is widely accepted
 4. **Descriptive**: File name should clearly indicate its purpose
+5. **Component naming**: React component files use kebab-case, component itself uses PascalCase
+6. **No suffix redundancy**: Avoid suffixes like `Component`, `Container`, `Page` in filenames
 
 ## Examples
 

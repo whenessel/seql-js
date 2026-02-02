@@ -136,7 +136,7 @@ export class CssGenerator {
 
     // FIX 2: Ensure anchor is unique before building full selector
     const anchorSelector = options?.ensureUnique
-      ? this.ensureUniqueAnchor(eid, options.root ?? document)
+      ? this.ensureUniqueAnchor(eid, options.root!)
       : this.buildNodeSelector(eid.anchor.tag, eid.anchor.semantics);
 
     parts.push(anchorSelector);

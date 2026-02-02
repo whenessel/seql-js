@@ -139,6 +139,7 @@ body {
   gap: 8px;
 }
 
+.iframe-selector,
 .tag-filter,
 .grouping-mode {
   padding: 5px 8px;
@@ -149,6 +150,12 @@ body {
   cursor: pointer;
 }
 
+.iframe-selector {
+  min-width: 140px;
+  font-weight: 500;
+}
+
+.iframe-selector:focus,
 .tag-filter:focus,
 .grouping-mode:focus {
   outline: none;

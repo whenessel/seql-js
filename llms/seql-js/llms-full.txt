@@ -1,0 +1,7625 @@
+<SYSTEM>This is the full developer documentation for @whenessel/seql-js (seql-js).</SYSTEM>
+
+# SEQL-JS Full Documentation
+
+## Package Metadata
+
+- Name: @whenessel/seql-js
+- Version: 1.4.0
+- Description: Semantic Element Query Language JS Implementation
+- Repository: https://github.com/whenessel/seql-js
+- Exports: `dist/seql-js.js`, `dist/seql-js.umd.cjs`
+- Types: `dist/seql-js.d.ts`
+
+## Sources and Notes
+
+- This file concatenates `README.md` and all `docs/**/*.md` files except `docs/archive/**`.
+- Defaults and behavior details should be verified against `src/` (e.g., `src/utils/constants.ts`).
+
+## Documentation
+
+
+# File: README.md
+
+# seql-js
+
+Semantic Element Query Language (SEQL) - Stable DOM element identification for web analytics, session replay, and automation.
+
+`seql-js` provides a robust way to identify DOM elements using semantic features rather than brittle CSS paths or XPath. It's designed to survive DOM restructuring, CSS changes, and framework updates.
+
+## Features
+
+- **Semantic-first**: Uses ARIA roles, labels, semantic HTML tags, and stable attributes.
+- **Resilient**: Designed to be stable across UI updates and DOM changes.
+- **State-independent** (v1.0.3): Filters out state attributes (`aria-selected`, `data-state`, `disabled`) to ensure elements are found regardless of their current state.
+- **Dual Format**:
+  - **EID** (JSON): Structured descriptor for internal operations and high precision.
+  - **SEQL Selector** (String): Canonical string format for easy transport (analytics) and storage.
+- **Deterministic**: Guaranteed same output for the same DOM state.
+- **Zero Dependencies**: Tree-shakeable and lightweight.
+- **TypeScript Native**: Written in TypeScript with full type definitions.
+
+## Requirements
+
+- **Node.js**: v18 or higher.
+- **Package Manager**: Yarn (recommended) or npm.
+
+## Installation
+
+```bash
+yarn add seql-js
+# or
+npm install seql-js
+```
+
+## Quick Start
+
+### 1. SEQL Selector Format (Recommended for Analytics)
+
+SEQL Selectors are compact, URL-safe strings perfect for sending to analytics platforms.
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// 1. Generate SEQL Selector from a DOM element
+const button = document.querySelector('.submit-button');
+const selector = generateSEQL(button);
+// Result: "v1: form :: div.actions > button[type="submit",text="Order Now"]"
+
+// 2. Send to your analytics provider
+gtag('event', 'click', { element_selector: selector });
+
+// 3. Later: Resolve SEQL Selector back to the original element
+const elements = resolveSEQL(selector, document);
+// Returns an array: [<button>...]
+```
+
+### 2. EID Structured Format (Internal Operations)
+
+EID is a rich JSON object containing full semantic metadata and resolution constraints.
+
+```typescript
+import { generateEID, resolve } from 'seql-js';
+
+// 1. Generate EID (JSON)
+const button = document.querySelector('.submit-button');
+const eid = generateEID(button);
+
+// 2. Resolve EID
+const result = resolve(eid, document);
+
+if (result.status === 'success') {
+  console.log('Found element:', result.elements[0]);
+  console.log('Confidence score:', result.confidence);
+}
+```
+
+## Concepts
+
+### EID vs SEQL Selector
+
+- **EID** (Element Identity Descriptor): A detailed JSON structure describing the **Anchor**, **Path**, **Target**, and **Constraints**.
+- **SEQL Selector**: A canonical string representation of an EID, similar to CSS Selector or XPath.
+
+```text
+Generation: Element → generateEID() → EID (JSON)
+Stringify:  EID → stringifySEQL() → SEQL Selector (string)
+Parse:      SEQL Selector → parseSEQL() → EID (JSON)
+Resolution: EID → resolve() → ResolveResult
+```
+
+### Core Architecture
+
+1. **Anchor**: A semantic root (e.g., `<form>`, `<main>`, or ARIA landmarks).
+2. **Path**: Semantic traversal from the anchor to the target.
+3. **Target**: The specific element being identified.
+4. **Constraints**: Disambiguation rules (uniqueness, visibility, text proximity).
+
+## API Reference
+
+### SEQL Selector Functions
+
+#### `generateSEQL(element, generatorOptions?, stringifyOptions?)`
+
+Convenience function: `generateEID` + `stringifySEQL`. Returns a string or `null`.
+
+#### `resolveSEQL(selector, root, options?)`
+
+Convenience function: `parseSEQL` + `resolve`. Returns `Element[]`.
+
+#### `parseSEQL(selector)`
+
+Parses a SEQL Selector into an `ElementIdentity` object.
+
+#### `stringifySEQL(eid, options?)`
+
+Converts an `ElementIdentity` object into a canonical SEQL Selector.
+
+### Core Functions
+
+#### `generateEID(element, options?)`
+
+Generates an `ElementIdentity` (EID) from a DOM element.
+
+- `maxPathDepth`: Default 10.
+- `enableSvgFingerprint`: Default true.
+- `confidenceThreshold`: Default 0.1.
+
+#### `resolve(eid, root, options?)`
+
+Resolves an EID back to DOM element(s). Returns a `ResolveResult` object.
+
+- `status`: `'success' | 'ambiguous' | 'error' | 'degraded-fallback'`.
+- `elements`: `Element[]` of matches.
+- `confidence`: Match confidence score (0-1).
+
+### Utilities & Advanced
+
+#### `generateEIDBatch(elements, options?)`
+
+Optimized generation for multiple elements at once.
+
+#### `createEIDCache(options?)` / `getGlobalCache()`
+
+Manage the LRU cache to improve performance for frequent generations/resolutions.
+
+## Project Structure
+
+- `src/generator/`: Logic for converting DOM elements into EID JSON.
+- `src/resolver/`: Logic for resolving EID JSON back to DOM elements.
+- `src/types/`: Core type definitions for EIDs, Semantics, and Constraints.
+- `src/utils/`: Shared utilities, constants, and scoring algorithms.
+
+## Scripts
+
+- `yarn build`: Build the library (outputs to `dist/`).
+- `yarn test`: Run all tests using Vitest.
+- `yarn test:watch`: Run tests in watch mode.
+- `yarn test:coverage`: Run tests with coverage report.
+- `yarn types:check`: Run TypeScript type checking.
+- `npx vitest <path>`: Run a specific test file.
+
+## Documentation
+
+- **[Getting Started](docs/getting-started/)** - Installation and quick start guide
+- **[API Reference](docs/api/)** - Complete API documentation
+- **[Examples](docs/examples/)** - Practical code examples
+- **[Specification](docs/specification/)** - EID and SEQL format specifications
+- **[Architecture](docs/architecture/)** - System design and internals
+- **[Guides](docs/guides/)** - Advanced topics and patterns
+- **[Contributing](docs/contributing/)** - Development guide
+- **[Troubleshooting](docs/troubleshooting/)** - Common issues and solutions
+- **[CLAUDE.md](CLAUDE.md)** - AI agent development guidelines
+
+## Migrating from v0.x
+
+If you are upgrading from v0.x, note these breaking changes:
+
+- `generateDsl()` → `generateEID()`
+- `resolveDsl()` → `resolve()`
+- `DslIdentity` → `ElementIdentity`
+- `DslCache` → `EIDCache`
+- `validateDsl()` → `validateEID()`
+
+See the full [Migration Guide](docs/MIGRATION.md) for details.
+
+## License
+
+MIT
+
+
+# File: docs/api/batch-api.md
+
+# Batch API
+
+Efficiently generate EIDs for multiple elements at once.
+
+## generateEIDBatch()
+
+Generates Element Identity Descriptors for multiple elements in a single optimized call.
+
+### Signature
+
+```typescript
+function generateEIDBatch(
+  elements: Element[],
+  options?: GeneratorOptions
+): (ElementIdentity | null)[];
+```
+
+### Parameters
+
+| Parameter  | Type               | Required | Description                        |
+| ---------- | ------------------ | -------- | ---------------------------------- |
+| `elements` | `Element[]`        | Yes      | Array of DOM elements to process   |
+| `options`  | `GeneratorOptions` | No       | Shared options for all generations |
+
+### Returns
+
+- **`(ElementIdentity | null)[]`** - Array of EIDs (same length as input, `null` for failed generations)
+
+### Performance Benefits
+
+Batch processing provides significant performance improvements:
+
+- **Shared cache**: All elements use the same cache instance
+- **Optimized anchor finding**: Common anchors are cached
+- **Reduced overhead**: Single function call vs. multiple individual calls
+- **Better memory usage**: Reuses semantic extractor instances
+
+**Performance gain**: 30-50% faster than individual `generateEID()` calls for 10+ elements.
+
+### Examples
+
+#### Basic Batch Generation
+
+```typescript
+import { generateEIDBatch } from 'seql-js';
+
+// Get all buttons on the page
+const buttons = Array.from(document.querySelectorAll('button'));
+
+// Generate EIDs for all buttons at once
+const eids = generateEIDBatch(buttons);
+
+// Filter out failed generations
+const validEIDs = eids.filter((eid) => eid !== null);
+
+console.log(`Generated ${validEIDs.length}/${buttons.length} EIDs`);
+```
+
+#### Convert to SEQL Selectors
+
+```typescript
+import { generateEIDBatch, stringifySEQL } from 'seql-js';
+
+const interactiveElements = Array.from(
+  document.querySelectorAll('button, a, input, select, textarea')
+);
+
+const eids = generateEIDBatch(interactiveElements);
+
+// Convert all to SEQL selectors
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
+
+console.log(`Generated ${selectors.length} selectors`);
+```
+
+#### Send to Analytics
+
+```typescript
+import { generateEIDBatch, stringifySEQL } from 'seql-js';
+
+async function trackPageElements() {
+  // Get all trackable elements
+  const elements = Array.from(document.querySelectorAll('[data-track]'));
+
+  // Generate EIDs in batch
+  const eids = generateEIDBatch(elements);
+
+  // Convert to selectors and send to backend
+  const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
+
+  await fetch('/api/analytics/page-elements', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url: window.location.href,
+      selectors,
+    }),
+  });
+}
+
+// Run on page load
+trackPageElements();
+```
+
+#### With Custom Options
+
+```typescript
+import { generateEIDBatch } from 'seql-js';
+
+const forms = Array.from(document.querySelectorAll('form'));
+
+const eids = generateEIDBatch(forms, {
+  maxPathDepth: 5, // Shorter paths
+  enableSvgFingerprint: false, // No SVG processing needed
+  confidenceThreshold: 0.3, // Higher quality threshold
+});
+```
+
+#### Parallel Processing with Map
+
+```typescript
+import { generateEIDBatch } from 'seql-js';
+
+const sections = Array.from(document.querySelectorAll('section'));
+
+// Generate EIDs for all sections
+const sectionEIDs = generateEIDBatch(sections);
+
+// Create a map of section → EID
+const sectionMap = new Map(sections.map((section, index) => [section, sectionEIDs[index]]));
+
+// Later, look up EID for a specific section
+const targetSection = document.querySelector('#products');
+const eid = sectionMap.get(targetSection);
+```
+
+## Common Patterns
+
+### Pattern 1: Page Snapshot
+
+Generate identifiers for all interactive elements on page load:
+
+```typescript
+import { generateEIDBatch, stringifySEQL } from 'seql-js';
+
+function capturePageSnapshot() {
+  const interactive = Array.from(
+    document.querySelectorAll('a, button, input, select, textarea, [role="button"]')
+  );
+
+  const eids = generateEIDBatch(interactive);
+  const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
+
+  return {
+    url: window.location.href,
+    timestamp: Date.now(),
+    elementCount: interactive.length,
+    selectors,
+  };
+}
+
+// Send snapshot to analytics
+const snapshot = capturePageSnapshot();
+console.log(`Captured ${snapshot.selectors.length} elements`);
+```
+
+### Pattern 2: Form Field Mapping
+
+Create identifiers for all form fields:
+
+```typescript
+import { generateEIDBatch } from 'seql-js';
+
+function mapFormFields(form: HTMLFormElement) {
+  const fields = Array.from(form.querySelectorAll('input, select, textarea')) as HTMLInputElement[];
+
+  const eids = generateEIDBatch(fields);
+
+  // Create field name → EID mapping
+  const fieldMap = new Map(fields.map((field, index) => [field.name || field.id, eids[index]]));
+
+  return fieldMap;
+}
+
+// Usage
+const loginForm = document.querySelector('#login-form') as HTMLFormElement;
+const fieldIdentifiers = mapFormFields(loginForm);
+```
+
+### Pattern 3: Incremental Processing
+
+Process elements in chunks for very large DOMs:
+
+```typescript
+import { generateEIDBatch } from 'seql-js';
+
+async function processLargeDOM(selector: string, chunkSize = 100) {
+  const allElements = Array.from(document.querySelectorAll(selector));
+  const allEIDs: (ElementIdentity | null)[] = [];
+
+  // Process in chunks
+  for (let i = 0; i < allElements.length; i += chunkSize) {
+    const chunk = allElements.slice(i, i + chunkSize);
+    const chunkEIDs = generateEIDBatch(chunk);
+
+    allEIDs.push(...chunkEIDs);
+
+    // Yield to browser between chunks
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    console.log(`Processed ${Math.min(i + chunkSize, allElements.length)}/${allElements.length}`);
+  }
+
+  return allEIDs;
+}
+
+// Usage
+const eids = await processLargeDOM('div, span, p', 100);
+```
+
+### Pattern 4: Comparison Across Sessions
+
+Generate and compare element sets:
+
+```typescript
+import { generateEIDBatch, stringifySEQL } from 'seql-js';
+
+function comparePageElements() {
+  const currentElements = Array.from(document.querySelectorAll('[data-important]'));
+
+  const currentEIDs = generateEIDBatch(currentElements);
+  const currentSelectors = currentEIDs
+    .filter((eid) => eid !== null)
+    .map((eid) => stringifySEQL(eid!));
+
+  // Load previous session
+  const previousSelectors = JSON.parse(localStorage.getItem('previousSelectors') || '[]');
+
+  // Find added/removed elements
+  const added = currentSelectors.filter((sel) => !previousSelectors.includes(sel));
+  const removed = previousSelectors.filter((sel) => !currentSelectors.includes(sel));
+
+  console.log(`Added: ${added.length}, Removed: ${removed.length}`);
+
+  // Save current state
+  localStorage.setItem('previousSelectors', JSON.stringify(currentSelectors));
+
+  return { added, removed };
+}
+```
+
+## Performance Benchmarks
+
+Typical performance characteristics (1000 elements):
+
+| Method                           | Time           | Memory              |
+| -------------------------------- | -------------- | ------------------- |
+| Individual `generateEID()` calls | ~2500ms        | ~15MB               |
+| `generateEIDBatch()`             | ~1500ms        | ~10MB               |
+| **Improvement**                  | **40% faster** | **33% less memory** |
+
+### Optimization Tips
+
+**✅ Do:**
+
+- Use batch processing for 10+ elements
+- Process similar elements together (all buttons, all inputs)
+- Reuse the same options object for all batches
+
+**❌ Don't:**
+
+- Batch drastically different element types (forms + tiny divs)
+- Process 10,000+ elements in a single batch (use chunking)
+- Generate batch EIDs in tight loops (batch the loop instead)
+
+## Error Handling
+
+Individual element failures don't stop batch processing:
+
+```typescript
+import { generateEIDBatch } from 'seql-js';
+
+const elements = [
+  document.createElement('div'), // Not connected to DOM
+  document.querySelector('button'), // Valid
+  null, // Invalid input
+  document.querySelector('input'), // Valid
+];
+
+const eids = generateEIDBatch(elements.filter((el) => el !== null) as Element[]);
+
+// Result: [null, ElementIdentity, null, ElementIdentity]
+console.log('Successful:', eids.filter((eid) => eid !== null).length);
+console.log('Failed:', eids.filter((eid) => eid === null).length);
+```
+
+## When to Use Batch vs Individual
+
+### Use `generateEIDBatch()` when
+
+- Processing 10+ elements at once
+- Capturing page snapshots
+- Initial page load analytics
+- Bulk export/import operations
+
+### Use `generateEID()` when
+
+- Processing single elements on-demand
+- Event handlers (click, input)
+- Real-time user interaction tracking
+- Elements are processed at different times
+
+## Combining with Other APIs
+
+### Batch Generation + Individual Resolution
+
+```typescript
+import { generateEIDBatch, resolve } from 'seql-js';
+
+// Generate batch at page load
+const buttons = Array.from(document.querySelectorAll('button'));
+const buttonEIDs = generateEIDBatch(buttons);
+
+// Store in WeakMap for later lookup
+const eidMap = new WeakMap(buttons.map((btn, i) => [btn, buttonEIDs[i]]));
+
+// Later, resolve individual elements
+document.addEventListener('click', (event) => {
+  const target = event.target as Element;
+  const button = target.closest('button');
+
+  if (button) {
+    const eid = eidMap.get(button);
+    if (eid) {
+      const result = resolve(eid, document);
+      console.log('Clicked button confidence:', result.confidence);
+    }
+  }
+});
+```
+
+### Batch with Custom Cache
+
+```typescript
+import { generateEIDBatch, createEIDCache } from 'seql-js';
+
+// Create dedicated cache for this batch
+const batchCache = createEIDCache({ maxSize: 1000 });
+
+const elements = Array.from(document.querySelectorAll('div'));
+const eids = generateEIDBatch(elements, {
+  cache: batchCache,
+});
+
+// Cache is warm for future operations
+console.log('Cache stats:', batchCache.getStats());
+```
+
+## TypeScript Types
+
+```typescript
+import type { ElementIdentity, GeneratorOptions } from 'seql-js';
+
+function generateEIDBatch(
+  elements: Element[],
+  options?: GeneratorOptions
+): (ElementIdentity | null)[];
+```
+
+## Next Steps
+
+- [Core Functions](./core-functions.md) - Individual element generation
+- [Cache API](./cache-api.md) - Optimize performance with caching
+- [Examples](../examples/basic-examples.md) - Real-world usage
+- [Performance Guide](../troubleshooting/performance.md) - Optimization tips
+
+
+# File: docs/api/cache-api.md
+
+# Cache API
+
+Performance optimization through intelligent caching of EID generation and resolution results.
+
+## Overview
+
+SEQL uses multi-level caching to avoid redundant computation:
+
+- **Level 1**: EID cache (WeakMap) - Full EID objects keyed by DOM element
+- **Level 2**: Selector query cache (LRU) - CSS selector query results
+- **Level 3**: Anchor cache (WeakMap) - Anchor finding results
+- **Level 4**: Semantics cache (WeakMap) - Semantic extraction results
+
+All caching is automatic and transparent to users.
+
+## createEIDCache()
+
+Creates a new cache instance with custom configuration.
+
+### Signature
+
+```typescript
+function createEIDCache(options?: CacheOptions): EIDCache;
+```
+
+### Parameters
+
+| Parameter | Type           | Required | Description                 |
+| --------- | -------------- | -------- | --------------------------- |
+| `options` | `CacheOptions` | No       | Cache configuration options |
+
+### Cache Options
+
+```typescript
+interface CacheOptions {
+  maxSize?: number; // Max entries in LRU cache (default: 1000)
+  enableStats?: boolean; // Track cache statistics (default: true)
+}
+```
+
+### Returns
+
+- **`EIDCache`** - New cache instance
+
+### Examples
+
+#### Create Custom Cache
+
+```typescript
+import { createEIDCache } from 'seql-js';
+
+// Create cache with custom size
+const cache = createEIDCache({ maxSize: 500 });
+
+console.log('Cache created');
+```
+
+#### Use with Generation
+
+```typescript
+import { generateEID, createEIDCache } from 'seql-js';
+
+// Create dedicated cache for session
+const sessionCache = createEIDCache({ maxSize: 2000 });
+
+const button = document.querySelector('button');
+const eid = generateEID(button, {
+  cache: sessionCache,
+});
+
+// Subsequent calls use cached result
+const eid2 = generateEID(button, {
+  cache: sessionCache, // Instant return from cache
+});
+```
+
+#### Per-Page Cache
+
+```typescript
+import { createEIDCache, generateEIDBatch } from 'seql-js';
+
+class PageAnalyzer {
+  private cache: EIDCache;
+
+  constructor() {
+    this.cache = createEIDCache({ maxSize: 1000 });
+  }
+
+  analyzeElements(selector: string) {
+    const elements = Array.from(document.querySelectorAll(selector));
+    return generateEIDBatch(elements, {
+      cache: this.cache,
+    });
+  }
+
+  getCacheStats() {
+    return this.cache.getStats();
+  }
+
+  clearCache() {
+    this.cache.clear();
+  }
+}
+
+const analyzer = new PageAnalyzer();
+const eids = analyzer.analyzeElements('button, a, input');
+console.log('Cache stats:', analyzer.getCacheStats());
+```
+
+---
+
+## getGlobalCache()
+
+Returns the singleton global cache instance used by default.
+
+### Signature
+
+```typescript
+function getGlobalCache(): EIDCache;
+```
+
+### Returns
+
+- **`EIDCache`** - Global cache instance
+
+### Examples
+
+#### Access Global Cache
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+const globalCache = getGlobalCache();
+console.log('Global cache stats:', globalCache.getStats());
+```
+
+#### Monitor Cache Performance
+
+```typescript
+import { getGlobalCache, generateEID } from 'seql-js';
+
+const cache = getGlobalCache();
+
+// Before
+const statsBefore = cache.getStats();
+
+// Generate EIDs
+const buttons = document.querySelectorAll('button');
+buttons.forEach((btn) => generateEID(btn));
+
+// After
+const statsAfter = cache.getStats();
+
+console.log('Hit rate:', statsAfter.hitRate);
+console.log('New entries:', statsAfter.size - statsBefore.size);
+```
+
+#### Clear Global Cache
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+// Clear all cached data
+getGlobalCache().clear();
+console.log('Global cache cleared');
+```
+
+---
+
+## EIDCache Interface
+
+The `EIDCache` interface provides methods for cache management and statistics.
+
+### Methods
+
+#### getEID()
+
+```typescript
+getEID(element: Element): ElementIdentity | null | undefined
+```
+
+Retrieve cached EID for an element.
+
+- Returns `ElementIdentity` if cached
+- Returns `undefined` if not in cache
+- Returns `null` if previously failed to generate
+
+#### setEID()
+
+```typescript
+setEID(element: Element, eid: ElementIdentity | null): void
+```
+
+Store EID in cache.
+
+#### getSelectorResults()
+
+```typescript
+getSelectorResults(selector: string): Element[] | undefined
+```
+
+Retrieve cached CSS selector query results.
+
+#### setSelectorResults()
+
+```typescript
+setSelectorResults(selector: string, elements: Element[]): void
+```
+
+Store CSS selector query results.
+
+#### getAnchor()
+
+```typescript
+getAnchor(element: Element): AnchorResult | undefined
+```
+
+Retrieve cached anchor finding result.
+
+#### setAnchor()
+
+```typescript
+setAnchor(element: Element, result: AnchorResult): void
+```
+
+Store anchor finding result.
+
+#### getSemantics()
+
+```typescript
+getSemantics(element: Element): ElementSemantics | undefined
+```
+
+Retrieve cached semantic extraction result.
+
+#### setSemantics()
+
+```typescript
+setSemantics(element: Element, semantics: ElementSemantics): void
+```
+
+Store semantic extraction result.
+
+#### getStats()
+
+```typescript
+getStats(): CacheStats
+```
+
+Get cache statistics.
+
+Returns:
+
+```typescript
+interface CacheStats {
+  size: number; // Current cache size
+  hits: number; // Cache hit count
+  misses: number; // Cache miss count
+  hitRate: number; // Hit rate (0-1)
+  evictions: number; // Number of evicted entries
+}
+```
+
+#### clear()
+
+```typescript
+clear(): void
+```
+
+Clear all cached data.
+
+---
+
+## Cache Strategies
+
+### Strategy 1: Global Cache (Default)
+
+Use the global cache for general-purpose caching:
+
+```typescript
+import { generateEID } from 'seql-js';
+
+// Uses global cache automatically
+const eid = generateEID(element);
+```
+
+**Pros:**
+
+- Zero configuration
+- Shared across entire application
+- Good for general use
+
+**Cons:**
+
+- Shared state may not suit all scenarios
+- No isolation between features
+
+### Strategy 2: Custom Cache Per Feature
+
+Create dedicated caches for different features:
+
+```typescript
+import { createEIDCache, generateEID } from 'seql-js';
+
+class FeatureA {
+  private cache = createEIDCache({ maxSize: 500 });
+
+  trackElement(el: Element) {
+    return generateEID(el, { cache: this.cache });
+  }
+}
+
+class FeatureB {
+  private cache = createEIDCache({ maxSize: 300 });
+
+  analyzeElement(el: Element) {
+    return generateEID(el, { cache: this.cache });
+  }
+}
+```
+
+**Pros:**
+
+- Isolated state per feature
+- Custom cache sizes
+- Easy to clear feature-specific cache
+
+**Cons:**
+
+- More memory usage
+- Less cache sharing
+
+### Strategy 3: Session-Based Cache
+
+Clear cache on navigation or session end:
+
+```typescript
+import { createEIDCache } from 'seql-js';
+
+class SessionManager {
+  private cache = createEIDCache({ maxSize: 1000 });
+
+  onNavigate() {
+    this.cache.clear();
+    console.log('Cache cleared for new page');
+  }
+
+  getCache() {
+    return this.cache;
+  }
+}
+
+const session = new SessionManager();
+
+// Clear on navigation
+window.addEventListener('beforeunload', () => {
+  session.onNavigate();
+});
+```
+
+**Pros:**
+
+- Fresh cache per page/session
+- Prevents stale data
+- Predictable behavior
+
+**Cons:**
+
+- Lose cross-page caching benefits
+- More computation on each page
+
+---
+
+## Performance Impact
+
+### Cache Hit Rates
+
+Typical hit rates in production scenarios:
+
+| Scenario        | Hit Rate | Impact |
+| --------------- | -------- | ------ |
+| Static page     | 60-80%   | High   |
+| Single-page app | 40-60%   | Medium |
+| Dynamic content | 20-40%   | Low    |
+| First page load | 0-10%    | None   |
+
+### Performance Metrics
+
+With cache (1000 elements, 50% hit rate):
+
+| Operation      | Without Cache | With Cache | Improvement |
+| -------------- | ------------- | ---------- | ----------- |
+| EID generation | 1500ms        | 800ms      | 47% faster  |
+| Selector query | 300ms         | 150ms      | 50% faster  |
+| Anchor finding | 500ms         | 250ms      | 50% faster  |
+
+### Memory Usage
+
+Typical memory footprint:
+
+| Cache Size   | Memory Usage |
+| ------------ | ------------ |
+| 100 entries  | ~1 MB        |
+| 500 entries  | ~5 MB        |
+| 1000 entries | ~10 MB       |
+| 5000 entries | ~50 MB       |
+
+---
+
+## Best Practices
+
+### ✅ Do
+
+#### Use global cache for most cases
+
+```typescript
+import { generateEID } from 'seql-js';
+const eid = generateEID(element); // Uses global cache
+```
+
+#### Monitor cache performance
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+setInterval(() => {
+  const stats = getGlobalCache().getStats();
+  if (stats.hitRate < 0.3) {
+    console.warn('Low cache hit rate:', stats.hitRate);
+  }
+}, 60000); // Check every minute
+```
+
+#### Clear cache on major DOM changes
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+function onMajorDOMChange() {
+  getGlobalCache().clear();
+  console.log('Cache cleared after DOM restructure');
+}
+```
+
+#### Use custom cache for isolated features
+
+```typescript
+import { createEIDCache } from 'seql-js';
+
+class IsolatedFeature {
+  private cache = createEIDCache({ maxSize: 200 });
+  // Use this.cache for all operations
+}
+```
+
+### ❌ Don't
+
+#### Don't create cache per element
+
+```typescript
+// ❌ Bad: Creates new cache for each element
+elements.forEach((el) => {
+  const cache = createEIDCache();
+  generateEID(el, { cache });
+});
+
+// ✅ Good: Reuse cache
+const cache = createEIDCache();
+elements.forEach((el) => {
+  generateEID(el, { cache });
+});
+```
+
+#### Don't set maxSize too high
+
+```typescript
+// ❌ Bad: Excessive memory usage
+const cache = createEIDCache({ maxSize: 100000 });
+
+// ✅ Good: Reasonable limit
+const cache = createEIDCache({ maxSize: 1000 });
+```
+
+#### Don't clear cache too frequently
+
+```typescript
+// ❌ Bad: Cache becomes useless
+setInterval(() => cache.clear(), 1000);
+
+// ✅ Good: Clear only when needed
+window.addEventListener('popstate', () => cache.clear());
+```
+
+---
+
+## Debugging Cache Issues
+
+### Check Cache Stats
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+const stats = getGlobalCache().getStats();
+console.log('Cache stats:', {
+  size: stats.size,
+  hitRate: `${(stats.hitRate * 100).toFixed(1)}%`,
+  hits: stats.hits,
+  misses: stats.misses,
+  evictions: stats.evictions,
+});
+```
+
+### Monitor Cache Growth
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+let previousSize = 0;
+setInterval(() => {
+  const currentSize = getGlobalCache().getStats().size;
+  const growth = currentSize - previousSize;
+
+  if (growth > 100) {
+    console.warn(`Cache grew by ${growth} entries in last minute`);
+  }
+
+  previousSize = currentSize;
+}, 60000);
+```
+
+### Test Cache Effectiveness
+
+```typescript
+import { getGlobalCache, generateEID } from 'seql-js';
+
+function testCacheEffectiveness(element: Element, iterations = 1000) {
+  getGlobalCache().clear();
+
+  const start = performance.now();
+
+  for (let i = 0; i < iterations; i++) {
+    generateEID(element);
+  }
+
+  const end = performance.now();
+  const stats = getGlobalCache().getStats();
+
+  console.log(`${iterations} iterations: ${(end - start).toFixed(2)}ms`);
+  console.log(`Hit rate: ${(stats.hitRate * 100).toFixed(1)}%`);
+  console.log(`Cache size: ${stats.size}`);
+}
+
+const button = document.querySelector('button')!;
+testCacheEffectiveness(button);
+```
+
+---
+
+## Advanced Patterns
+
+### Cache Warming
+
+Pre-populate cache on page load:
+
+```typescript
+import { generateEIDBatch, createEIDCache } from 'seql-js';
+
+async function warmCache() {
+  const cache = createEIDCache({ maxSize: 1000 });
+
+  // Generate EIDs for all important elements
+  const importantElements = Array.from(document.querySelectorAll('[data-track], button, a, input'));
+
+  const eids = generateEIDBatch(importantElements, { cache });
+
+  console.log(`Cache warmed with ${eids.filter((e) => e).length} entries`);
+  return cache;
+}
+
+// Warm cache when page is idle
+requestIdleCallback(() => warmCache());
+```
+
+### Cache Persistence
+
+Save/restore cache across page loads:
+
+```typescript
+import { getGlobalCache, createEIDCache } from 'seql-js';
+
+// Note: This is a simplified example. In production, you'd need
+// to serialize/deserialize EIDs and handle cache invalidation
+
+function saveCache() {
+  const stats = getGlobalCache().getStats();
+  localStorage.setItem('cache-stats', JSON.stringify(stats));
+}
+
+function loadCache() {
+  const stats = localStorage.getItem('cache-stats');
+  if (stats) {
+    console.log('Previous session stats:', JSON.parse(stats));
+  }
+}
+
+window.addEventListener('beforeunload', saveCache);
+window.addEventListener('load', loadCache);
+```
+
+---
+
+## Next Steps
+
+- [Core Functions](./core-functions.md) - EID generation and resolution
+- [Batch API](./batch-api.md) - Batch processing
+- [Performance Guide](../troubleshooting/performance.md) - Optimization tips
+- [Examples](../examples/) - Real-world usage patterns
+
+
+# File: docs/api/core-functions.md
+
+# Core Functions
+
+Low-level EID/Core API for advanced element identification workflows.
+
+## generateEID()
+
+Generates an Element Identity Descriptor (EID) from a DOM element.
+
+### Signature
+
+```typescript
+function generateEID(target: Element, options?: GeneratorOptions): ElementIdentity | null;
+```
+
+### Parameters
+
+| Parameter | Type               | Required | Description                            |
+| --------- | ------------------ | -------- | -------------------------------------- |
+| `target`  | `Element`          | Yes      | The DOM element to generate an EID for |
+| `options` | `GeneratorOptions` | No       | Configuration options for generation   |
+
+### Returns
+
+- **`ElementIdentity`** - EID JSON object with anchor, path, target, and constraints
+- **`null`** - Only if element is invalid (null, disconnected, or no ownerDocument)
+
+**Since v1.3.0**: Always returns an EID for valid DOM elements (even with low semantics). Low confidence is indicated via `meta.confidence` field.
+
+### Generator Options
+
+```typescript
+interface GeneratorOptions {
+  maxPathDepth?: number; // Max depth for path building (default: 10)
+  enableSvgFingerprint?: boolean; // Enable SVG fingerprinting (default: true)
+  confidenceThreshold?: number; // Min confidence threshold (default: 0.0, v1.3.0+)
+  fallbackToBody?: boolean; // Use <body> if no anchor found (default: true)
+  cache?: EIDCache; // Custom cache instance (default: global cache)
+}
+```
+
+**Note (v1.3.0)**: `confidenceThreshold` default changed from `0.1` to `0.0`. Elements below threshold now return EID with low `meta.confidence` instead of `null`.
+
+### Examples
+
+#### Basic Usage
+
+```typescript
+import { generateEID } from 'seql-js';
+
+const button = document.querySelector('.submit-button');
+const eid = generateEID(button);
+
+if (eid) {
+  console.log('Generated EID:', eid);
+  console.log('Anchor tag:', eid.anchor.tag);
+  console.log('Target tag:', eid.target.tag);
+  console.log('Confidence:', eid.meta.confidence);
+  
+  // v1.3.0+: Check confidence if quality matters
+  if (eid.meta.confidence < 0.3) {
+    console.warn('Low confidence EID - consider alternative identification');
+  }
+}
+```
+
+#### With Custom Options
+
+```typescript
+import { generateEID } from 'seql-js';
+
+const input = document.querySelector('input[type="email"]');
+const eid = generateEID(input, {
+  maxPathDepth: 5, // Shorter path for performance
+  enableSvgFingerprint: false, // Disable SVG processing
+  confidenceThreshold: 0.3, // Higher quality threshold
+});
+```
+
+#### Custom Cache
+
+```typescript
+import { generateEID, createEIDCache } from 'seql-js';
+
+// Create dedicated cache for session
+const sessionCache = createEIDCache({ maxSize: 500 });
+
+const element = document.querySelector('button');
+const eid = generateEID(element, { cache: sessionCache });
+```
+
+### Return Structure
+
+```typescript
+interface ElementIdentity {
+  version: string; // EID format version (e.g., "1.0")
+
+  anchor: AnchorNode; // Semantic root element
+  path: PathNode[]; // Semantic traversal
+  target: TargetNode; // The element itself
+
+  constraints?: Constraint[]; // Disambiguation rules
+  fallbackRules?: FallbackRules; // Fallback resolution rules
+
+  meta: {
+    confidence: number; // Quality score (0-1)
+    generatedAt: string; // ISO timestamp
+    degraded: boolean; // True if ideal conditions not met
+    degradationReason?: string; // Why degraded (if applicable)
+  };
+}
+```
+
+#### Anchor Node
+
+```typescript
+interface AnchorNode {
+  tag: string; // Tag name (e.g., "form", "main")
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position among siblings (v1.1.0)
+}
+```
+
+#### Target Node
+
+```typescript
+interface TargetNode {
+  tag: string; // Tag name (e.g., "button", "input")
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position among siblings (v1.1.0)
+}
+```
+
+### When Generation Fails
+
+`generateEID()` returns `null` in these cases:
+
+1. **Element not connected to DOM**
+
+   ```typescript
+   const orphan = document.createElement('button');
+   generateEID(orphan); // Returns null
+   ```
+
+2. **Element lacks owner document**
+
+   ```typescript
+   const detached = document.createElement('div');
+   generateEID(detached); // Returns null
+   ```
+
+3. **Confidence below threshold** (with custom threshold)
+
+   ```typescript
+   generateEID(element, { confidenceThreshold: 0.9 }); // May return null
+   ```
+
+### Performance Notes
+
+- **Caching**: Results are cached automatically using global cache or custom cache
+- **Cache hits**: Subsequent calls for same element return cached EID instantly
+- **Path depth**: Lower `maxPathDepth` improves performance but may reduce specificity
+- **SVG fingerprinting**: Disable for non-SVG documents to improve performance
+
+---
+
+## resolve()
+
+Resolves an Element Identity Descriptor back to DOM element(s).
+
+### Signature
+
+```typescript
+function resolve(
+  eid: ElementIdentity,
+  dom: Document | Element,
+  options?: ResolverOptions
+): ResolveResult;
+```
+
+### Parameters
+
+| Parameter | Type                  | Required | Description                                    |
+| --------- | --------------------- | -------- | ---------------------------------------------- |
+| `eid`     | `ElementIdentity`     | Yes      | The EID to resolve                             |
+| `dom`     | `Document \| Element` | Yes      | Document or container element to search within |
+| `options` | `ResolverOptions`     | No       | Configuration options for resolution           |
+
+### Returns
+
+Always returns a `ResolveResult` object with status, elements, and metadata.
+
+### Resolver Options
+
+```typescript
+interface ResolverOptions {
+  strictMode?: boolean; // Reject degraded matches (default: false)
+  requireUniqueness?: boolean; // Fail if multiple matches (default: false)
+  enableFallback?: boolean; // Try fallback resolution (default: true)
+  maxCandidates?: number; // Max candidates to consider (default: 100)
+}
+```
+
+### Examples
+
+#### Basic Usage
+
+```typescript
+import { resolve } from 'seql-js';
+
+const eid = {...}; // Previously generated EID
+const result = resolve(eid, document);
+
+console.log('Status:', result.status);
+console.log('Elements:', result.elements);
+console.log('Confidence:', result.confidence);
+```
+
+#### Handling Different Statuses
+
+```typescript
+import { resolve } from 'seql-js';
+
+const result = resolve(eid, document);
+
+switch (result.status) {
+  case 'success':
+    // Single match found
+    const element = result.elements[0];
+    console.log('Found element:', element);
+    element.click();
+    break;
+
+  case 'ambiguous':
+    // Multiple matches found
+    console.warn(`Found ${result.elements.length} matches`);
+    result.elements.forEach((el, i) => {
+      console.log(`Match ${i + 1}:`, el);
+    });
+    break;
+
+  case 'degraded-fallback':
+    // Partial match with reduced confidence
+    console.warn('Found with fallback:', result.elements[0]);
+    console.log('Degradation reason:', result.meta.degradationReason);
+    break;
+
+  case 'error':
+    // No matches found
+    console.error('Element not found');
+    result.warnings.forEach((w) => console.warn(w));
+    break;
+}
+```
+
+#### Strict Mode
+
+```typescript
+import { resolve } from 'seql-js';
+
+// Only accept perfect matches
+const result = resolve(eid, document, {
+  strictMode: true,
+  requireUniqueness: true,
+});
+
+if (result.status === 'success') {
+  // Guaranteed single, high-confidence match
+  const element = result.elements[0];
+  element.focus();
+}
+```
+
+#### Scoped Resolution
+
+```typescript
+import { resolve } from 'seql-js';
+
+// Search only within modal
+const modal = document.querySelector('.modal');
+if (modal) {
+  const result = resolve(eid, modal); // Scoped to modal
+  // ...
+}
+```
+
+### Return Structure
+
+```typescript
+interface ResolveResult {
+  status: 'success' | 'ambiguous' | 'degraded-fallback' | 'error';
+  elements: Element[]; // Matched elements (0 or more)
+  warnings: string[]; // Warning messages
+  confidence: number; // Match confidence (0-1)
+  meta: {
+    degraded: boolean; // True if match quality is reduced
+    degradationReason?: string; // Why degraded (if applicable)
+  };
+}
+```
+
+### Status Values
+
+| Status              | Description                | Elements Count | Confidence              |
+| ------------------- | -------------------------- | -------------- | ----------------------- |
+| `success`           | Perfect match              | 1              | Original EID confidence |
+| `ambiguous`         | Multiple matches           | 2+             | Original EID confidence |
+| `degraded-fallback` | Partial match via fallback | 1+             | Reduced (< original)    |
+| `error`             | No matches found           | 0              | 0                       |
+
+### Resolution Algorithm (5 Phases)
+
+The resolver uses a multi-phase algorithm for robustness:
+
+### Phase 1: CSS Narrowing
+
+- Generate optimized CSS selector from EID
+- Query DOM using native browser APIs
+- Narrow candidate set
+
+### Phase 2: Semantic Filtering
+
+- Score candidates by semantic similarity
+- Filter low-scoring matches
+- Prioritize semantically similar elements
+
+### Phase 3: Uniqueness Check
+
+- If exactly 1 candidate remains, return early (status: `success`)
+- Skip phases 4-5 for performance
+
+### Phase 4: Constraints Evaluation
+
+- Apply uniqueness, visibility, text proximity constraints
+- Filter candidates that don't meet constraints
+
+### Phase 5: Ambiguity Handling
+
+- Multiple matches: return all (status: `ambiguous`)
+- No matches + fallback enabled: try fallback rules (status: `degraded-fallback`)
+- No matches + no fallback: return error (status: `error`)
+
+### Common Patterns
+
+#### Safe Element Access
+
+```typescript
+const result = resolve(eid, document);
+const element = result.elements[0];
+
+if (element) {
+  // Safe to use element
+  element.click();
+}
+```
+
+#### Confidence-Based Logic
+
+```typescript
+const result = resolve(eid, document);
+
+if (result.confidence > 0.8) {
+  // High confidence - safe to auto-click
+  result.elements[0]?.click();
+} else if (result.confidence > 0.5) {
+  // Medium confidence - highlight for user
+  result.elements[0]?.scrollIntoView();
+} else {
+  // Low confidence - manual intervention
+  console.warn('Low confidence match:', result.confidence);
+}
+```
+
+#### Retry with Fallback Disabled
+
+```typescript
+// Try strict resolution first
+let result = resolve(eid, document, {
+  enableFallback: false,
+  requireUniqueness: true,
+});
+
+if (result.status !== 'success') {
+  // Retry with fallback
+  result = resolve(eid, document, {
+    enableFallback: true,
+  });
+}
+```
+
+### Performance Notes
+
+- **Scoped resolution**: Search within container instead of entire document
+- **Max candidates**: Limit candidate set for large DOMs
+- **CSS selector caching**: Browser caches compiled selectors
+- **Early exit**: Phase 3 exits early on unique match (most common case)
+
+## Comparison: generateEID() vs generateSEQL()
+
+| Aspect      | generateEID()            | generateSEQL()         |
+| ----------- | ------------------------ | ---------------------- |
+| Return type | `ElementIdentity` (JSON) | `string`               |
+| Use case    | Advanced, programmatic   | Simple, storage        |
+| Size        | ~500-2000 bytes          | ~100-300 bytes         |
+| Parsing     | Native JSON              | SEQL parser required   |
+| Metadata    | Full semantic structure  | Compact representation |
+| Performance | Slightly slower          | Slightly faster        |
+
+## Comparison: resolve() vs resolveSEQL()
+
+| Aspect      | resolve()                  | resolveSEQL()        |
+| ----------- | -------------------------- | -------------------- |
+| Input       | `ElementIdentity` (JSON)   | `string`             |
+| Return type | `ResolveResult` (detailed) | `Element[]` (simple) |
+| Status info | Yes (4 statuses)           | No (just array)      |
+| Confidence  | Yes                        | No                   |
+| Warnings    | Yes                        | No                   |
+| Use case    | Advanced, debugging        | Simple, quick        |
+
+## Next Steps
+
+- [SEQL Functions](./seql-functions.md) - High-level string-based API
+- [Batch API](./batch-api.md) - Process multiple elements
+- [Types](./types.md) - TypeScript type definitions
+- [Examples](../examples/) - Real-world usage patterns
+
+
+# File: docs/api/README.md
+
+# API Reference
+
+Complete API documentation for seql-js v1.1.0.
+
+## Quick Navigation
+
+- **[Core Functions](./core-functions.md)** - `generateEID()`, `resolve()`
+- **[SEQL Functions](./seql-functions.md)** - `generateSEQL()`, `resolveSEQL()`, `parseSEQL()`, `stringifySEQL()`
+- **[Batch API](./batch-api.md)** - `generateEIDBatch()`, batch processing
+- **[Cache API](./cache-api.md)** - `createEIDCache()`, `getGlobalCache()`, cache management
+- **[Types](./types.md)** - TypeScript interfaces and types
+
+## API Overview
+
+### Two-Tier API Design
+
+SEQL provides two complementary APIs:
+
+#### 1. SEQL Selector API (High-Level, String-Based)
+
+For most use cases - simple, compact string representation:
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+const selector = generateSEQL(element); // Returns string
+const elements = resolveSEQL(selector); // Returns Element[]
+```
+
+#### 2. EID/Core API (Low-Level, JSON-Based)
+
+For advanced scenarios requiring programmatic access:
+
+```typescript
+import { generateEID, resolve } from 'seql-js';
+
+const eid = generateEID(element); // Returns ElementIdentity (JSON)
+const result = resolve(eid); // Returns ResolveResult (detailed)
+```
+
+## Function Categories
+
+### Generation Functions
+
+| Function             | Return Type                   | Description                         |
+| -------------------- | ----------------------------- | ----------------------------------- |
+| `generateSEQL()`     | `string \| null`              | Generate SEQL selector string       |
+| `generateEID()`      | `ElementIdentity \| null`     | Generate EID JSON object            |
+| `generateEIDBatch()` | `(ElementIdentity \| null)[]` | Generate EIDs for multiple elements |
+
+### Resolution Functions
+
+| Function        | Return Type     | Description                       |
+| --------------- | --------------- | --------------------------------- |
+| `resolveSEQL()` | `Element[]`     | Resolve SEQL selector to elements |
+| `resolve()`     | `ResolveResult` | Resolve EID with detailed results |
+
+### Conversion Functions
+
+| Function          | Return Type       | Description                       |
+| ----------------- | ----------------- | --------------------------------- |
+| `parseSEQL()`     | `ElementIdentity` | Parse SEQL string to EID object   |
+| `stringifySEQL()` | `string`          | Convert EID object to SEQL string |
+
+### Validation Functions
+
+| Function        | Return Type        | Description                  |
+| --------------- | ------------------ | ---------------------------- |
+| `validateEID()` | `ValidationResult` | Validate EID structure       |
+| `isEID()`       | `boolean`          | Check if object is valid EID |
+
+### Cache Functions
+
+| Function           | Return Type | Description                |
+| ------------------ | ----------- | -------------------------- |
+| `createEIDCache()` | `EIDCache`  | Create new cache instance  |
+| `getGlobalCache()` | `EIDCache`  | Get global singleton cache |
+
+### Utility Functions
+
+| Function                | Return Type | Description                |
+| ----------------------- | ----------- | -------------------------- |
+| `normalizeText()`       | `string`    | Normalize text content     |
+| `filterClasses()`       | `string[]`  | Filter utility CSS classes |
+| `calculateConfidence()` | `number`    | Calculate match confidence |
+
+## Import Patterns
+
+### Named Imports (Recommended)
+
+```typescript
+import {
+  generateSEQL,
+  resolveSEQL,
+  generateEID,
+  resolve,
+  type ElementIdentity,
+  type ResolveResult,
+} from 'seql-js';
+```
+
+### Tree-Shakeable Imports
+
+Import only what you need to minimize bundle size:
+
+```typescript
+// Minimal: SEQL string API only
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// Extended: Include EID API
+import { generateSEQL, resolveSEQL, generateEID, resolve } from 'seql-js';
+
+// Advanced: Include utilities
+import { generateSEQL, resolveSEQL, generateEIDBatch, createEIDCache } from 'seql-js';
+```
+
+## Common Workflows
+
+### Workflow 1: Simple Identification
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// Generate → Store → Resolve
+const selector = generateSEQL(element);
+localStorage.setItem('key', selector);
+const elements = resolveSEQL(localStorage.getItem('key')!, document);
+```
+
+### Workflow 2: Advanced Processing
+
+```typescript
+import { generateEID, resolve, stringifySEQL } from 'seql-js';
+
+// Generate EID → Inspect → Convert → Resolve
+const eid = generateEID(element);
+console.log('Semantics:', eid?.target.semantics);
+
+const selector = stringifySEQL(eid!);
+const result = resolve(eid!, document);
+
+if (result.status === 'success') {
+  console.log('Confidence:', result.confidence);
+}
+```
+
+### Workflow 3: Batch Processing
+
+```typescript
+import { generateEIDBatch, stringifySEQL } from 'seql-js';
+
+// Batch generate → Convert all → Send to backend
+const elements = document.querySelectorAll('button, a, input');
+const eids = generateEIDBatch(Array.from(elements));
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
+
+await fetch('/api/elements', {
+  method: 'POST',
+  body: JSON.stringify(selectors),
+});
+```
+
+## TypeScript Support
+
+Full TypeScript definitions are included. Enable strict type checking:
+
+```typescript
+import { generateEID, type ElementIdentity } from 'seql-js';
+
+const element = document.querySelector('button');
+
+// Type-safe: may return null
+const eid: ElementIdentity | null = generateEID(element);
+
+if (eid) {
+  // Type narrowing - eid is non-null here
+  console.log(eid.target.tag); // Type: string
+  console.log(eid.target.nthChild); //  Type: number | undefined
+}
+```
+
+## Error Handling
+
+### Null Returns
+
+Generation functions return `null` when unable to create an identifier:
+
+```typescript
+const eid = generateEID(element);
+if (eid === null) {
+  console.warn('Could not generate EID - element may lack semantic features');
+}
+```
+
+### Resolution Failures
+
+Resolution returns empty array or error status:
+
+```typescript
+// SEQL API
+const elements = resolveSEQL(selector, document);
+if (elements.length === 0) {
+  console.warn('No elements found');
+}
+
+// EID API (more detailed)
+const result = resolve(eid, document);
+if (result.status === 'error') {
+  console.error('Resolution failed:', result.message);
+}
+```
+
+## Performance Considerations
+
+### Use Caching
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+// Cache is used automatically, but you can access it
+const cache = getGlobalCache();
+console.log('Cache stats:', cache.getStats());
+```
+
+### Use Batch Processing
+
+```typescript
+// ❌ Bad: Individual calls in loop
+elements.forEach((el) => generateEID(el));
+
+// ✅ Good: Batch processing
+generateEIDBatch(elements);
+```
+
+### Scope Resolution
+
+```typescript
+// ❌ Bad: Search entire document
+resolveSEQL(selector, document);
+
+// ✅ Good: Search within container
+const container = document.querySelector('.modal');
+resolveSEQL(selector, container!);
+```
+
+## Browser Compatibility
+
+- Modern browsers with ES2015+ support
+- No polyfills required for DOM APIs
+- Tested on Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+
+## Next Steps
+
+- [Core Functions](./core-functions.md) - Detailed API for `generateEID()` and `resolve()`
+- [SEQL Functions](./seql-functions.md) - String-based API reference
+- [Batch API](./batch-api.md) - Efficient batch processing
+- [Cache API](./cache-api.md) - Performance optimization
+- [Types](./types.md) - TypeScript type reference
+
+
+# File: docs/api/seql-functions.md
+
+# SEQL Functions
+
+High-level string-based API for simple, compact element identification.
+
+## generateSEQL()
+
+Convenience function that combines `generateEID()` + `stringifySEQL()` into a single call.
+
+### Signature
+
+```typescript
+function generateSEQL(
+  element: Element,
+  generatorOptions?: GeneratorOptions,
+  stringifyOptions?: StringifyOptions
+): string | null;
+```
+
+### Parameters
+
+| Parameter          | Type               | Required | Description                                |
+| ------------------ | ------------------ | -------- | ------------------------------------------ |
+| `element`          | `Element`          | Yes      | The DOM element to generate a selector for |
+| `generatorOptions` | `GeneratorOptions` | No       | Options for EID generation                 |
+| `stringifyOptions` | `StringifyOptions` | No       | Options for SEQL string formatting         |
+
+### Returns
+
+- **`string`** - Compact SEQL selector string
+- **`null`** - If generation failed
+
+### Stringify Options
+
+```typescript
+interface StringifyOptions {
+  verbose?: boolean; // Include all details (default: false)
+  includeNthChild?: boolean; // Include nth-child positions (default: true)
+}
+```
+
+### Examples
+
+#### Basic Usage
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const button = document.querySelector('.submit-button');
+const selector = generateSEQL(button);
+
+console.log(selector);
+// Output: "v1: form :: div.actions > button[type="submit",text="Order Now"]"
+```
+
+#### Compact Format
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const input = document.querySelector('input[type="email"]');
+const selector = generateSEQL(
+  input,
+  { maxPathDepth: 5 },
+  { verbose: false } // Compact format (default)
+);
+
+console.log(selector);
+// Output: "v1: form :: input[type="email",name="email"]"
+```
+
+#### Verbose Format
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const link = document.querySelector('a');
+const selector = generateSEQL(
+  link,
+  {},
+  { verbose: true } // Include all semantic details
+);
+
+console.log(selector);
+// Output: "v1: nav[role="navigation",aria-label="Main"] :: ul.menu > li[nthChild=2] > a[href="/about",text="About Us"]"
+```
+
+### SEQL Selector Format
+
+SEQL selectors follow this format:
+
+```
+v1: <anchor> :: <path> > <target>
+```
+
+**Components**:
+
+- `v1:` - Version prefix
+- `<anchor>` - Semantic root element with attributes
+- `::` - Anchor-to-path separator
+- `<path>` - Semantic traversal (`>` separated)
+- `<target>` - Target element with attributes
+
+**Example Breakdown**:
+
+```
+v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
+│   └──────anchor──────────┘    └──path──┘   └─────────target──────────────┘
+└─ version
+```
+
+---
+
+## resolveSEQL()
+
+Convenience function that combines `parseSEQL()` + `resolve()` into a single call.
+
+### Signature
+
+```typescript
+function resolveSEQL(
+  selector: string,
+  dom: Document | Element,
+  options?: ResolverOptions
+): Element[];
+```
+
+### Parameters
+
+| Parameter  | Type                  | Required | Description                            |
+| ---------- | --------------------- | -------- | -------------------------------------- |
+| `selector` | `string`              | Yes      | The SEQL selector to resolve           |
+| `dom`      | `Document \| Element` | Yes      | Document or container to search within |
+| `options`  | `ResolverOptions`     | No       | Options for resolution                 |
+
+### Returns
+
+- **`Element[]`** - Array of matched elements (may be empty)
+
+### Examples
+
+#### Basic Usage
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+const selector = 'v1: form :: button[type="submit"]';
+const elements = resolveSEQL(selector, document);
+
+if (elements.length > 0) {
+  console.log('Found button:', elements[0]);
+  elements[0].click();
+} else {
+  console.log('Button not found');
+}
+```
+
+#### Scoped Resolution
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+// Search only within modal
+const modal = document.querySelector('.modal');
+const selector = 'v1: div[role="dialog"] :: button[text="Close"]';
+
+if (modal) {
+  const buttons = resolveSEQL(selector, modal);
+  buttons[0]?.click();
+}
+```
+
+#### Strict Resolution
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+const selector = 'v1: form :: input[name="email"]';
+const elements = resolveSEQL(selector, document, {
+  strictMode: true,
+  requireUniqueness: true,
+});
+
+// Will only return element if exactly 1 high-confidence match
+if (elements.length === 1) {
+  elements[0].focus();
+}
+```
+
+### Error Handling
+
+Unlike `resolve()`, `resolveSEQL()` returns an empty array instead of detailed error information.
+
+```typescript
+const elements = resolveSEQL(invalidSelector, document);
+
+if (elements.length === 0) {
+  // Could be: parse error, no matches, or resolution failure
+  console.warn('No elements found');
+}
+```
+
+For detailed error information, use `parseSEQL()` + `resolve()`:
+
+```typescript
+try {
+  const eid = parseSEQL(selector);
+  const result = resolve(eid, document);
+
+  console.log('Status:', result.status);
+  console.log('Warnings:', result.warnings);
+} catch (error) {
+  console.error('Parse error:', error);
+}
+```
+
+---
+
+## parseSEQL()
+
+Parses a SEQL selector string into an `ElementIdentity` object.
+
+### Signature
+
+```typescript
+function parseSEQL(selector: string): ElementIdentity;
+```
+
+### Parameters
+
+| Parameter  | Type     | Required | Description                   |
+| ---------- | -------- | -------- | ----------------------------- |
+| `selector` | `string` | Yes      | SEQL selector string to parse |
+
+### Returns
+
+- **`ElementIdentity`** - Parsed EID object
+
+### Throws
+
+- **`Error`** - If selector format is invalid
+
+### Examples
+
+#### Basic Parsing
+
+```typescript
+import { parseSEQL } from 'seql-js';
+
+const selector = 'v1: form :: button[type="submit"]';
+const eid = parseSEQL(selector);
+
+console.log('Anchor tag:', eid.anchor.tag); // "form"
+console.log('Target tag:', eid.target.tag); // "button"
+console.log('Target type:', eid.target.semantics.attributes.type); // "submit"
+```
+
+#### Parse Then Resolve
+
+```typescript
+import { parseSEQL, resolve } from 'seql-js';
+
+try {
+  const selector = 'v1: main :: div.content > p[text="Hello"]';
+  const eid = parseSEQL(selector);
+
+  // Now you can inspect the EID
+  console.log('Path length:', eid.path.length);
+  console.log('Target semantics:', eid.target.semantics);
+
+  // Resolve with custom options
+  const result = resolve(eid, document, {
+    strictMode: true,
+  });
+
+  console.log('Status:', result.status);
+} catch (error) {
+  console.error('Invalid selector:', error.message);
+}
+```
+
+#### Error Handling
+
+```typescript
+import { parseSEQL } from 'seql-js';
+
+try {
+  const eid = parseSEQL('invalid selector format');
+} catch (error) {
+  console.error('Parse failed:', error.message);
+  // Error: Invalid SEQL selector format
+}
+```
+
+---
+
+## stringifySEQL()
+
+Converts an `ElementIdentity` object into a SEQL selector string.
+
+### Signature
+
+```typescript
+function stringifySEQL(eid: ElementIdentity, options?: StringifyOptions): string;
+```
+
+### Parameters
+
+| Parameter | Type               | Required | Description        |
+| --------- | ------------------ | -------- | ------------------ |
+| `eid`     | `ElementIdentity`  | Yes      | The EID to convert |
+| `options` | `StringifyOptions` | No       | Formatting options |
+
+### Returns
+
+- **`string`** - SEQL selector string
+
+### Examples
+
+#### Basic Stringify
+
+```typescript
+import { generateEID, stringifySEQL } from 'seql-js';
+
+const button = document.querySelector('button');
+const eid = generateEID(button);
+
+if (eid) {
+  const selector = stringifySEQL(eid);
+  console.log(selector);
+  // Output: "v1: form :: button[type="submit"]"
+}
+```
+
+#### Verbose Format
+
+```typescript
+import { generateEID, stringifySEQL } from 'seql-js';
+
+const input = document.querySelector('input');
+const eid = generateEID(input);
+
+if (eid) {
+  const verboseSelector = stringifySEQL(eid, { verbose: true });
+  console.log(verboseSelector);
+  // Includes all semantic attributes, nth-child positions, etc.
+}
+```
+
+#### Without nth-child
+
+```typescript
+import { generateEID, stringifySEQL } from 'seql-js';
+
+const element = document.querySelector('.item');
+const eid = generateEID(element);
+
+if (eid) {
+  const selector = stringifySEQL(eid, { includeNthChild: false });
+  // Omits nth-child positions for broader matching
+  console.log(selector);
+}
+```
+
+---
+
+## Common Workflows
+
+### Workflow 1: Generate and Store
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+// Generate selector for analytics
+document.addEventListener('click', (event) => {
+  const target = event.target as Element;
+  const selector = generateSEQL(target);
+
+  if (selector) {
+    // Send to analytics
+    gtag('event', 'click', { element: selector });
+
+    // Or store locally
+    localStorage.setItem('lastClick', selector);
+  }
+});
+```
+
+### Workflow 2: Retrieve and Resolve
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+// Retrieve stored selector
+const storedSelector = localStorage.getItem('lastClick');
+
+if (storedSelector) {
+  const elements = resolveSEQL(storedSelector, document);
+
+  if (elements.length > 0) {
+    // Highlight the element
+    elements[0].scrollIntoView({ behavior: 'smooth' });
+    elements[0].classList.add('highlight');
+  }
+}
+```
+
+### Workflow 3: Parse, Modify, Stringify
+
+```typescript
+import { parseSEQL, stringifySEQL } from 'seql-js';
+
+const selector = 'v1: form :: input[type="text"]';
+const eid = parseSEQL(selector);
+
+// Modify the EID programmatically
+eid.target.semantics.attributes.name = 'username';
+
+// Convert back to string
+const modifiedSelector = stringifySEQL(eid);
+console.log(modifiedSelector);
+// Output: "v1: form :: input[type="text",name="username"]"
+```
+
+### Workflow 4: Convert Between Formats
+
+```typescript
+import { generateEID, resolveSEQL, stringifySEQL } from 'seql-js';
+
+// EID → SEQL
+const element = document.querySelector('button');
+const eid = generateEID(element);
+const selector = stringifySEQL(eid!);
+
+// SEQL → Elements
+const elements = resolveSEQL(selector, document);
+```
+
+## Performance Considerations
+
+### Use SEQL for Most Cases
+
+```typescript
+// ✅ Good: Simple string-based workflow
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+const selector = generateSEQL(element);
+const elements = resolveSEQL(selector, document);
+```
+
+### Use EID When Needed
+
+```typescript
+// ✅ Good: When you need metadata
+import { generateEID, resolve } from 'seql-js';
+
+const eid = generateEID(element);
+if (eid && eid.meta.confidence > 0.8) {
+  const result = resolve(eid, document);
+  console.log('High confidence match');
+}
+```
+
+### Cache Selectors, Not Elements
+
+```typescript
+// ❌ Bad: Caching DOM elements
+const cachedButton = document.querySelector('button');
+
+// ✅ Good: Caching selectors
+const buttonSelector = generateSEQL(document.querySelector('button'));
+// Later...
+const button = resolveSEQL(buttonSelector!, document)[0];
+```
+
+## Comparison with EID/Core API
+
+| Feature     | SEQL Functions         | EID/Core Functions                  |
+| ----------- | ---------------------- | ----------------------------------- |
+| Return type | `string` / `Element[]` | `ElementIdentity` / `ResolveResult` |
+| Simplicity  | ⭐⭐⭐⭐⭐ Simple      | ⭐⭐⭐ Advanced                     |
+| Size        | ~100-300 bytes         | ~500-2000 bytes                     |
+| Metadata    | None                   | Full details                        |
+| Status info | No                     | Yes (4 statuses)                    |
+| Confidence  | No                     | Yes (0-1 score)                     |
+| Warnings    | No                     | Yes                                 |
+| Use case    | Analytics, storage     | Debugging, advanced                 |
+
+## Next Steps
+
+- [Core Functions](./core-functions.md) - Low-level EID/Core API
+- [Batch API](./batch-api.md) - Process multiple elements
+- [Cache API](./cache-api.md) - Performance optimization
+- [Examples](../examples/) - Real-world patterns
+
+
+# File: docs/architecture/design-decisions.md
+
+# Design Decisions
+
+Key architectural choices and their rationale.
+
+## 1. Why Semantic-First?
+
+**Decision**: Prioritize semantic HTML/ARIA over structural selectors.
+
+**Rationale**:
+
+- Semantic attributes change less frequently than structure
+- Developers update DOM structure often during refactoring
+- ARIA attributes indicate intent, not implementation
+
+**Trade-off**: May be less specific initially, but more stable long-term.
+
+## 2. Why Dual Format (EID + SEQL)?
+
+**Decision**: Provide both JSON and string representations.
+
+**Rationale**:
+
+- JSON: Rich metadata for programmatic use
+- String: Compact for analytics/transport
+
+**Trade-off**: Maintain two formats, but each optimized for its use case.
+
+## 3. Why State Independence? (v1.0.3)
+
+**Decision**: Filter out state attributes like `aria-selected`, `disabled`.
+
+**Rationale**:
+
+- Element identity doesn't change with state
+- Analytics should track "what" was clicked, not its state
+- Enables consistent identification across sessions
+
+**Trade-off**: Can't distinguish between states, but that's intentional.
+
+## 4. Why nth-child? (v1.1.0)
+
+**Decision**: Include positional information when needed.
+
+**Rationale**:
+
+- Disambiguates identical siblings
+- Essential for tables, lists with uniform items
+- Only used when semantic features insufficient
+
+**Trade-off**: Less resilient to reordering, but necessary for precision.
+
+## 5. Why 5-Phase Resolution?
+
+**Decision**: Multi-phase algorithm with early exits.
+
+**Rationale**:
+
+- Phase 1 (CSS): Fast native browser query
+- Phase 3: Early exit for common case (single match)
+- Phases 2,4,5: Only when needed
+
+**Trade-off**: More complex, but optimized for common paths.
+
+## 6. Why WeakMap for Cache?
+
+**Decision**: Use WeakMap for element-keyed caches.
+
+**Rationale**:
+
+- Automatic garbage collection when elements removed
+- No memory leaks from detached DOM
+- Zero manual cache management
+
+**Trade-off**: Can't iterate cache, but not needed.
+
+## 7. Why LRU for Selector Cache?
+
+**Decision**: Use LRU cache for CSS selector results.
+
+**Rationale**:
+
+- Bounded memory usage (default: 1000 entries)
+- Evicts least-recently-used entries automatically
+- Balances hit rate and memory
+
+**Trade-off**: May evict useful entries, but prevents unbounded growth.
+
+## 8. Why Zero Dependencies?
+
+**Decision**: No external runtime dependencies.
+
+**Rationale**:
+
+- Smaller bundle size
+- No version conflicts
+- Easier to audit/trust
+- Tree-shakeable
+
+**Trade-off**: Implement utilities ourselves, but keeps library lean.
+
+## 9. Why TypeScript?
+
+**Decision**: Write in TypeScript, ship both TS and JS.
+
+**Rationale**:
+
+- Type safety during development
+- Better IDE support for consumers
+- Self-documenting types
+
+**Trade-off**: Build step required, but standard practice.
+
+## 10. Why Anchor Tiers?
+
+**Decision**: Prioritize anchors by semantic strength.
+
+**Rationale**:
+
+- Tier A (`<form>`, `<main>`): Strongest semantic meaning
+- Tier B (ARIA roles): Still strong
+- Tier C (test IDs, body): Fallback only
+
+**Trade-off**: Hierarchy adds complexity, but improves EID quality.
+
+
+# File: docs/architecture/generation-pipeline.md
+
+# Generation Pipeline
+
+How EIDs are created from DOM elements.
+
+## Pipeline Stages
+
+### Stage 1: Anchor Finding
+
+Find semantic root element up to 10 levels above target.
+
+**Input**: Target element  
+**Output**: Anchor element + tier + depth  
+**Component**: `AnchorFinder`
+
+### Stage 2: Path Building
+
+Build semantic path from anchor to target.
+
+**Input**: Anchor, target, semantic extractor  
+**Output**: Array of path nodes  
+**Component**: `PathBuilder`
+
+### Stage 3: Semantic Extraction
+
+Extract semantics for anchor, path nodes, and target.
+
+**Input**: Each element  
+**Output**: `ElementSemantics` object  
+**Component**: `SemanticExtractor`
+
+### Stage 4: SVG Fingerprinting (Optional)
+
+Create fingerprints for SVG elements.
+
+**Input**: SVG element  
+**Output**: `SvgFingerprint`  
+**Component**: `SvgFingerprinter`
+
+### Stage 5: Confidence Calculation
+
+Calculate quality score for generated EID.
+
+**Input**: Anchor tier, path degradation, semantic richness  
+**Output**: Confidence score (0-1)  
+**Component**: Built into generator
+
+### Stage 6: Constraints Generation
+
+Add disambiguation constraints if needed.
+
+**Input**: EID, DOM context  
+**Output**: Constraint array  
+**Component**: Built into generator
+
+## Complete Example
+
+```typescript
+// Stage 1: Find anchor
+const anchor = anchorFinder.findAnchor(target);
+// { element: <form>, tier: 'A', depth: 2 }
+
+// Stage 2: Build path
+const pathResult = pathBuilder.buildPath(anchor.element, target);
+// { path: [{ tag: 'div', semantics: {...} }], degraded: false }
+
+// Stage 3: Extract semantics
+const anchorSemantics = semanticExtractor.extract(anchor.element);
+const targetSemantics = semanticExtractor.extract(target);
+
+// Stage 4: SVG fingerprint (if applicable)
+const svgFingerprint = isSvg ? svgFingerprinter.fingerprint(target) : undefined;
+
+// Stage 5: Calculate confidence
+const confidence = calculateConfidence({
+  anchorTier: anchor.tier,
+  pathDegraded: pathResult.degraded,
+  semanticRichness: targetSemantics.attributes.length,
+});
+
+// Stage 6: Generate constraints
+const constraints = generateConstraints(target, targetSemantics);
+
+// Final EID
+const eid: ElementIdentity = {
+  version: '1.0',
+  anchor: { tag: anchor.element.tagName, semantics: anchorSemantics },
+  path: pathResult.path,
+  target: { tag: target.tagName, semantics: targetSemantics },
+  constraints,
+  meta: { confidence, generatedAt: new Date().toISOString(), degraded: false },
+};
+```
+
+
+# File: docs/architecture/README.md
+
+# Architecture Overview
+
+System design and component structure for seql-js.
+
+## High-Level Design
+
+```
+┌─────────────┐
+│   Element   │
+└──────┬──────┘
+       │ generateEID()
+       ↓
+┌─────────────────────────────────┐
+│  Generator Pipeline             │
+│  1. AnchorFinder               │
+│  2. PathBuilder                │
+│  3. SemanticExtractor          │
+│  4. SvgFingerprinter           │
+│  5. Confidence Calculator      │
+└──────┬──────────────────────────┘
+       │
+       ↓
+┌──────────────┐
+│  EID (JSON)  │
+└──────┬───────┘
+       │ resolve()
+       ↓
+┌─────────────────────────────────┐
+│  Resolver Pipeline (5 Phases)  │
+│  1. CSS Narrowing              │
+│  2. Semantic Filtering         │
+│  3. Uniqueness Check           │
+│  4. Constraints Evaluation     │
+│  5. Ambiguity Handling         │
+└──────┬──────────────────────────┘
+       │
+       ↓
+┌──────────────┐
+│  Element(s)  │
+└──────────────┘
+```
+
+## Core Principles
+
+1. **Semantic-First**: Prioritize meaning over structure
+2. **Deterministic**: Same input → same output
+3. **State-Independent**: Identity ≠ state (v1.0.3)
+4. **Framework-Agnostic**: Works with any framework
+5. **Zero Dependencies**: Standalone library
+
+## Module Structure
+
+- **[System Design](./system-design.md)** - Components and data flow
+- **[Generation Pipeline](./generation-pipeline.md)** - How EIDs are created
+- **[Resolution Algorithm](./resolution-algorithm.md)** - 5-phase resolver
+- **[Semantic Model](./semantic-model.md)** - Anchor/path/target structure
+- **[Design Decisions](./design-decisions.md)** - Key architectural choices
+
+## Quick Facts
+
+- **Language**: TypeScript
+- **Size**: ~15KB minified + gzipped
+- **Dependencies**: Zero
+- **Browser Support**: ES2015+
+- **Performance**: <5ms generation, <20ms resolution
+
+
+# File: docs/architecture/resolution-algorithm.md
+
+# Resolution Algorithm
+
+5-phase algorithm for resolving EIDs back to DOM elements.
+
+## Algorithm Overview
+
+```
+Phase 1: CSS Narrowing      → Candidates (100-1000 elements)
+Phase 2: Semantic Filtering  → Filtered (10-50 elements)
+Phase 3: Uniqueness Check    → Early exit if 1 match
+Phase 4: Constraints        → Final candidates (0-N elements)
+Phase 5: Handle Ambiguity    → ResolveResult
+```
+
+## Detailed Phases
+
+### Phase 1: CSS Narrowing
+
+Build CSS selector and query DOM.
+
+```typescript
+const selector = cssGenerator.buildSelector(eid);
+// "form button[type='submit']"
+
+const candidates = root.querySelectorAll(selector);
+// [<button>, <button>, <button>]
+```
+
+### Phase 2: Semantic Filtering
+
+Score candidates by semantic similarity.
+
+```typescript
+const scored = candidates.map((el) => ({
+  element: el,
+  score: calculateSemanticScore(el, eid.target.semantics),
+}));
+
+const filtered = scored
+  .filter((s) => s.score > 0.5)
+  .sort((a, b) => b.score - a.score)
+  .map((s) => s.element);
+```
+
+### Phase 3: Uniqueness Check
+
+Early exit for single match.
+
+```typescript
+if (filtered.length === 1) {
+  return {
+    status: 'success',
+    elements: filtered,
+    confidence: eid.meta.confidence,
+  };
+}
+```
+
+### Phase 4: Constraints Evaluation
+
+Apply disambiguation rules.
+
+```typescript
+let final = filtered;
+
+for (const constraint of eid.constraints || []) {
+  final = constraintsEvaluator.evaluate(final, constraint);
+}
+```
+
+### Phase 5: Handle Ambiguity
+
+Return appropriate result.
+
+```typescript
+if (final.length === 0 && options.enableFallback) {
+  return fallbackHandler.handleFallback(eid, root);
+}
+
+if (final.length > 1) {
+  return { status: 'ambiguous', elements: final };
+}
+
+if (final.length === 0) {
+  return { status: 'error', elements: [] };
+}
+
+return { status: 'success', elements: final };
+```
+
+## Performance Characteristics
+
+| Phase | Complexity | Typical Time |
+| ----- | ---------- | ------------ |
+| 1     | O(n)       | 5ms          |
+| 2     | O(m log m) | 8ms          |
+| 3     | O(1)       | <1ms         |
+| 4     | O(m × c)   | 3ms          |
+| 5     | O(m)       | 2ms          |
+
+Where:
+
+- n = DOM size
+- m = candidate count
+- c = constraint count
+
+
+# File: docs/architecture/semantic-model.md
+
+# Semantic Model
+
+Anchor-Path-Target structure explained.
+
+## Three-Part Model
+
+### 1. Anchor (Root)
+
+Stable semantic starting point.
+
+**Purpose**: Provide context that's unlikely to change.
+
+**Examples**:
+
+- `<form>` - Forms are stable page structures
+- `<main>` - Main content area
+- `div[role="dialog"]` - Modal dialogs
+
+### 2. Path (Traversal)
+
+Semantic journey from anchor to target's parent.
+
+**Purpose**: Capture meaningful intermediate steps.
+
+**Filtering**: Skip non-semantic `<div>` and `<span>` wrappers.
+
+**Examples**:
+
+- `div.fields` - Semantic container
+- `ul.menu > li` - List structure
+- `section[aria-label="Products"]` - Labeled section
+
+### 3. Target (Destination)
+
+The element being identified.
+
+**Purpose**: Uniquely identify the specific element.
+
+**Features**:
+
+- Tag name
+- Semantic attributes
+- Text content
+- nth-child (if needed)
+
+## Why This Model?
+
+**Stability**: Anchors rarely change, targets have clear identity.
+
+**Context**: Path provides enough context without brittleness.
+
+**Balance**: Not too general (just target), not too specific (full XPath).
+
+## Example Breakdown
+
+```html
+<form aria-label="Login">
+  <div class="wrapper">
+    <div>
+      <!-- Non-semantic, skipped -->
+      <div class="fields">
+        <input type="email" name="email" />
+      </div>
+    </div>
+  </div>
+</form>
+```
+
+**EID Structure**:
+
+```
+Anchor: form[aria-label="Login"]
+Path:   div.fields
+Target: input[type="email",name="email"]
+```
+
+**Reasoning**:
+
+- Anchor: `<form>` is stable semantic container
+- Path: `div.fields` has semantic value, `div.wrapper` and anonymous `div` skipped
+- Target: Input has clear identity via type and name
+
+
+# File: docs/architecture/system-design.md
+
+# System Design
+
+Component architecture and data flow.
+
+## Component Layers
+
+### 1. Public API Layer
+
+- `generateEID()`, `resolve()` - Core functions
+- `generateSEQL()`, `resolveSEQL()` - String-based convenience
+- `generateEIDBatch()` - Batch processing
+
+### 2. Generator Layer
+
+- **AnchorFinder**: Finds semantic root element
+- **PathBuilder**: Builds semantic traversal path
+- **SemanticExtractor**: Extracts element semantics
+- **SvgFingerprinter**: Creates SVG fingerprints
+- **ConfidenceCalculator**: Scores EID quality
+
+### 3. Resolver Layer
+
+- **CssGenerator**: Builds CSS selectors from EID
+- **SemanticsMatcher**: Scores semantic similarity
+- **ConstraintsEvaluator**: Applies disambiguation rules
+- **FallbackHandler**: Handles resolution failures
+
+### 4. Utilities Layer
+
+- **EIDCache**: Multi-level caching
+- **Validators**: EID validation
+- **Parsers**: SEQL string parsing
+- **Filters**: Class/attribute filtering
+
+## Data Flow
+
+**Generation Flow:**
+
+```
+Element
+  → AnchorFinder.findAnchor()
+  → PathBuilder.buildPath()
+  → SemanticExtractor.extract() (for each node)
+  → SvgFingerprinter.fingerprint() (if SVG)
+  → ConfidenceCalculator.calculate()
+  → ElementIdentity
+```
+
+**Resolution Flow:**
+
+```
+ElementIdentity
+  → CssGenerator.buildSelector()
+  → document.querySelectorAll()
+  → SemanticsMatcher.match()
+  → ConstraintsEvaluator.evaluate()
+  → FallbackHandler.handleFallback() (if needed)
+  → ResolveResult
+```
+
+## Module Organization
+
+```
+src/
+├── types/              # TypeScript definitions
+│   ├── eid.ts
+│   ├── semantics.ts
+│   ├── constraints.ts
+│   └── options.ts
+│
+├── generator/          # EID generation
+│   ├── generator.ts
+│   ├── anchor-finder.ts
+│   ├── path-builder.ts
+│   ├── semantic-extractor.ts
+│   └── svg-fingerprinter.ts
+│
+├── resolver/           # EID resolution
+│   ├── resolver.ts
+│   ├── css-generator.ts
+│   ├── semantics-matcher.ts
+│   ├── constraints-evaluator.ts
+│   └── fallback-handler.ts
+│
+├── utils/              # Shared utilities
+│   ├── eid-cache.ts
+│   ├── seql-parser.ts
+│   ├── attribute-filters.ts
+│   ├── class-filter.ts
+│   └── scorer.ts
+│
+└── index.ts            # Public API
+```
+
+
+# File: docs/contributing/ai-agent-guidelines.md
+
+# AI Agent Development Guidelines
+
+Guidelines for AI assistants working on seql-js.
+
+## Core Principles
+
+1. **Follow the specification**: [docs/specification/](../specification/) is authoritative
+2. **Maintain determinism**: Same input → same output
+3. **Preserve semantics**: Don't break semantic-first approach
+4. **Test everything**: Add tests for all changes
+
+## Key Constraints
+
+### DO NOT
+
+- Change EID format without specification update
+- Break deterministic generation
+- Add runtime dependencies
+- Modify core algorithms without deep understanding
+
+### DO
+
+- Add tests for new features
+- Update documentation with code changes
+- Maintain TypeScript strict mode
+- Follow existing code patterns
+
+## Making Changes
+
+1. **Read specifications** in `docs/specification/`
+2. **Understand architecture** in `docs/architecture/`
+3. **Check existing tests** for patterns
+4. **Add new tests** before implementation
+5. **Update docs** with code changes
+
+## Testing New Features
+
+```bash
+# Run tests
+yarn test
+
+# Type check
+yarn types:check
+
+# Build
+yarn build
+```
+
+## Common Tasks
+
+### Adding New Semantic Tag
+
+1. Update `SEMANTIC_TAGS` in `src/utils/constants.ts`
+2. Add test in `tests/generator.test.ts`
+3. Update `docs/specification/anchor-strategy.md`
+
+### Adding New Constraint Type
+
+1. Define interface in `src/types/constraints.ts`
+2. Implement in `src/resolver/constraints-evaluator.ts`
+3. Add tests in `tests/resolver.test.ts`
+4. Document in `docs/specification/constraints.md`
+
+## Questions?
+
+- Check [CLAUDE.md](../../CLAUDE.md) for project overview
+- Review [docs/architecture/](../architecture/) for system design
+- See [docs/specification/](../specification/) for technical details
+
+
+# File: docs/contributing/code-style.md
+
+# Code Style Guide
+
+Coding conventions for seql-js.
+
+## TypeScript
+
+- Use TypeScript for all code
+- Prefer interfaces over types
+- Use strict mode
+- Avoid `any` - use `unknown` if needed
+
+## Naming
+
+- Classes: `PascalCase`
+- Functions: `camelCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Files: `kebab-case.ts`
+
+## Formatting
+
+- 2 spaces indentation
+- Single quotes for strings
+- Semicolons required
+- Trailing commas in multi-line
+
+## Comments
+
+- Use JSDoc for public APIs
+- Explain "why", not "what"
+- Keep comments up-to-date
+
+## Examples
+
+```typescript
+/**
+ * Generates EID for a DOM element
+ *
+ * @param target - Element to generate EID for
+ * @param options - Generation options
+ * @returns Element identity or null
+ */
+export function generateEID(target: Element, options?: GeneratorOptions): ElementIdentity | null {
+  // Implementation
+}
+```
+
+
+# File: docs/contributing/development-setup.md
+
+# Development Setup
+
+Setting up seql-js for local development.
+
+## Prerequisites
+
+- Node.js v18+
+- Yarn v1.22+
+
+## Clone & Install
+
+```bash
+git clone https://github.com/whenessel/seql-js.git
+cd seql-js
+yarn install
+```
+
+## Development Commands
+
+```bash
+# Build library
+yarn build
+
+# Watch mode
+yarn build:watch
+
+# Run tests
+yarn test
+
+# Watch tests
+yarn test:watch
+
+# Type checking
+yarn types:check
+
+# Coverage
+yarn test:coverage
+```
+
+## Project Structure
+
+```
+seql-js/
+├── src/                 # Source code
+│   ├── generator/      # EID generation
+│   ├── resolver/       # EID resolution
+│   ├── types/          # TypeScript types
+│   └── utils/          # Utilities
+├── tests/              # Test files
+├── docs/               # Documentation
+├── dist/               # Build output
+└── package.json
+```
+
+## Making Changes
+
+1. Create feature branch
+2. Make changes in `src/`
+3. Add/update tests in `tests/`
+4. Run `yarn test`
+5. Run `yarn build`
+6. Commit with descriptive message
+
+
+# File: docs/contributing/documentation.md
+
+# Documentation Guidelines
+
+Writing and updating documentation.
+
+## Documentation Structure
+
+- `docs/getting-started/` - New user guides
+- `docs/api/` - API reference
+- `docs/examples/` - Code examples
+- `docs/specification/` - Technical specs
+- `docs/architecture/` - System design
+- `docs/guides/` - In-depth topics
+- `docs/troubleshooting/` - Common issues
+- `docs/contributing/` - This guide
+
+## Writing Guidelines
+
+1. **Clear and concise**: Use simple language
+2. **Code examples**: Include runnable code
+3. **Links**: Cross-reference related docs
+4. **Up-to-date**: Match current codebase
+
+## Updating Docs
+
+1. Edit relevant `.md` file
+2. Test code examples
+3. Check links
+4. Submit with code changes
+
+## Building Docs
+
+Documentation is static Markdown files. No build step required.
+
+
+# File: docs/contributing/README.md
+
+# Contributing to SEQL
+
+Thank you for considering contributing to seql-js!
+
+## Quick Links
+
+- **[Development Setup](./development-setup.md)** - Get started
+- **[Testing](./testing.md)** - Running and writing tests
+- **[Code Style](./code-style.md)** - Style guide
+- **[Documentation](./documentation.md)** - Updating docs
+- **[AI Agent Guidelines](./ai-agent-guidelines.md)** - For AI assistants
+
+## Ways to Contribute
+
+- 🐛 Report bugs
+- 💡 Suggest features
+- 📝 Improve documentation
+- 🧪 Add tests
+- 🔧 Fix issues
+
+## Process
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests (`yarn test`)
+5. Submit a pull request
+
+## Code of Conduct
+
+Be respectful and constructive in all interactions.
+
+
+# File: docs/contributing/testing.md
+
+# Testing Guide
+
+Running and writing tests for seql-js.
+
+## Running Tests
+
+```bash
+# All tests
+yarn test
+
+# Watch mode
+yarn test:watch
+
+# Specific file
+npx vitest run tests/generator.test.ts
+
+# With coverage
+yarn test:coverage
+```
+
+## Test Structure
+
+Tests use Vitest with jsdom for DOM emulation.
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { generateEID } from '../src';
+
+describe('generateEID', () => {
+  it('should generate EID for button', () => {
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Submit';
+    document.body.appendChild(button);
+
+    const eid = generateEID(button);
+
+    expect(eid).not.toBeNull();
+    expect(eid?.target.tag).toBe('button');
+  });
+});
+```
+
+## Writing Tests
+
+1. Create DOM elements
+2. Call function
+3. Assert results
+4. Clean up (if needed)
+
+## Test Categories
+
+- `generator.test.ts` - Generation tests
+- `resolver.test.ts` - Resolution tests
+- `css-generator.test.ts` - CSS selector tests
+- `utils.test.ts` - Utility function tests
+
+
+# File: docs/examples/basic-examples.md
+
+# Basic Examples
+
+15 essential SEQL patterns you'll use every day.
+
+## 1. Simple Button
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// HTML: <button type="submit">Submit</button>
+const button = document.querySelector('button[type="submit"]');
+const selector = generateSEQL(button);
+// Result: "v1: button[type="submit",text="Submit"]"
+
+// Later, find it again
+const found = resolveSEQL(selector, document);
+console.log(found[0] === button); // true
+```
+
+## 2. Form Submit Button
+
+```typescript
+// HTML: <form><button type="submit">Create Account</button></form>
+const submitBtn = document.querySelector('form button[type="submit"]');
+const selector = generateSEQL(submitBtn);
+// Result: "v1: form :: button[type="submit",text="Create Account"]"
+```
+
+## 3. Text Input Field
+
+```typescript
+// HTML: <input type="text" name="username" placeholder="Enter username">
+const input = document.querySelector('input[name="username"]');
+const selector = generateSEQL(input);
+// Result: "v1: form :: input[type="text",name="username"]"
+```
+
+## 4. Email Input
+
+```typescript
+// HTML: <input type="email" name="email" required>
+const email = document.querySelector('input[type="email"]');
+const selector = generateSEQL(email);
+// Result: "v1: form :: input[type="email",name="email"]"
+```
+
+## 5. Checkbox
+
+```typescript
+// HTML: <input type="checkbox" name="terms" id="accept-terms">
+const checkbox = document.querySelector('#accept-terms');
+const selector = generateSEQL(checkbox);
+// Result: "v1: form :: input[type="checkbox",name="terms"]"
+```
+
+## 6. Link in Navigation
+
+```typescript
+// HTML: <nav><a href="/about">About Us</a></nav>
+const link = document.querySelector('nav a[href="/about"]');
+const selector = generateSEQL(link);
+// Result: "v1: nav :: a[href="/about",text="About Us"]"
+```
+
+## 7. Select Dropdown
+
+```typescript
+// HTML: <select name="country"><option>USA</option></select>
+const select = document.querySelector('select[name="country"]');
+const selector = generateSEQL(select);
+// Result: "v1: form :: select[name="country"]"
+```
+
+## 8. Dialog Close Button
+
+```typescript
+// HTML: <div role="dialog"><button aria-label="Close">×</button></div>
+const closeBtn = document.querySelector('[role="dialog"] button[aria-label="Close"]');
+const selector = generateSEQL(closeBtn);
+// Result: "v1: div[role="dialog"] :: button[aria-label="Close"]"
+```
+
+## 9. Main Content Area
+
+```typescript
+// HTML: <main><h1>Welcome</h1></main>
+const heading = document.querySelector('main h1');
+const selector = generateSEQL(heading);
+// Result: "v1: main :: h1[text="Welcome"]"
+```
+
+## 10. Article Link
+
+```typescript
+// HTML: <article><a href="/post/123">Read More</a></article>
+const readMore = document.querySelector('article a');
+const selector = generateSEQL(readMore);
+// Result: "v1: article :: a[href="/post/123",text="Read More"]"
+```
+
+## 11. Search Input
+
+```typescript
+// HTML: <input type="search" placeholder="Search..." aria-label="Search">
+const search = document.querySelector('input[type="search"]');
+const selector = generateSEQL(search);
+// Result: "v1: input[type="search",aria-label="Search"]"
+```
+
+## 12. Radio Button
+
+```typescript
+// HTML: <input type="radio" name="plan" value="pro">
+const radio = document.querySelector('input[type="radio"][value="pro"]');
+const selector = generateSEQL(radio);
+// Result: "v1: form :: input[type="radio",name="plan",value="pro"]"
+```
+
+## 13. Textarea
+
+```typescript
+// HTML: <textarea name="message" rows="5"></textarea>
+const textarea = document.querySelector('textarea[name="message"]');
+const selector = generateSEQL(textarea);
+// Result: "v1: form :: textarea[name="message"]"
+```
+
+## 14. Icon Button
+
+```typescript
+// HTML: <button aria-label="Menu"><svg>...</svg></button>
+const menuBtn = document.querySelector('button[aria-label="Menu"]');
+const selector = generateSEQL(menuBtn);
+// Result: "v1: button[aria-label="Menu"]"
+```
+
+## 15. List Item Link
+
+```typescript
+// HTML: <ul><li><a href="/products">Products</a></li></ul>
+const productLink = document.querySelector('ul li a[href="/products"]');
+const selector = generateSEQL(productLink);
+// Result: "v1: ul > li > a[href="/products",text="Products"]"
+```
+
+## Event Tracking Example
+
+Track all button clicks on a page:
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+document.addEventListener('click', (event) => {
+  const target = event.target as Element;
+  const button = target.closest('button');
+
+  if (button) {
+    const selector = generateSEQL(button);
+    console.log('Button clicked:', selector);
+
+    // Send to analytics
+    gtag('event', 'button_click', {
+      element_selector: selector,
+    });
+  }
+});
+```
+
+## Batch Example
+
+Generate selectors for all buttons:
+
+```typescript
+import { generateEIDBatch, stringifySEQL } from 'seql-js';
+
+const buttons = Array.from(document.querySelectorAll('button'));
+const eids = generateEIDBatch(buttons);
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
+
+console.log(`Generated ${selectors.length} button selectors`);
+```
+
+## Testing Pattern
+
+Verify selectors work correctly:
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+function testSelector(element: Element): boolean {
+  const selector = generateSEQL(element);
+
+  if (!selector) {
+    console.error('Failed to generate selector');
+    return false;
+  }
+
+  const resolved = resolveSEQL(selector, document);
+
+  if (resolved.length === 0) {
+    console.error('Selector found no elements');
+    return false;
+  }
+
+  if (resolved[0] !== element) {
+    console.error('Selector matched different element');
+    return false;
+  }
+
+  console.log('✓ Selector works correctly');
+  return true;
+}
+
+// Test it
+const button = document.querySelector('button');
+if (button) {
+  testSelector(button);
+}
+```
+
+## Next Steps
+
+- [Forms](./forms.md) - More form examples
+- [Navigation](./navigation.md) - Nav menus and tabs
+- [Tables](./tables.md) - Table cell identification
+- [API Reference](../api/) - Complete API docs
+
+
+# File: docs/examples/edge-cases.md
+
+# Edge Cases
+
+Complex scenarios and advanced usage.
+
+## Dynamic Modal
+
+```html
+<div role="dialog" aria-label="Confirm Delete">
+  <p>Are you sure?</p>
+  <button>Cancel</button>
+  <button>Delete</button>
+</div>
+```
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+const deleteButton = document.querySelector('[role="dialog"] button:last-child');
+const selector = generateSEQL(deleteButton);
+// "v1: div[role="dialog",aria-label="Confirm Delete"] :: button[text="Delete"]"
+
+// Later, when modal reappears
+const found = resolveSEQL(selector, document);
+// Finds button even if modal is recreated
+```
+
+## Shadow DOM
+
+SEQL works with elements in Shadow DOM if you provide the shadow root as the context:
+
+```typescript
+const host = document.querySelector('my-component');
+const shadowRoot = host.shadowRoot;
+
+if (shadowRoot) {
+  const button = shadowRoot.querySelector('button');
+  const selector = generateSEQL(button);
+
+  // Resolve within shadow root
+  const found = resolveSEQL(selector, shadowRoot);
+}
+```
+
+## Nested Forms
+
+```html
+<form id="outer">
+  <form id="inner">
+    <input name="email" />
+  </form>
+</form>
+```
+
+```typescript
+const input = document.querySelector('#inner input');
+generateSEQL(input);
+// Uses closest semantic anchor (inner form)
+```
+
+## Identical Siblings
+
+```html
+<div>
+  <button>Action</button>
+  <button>Action</button>
+  <button>Action</button>
+</div>
+```
+
+```typescript
+const secondButton = document.querySelectorAll('button')[1];
+generateSEQL(secondButton);
+// "v1: button[text="Action",nthChild=2]"
+// Uses nth-child for disambiguation
+```
+
+
+# File: docs/examples/forms.md
+
+# Form Examples
+
+Practical examples for identifying form elements.
+
+## Login Form
+
+```html
+<form aria-label="Login">
+  <input type="email" name="email" placeholder="Email" />
+  <input type="password" name="password" placeholder="Password" />
+  <button type="submit">Sign In</button>
+</form>
+```
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const emailInput = document.querySelector('input[type="email"]');
+const selector = generateSEQL(emailInput);
+// "v1: form[aria-label="Login"] :: input[type="email",name="email"]"
+```
+
+## Multi-Step Form
+
+```typescript
+// Step 1: Personal Info
+const firstName = document.querySelector('input[name="firstName"]');
+generateSEQL(firstName);
+// "v1: form :: div[class="step-1"] > input[name="firstName"]"
+
+// Step 2: Address
+const zipCode = document.querySelector('input[name="zipCode"]');
+generateSEQL(zipCode);
+// "v1: form :: div[class="step-2"] > input[name="zipCode"]"
+```
+
+## Form Validation Tracking
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+document.querySelectorAll('input').forEach((input) => {
+  input.addEventListener('invalid', (event) => {
+    const selector = generateSEQL(event.target as Element);
+    console.log('Validation failed:', selector);
+
+    // Track in analytics
+    gtag('event', 'form_validation_error', {
+      field: selector,
+    });
+  });
+});
+```
+
+## Radio Button Group
+
+```html
+<form>
+  <input type="radio" name="plan" value="free" id="plan-free" />
+  <input type="radio" name="plan" value="pro" id="plan-pro" />
+  <input type="radio" name="plan" value="enterprise" id="plan-enterprise" />
+</form>
+```
+
+```typescript
+const proRadio = document.querySelector('input[value="pro"]');
+generateSEQL(proRadio);
+// "v1: form :: input[type="radio",name="plan",value="pro"]"
+```
+
+## Checkbox List
+
+```html
+<form>
+  <input type="checkbox" name="features" value="feature1" />
+  <input type="checkbox" name="features" value="feature2" />
+  <input type="checkbox" name="features" value="feature3" />
+</form>
+```
+
+```typescript
+const feature2 = document.querySelector('input[value="feature2"]');
+generateSEQL(feature2);
+// "v1: form :: input[type="checkbox",name="features",value="feature2"]"
+```
+
+## File Upload
+
+```html
+<form>
+  <input type="file" name="avatar" accept="image/*" />
+</form>
+```
+
+```typescript
+const fileInput = document.querySelector('input[type="file"]');
+generateSEQL(fileInput);
+// "v1: form :: input[type="file",name="avatar"]"
+```
+
+## Submit Button States
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const submitBtn = document.querySelector('button[type="submit"]');
+const selector = generateSEQL(submitBtn);
+// Selector remains same regardless of disabled/enabled state
+// "v1: form :: button[type="submit",text="Submit"]"
+
+// This is stable across state changes (v1.0.3 feature)
+```
+
+
+# File: docs/examples/migration.md
+
+# Migration from CSS/XPath
+
+Guide for migrating from traditional selectors to SEQL.
+
+## From CSS Selectors
+
+### Brittle CSS
+
+```css
+/* ❌ Brittle: Breaks when structure changes */
+.modal > div:nth-child(2) > button.primary
+```
+
+```typescript
+// ✅ SEQL: Semantic, survives refactoring
+import { generateSEQL } from 'seql-js';
+
+const button = document.querySelector('.modal button.primary');
+const selector = generateSEQL(button);
+// "v1: div[role="dialog"] :: button[type="submit",text="Save"]"
+```
+
+### Class-Based Selectors
+
+```css
+/* ❌ Breaks when classes are renamed */
+.submit-btn-primary
+```
+
+```typescript
+// ✅ Uses semantic attributes
+const button = document.querySelector('.submit-btn-primary');
+generateSEQL(button);
+// "v1: form :: button[type="submit",text="Submit"]"
+```
+
+## From XPath
+
+### XPath Structure
+
+```xpath
+<!-- ❌ Brittle XPath -->
+//div[@class='container']/div[2]/button[1]
+```
+
+```typescript
+// ✅ SEQL Equivalent
+import { generateSEQL } from 'seql-js';
+
+const button = document.evaluate(
+  "//div[@class='container']/div[2]/button[1]",
+  document,
+  null,
+  XPathResult.FIRST_ORDERED_NODE_TYPE,
+  null
+).singleNodeValue;
+
+if (button) {
+  const selector = generateSEQL(button);
+  // More stable semantic selector
+}
+```
+
+## Migration Strategy
+
+### Step 1: Identify Critical Elements
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+// Find all elements you currently select with CSS/XPath
+const criticalElements = [
+  document.querySelector('.login-button'),
+  document.querySelector('#email-input'),
+  document.querySelector('[data-testid="submit"]'),
+];
+
+// Generate SEQL selectors
+const selectors = criticalElements
+  .filter((el) => el !== null)
+  .map((el) => ({ element: el, seql: generateSEQL(el!) }));
+
+console.table(selectors);
+```
+
+### Step 2: Compare Stability
+
+```typescript
+// Old CSS selector
+const oldSelector = '.form-container > div:nth-child(2) > input[type="email"]';
+
+// New SEQL selector
+const input = document.querySelector(oldSelector);
+const newSelector = generateSEQL(input);
+// "v1: form :: input[type="email",name="email"]"
+
+console.log('Old:', oldSelector);
+console.log('New:', newSelector);
+// New selector survives DOM restructuring
+```
+
+### Step 3: Gradual Migration
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+// Wrapper function for gradual migration
+function findElement(seqlSelector: string, fallbackCSS: string): Element | null {
+  // Try SEQL first
+  const seqlResult = resolveSEQL(seqlSelector, document);
+  if (seqlResult.length > 0) {
+    return seqlResult[0];
+  }
+
+  // Fallback to CSS
+  console.warn('SEQL failed, using CSS fallback');
+  return document.querySelector(fallbackCSS);
+}
+
+// Usage
+const button = findElement('v1: form :: button[type="submit"]', '.form button.submit');
+```
+
+## Benefits of Migration
+
+| Aspect            | CSS/XPath    | SEQL         |
+| ----------------- | ------------ | ------------ |
+| Stability         | ❌ Brittle   | ✅ Resilient |
+| Readability       | ❌ Technical | ✅ Semantic  |
+| Maintenance       | ❌ High      | ✅ Low       |
+| Refactoring       | ❌ Breaks    | ✅ Survives  |
+| Framework updates | ❌ Breaks    | ✅ Stable    |
+
+
+# File: docs/examples/navigation.md
+
+# Navigation Examples
+
+Nav menus, breadcrumbs, and tabs.
+
+## Main Navigation
+
+```html
+<nav role="navigation" aria-label="Main">
+  <a href="/">Home</a>
+  <a href="/products">Products</a>
+  <a href="/about">About</a>
+</nav>
+```
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const productsLink = document.querySelector('nav a[href="/products"]');
+const selector = generateSEQL(productsLink);
+// "v1: nav[role="navigation"] :: a[href="/products",text="Products"]"
+```
+
+## Tabs
+
+```html
+<div role="tablist">
+  <button role="tab" aria-selected="true">Overview</button>
+  <button role="tab" aria-selected="false">Details</button>
+</div>
+```
+
+```typescript
+const detailsTab = document.querySelector('[role="tab"]:nth-child(2)');
+generateSEQL(detailsTab);
+// "v1: div[role="tablist"] :: button[role="tab",text="Details"]"
+// Note: aria-selected is filtered out (state attribute)
+```
+
+## Breadcrumbs
+
+```html
+<nav aria-label="Breadcrumb">
+  <a href="/">Home</a> > <a href="/products">Products</a> >
+  <span>Product A</span>
+</nav>
+```
+
+```typescript
+const productsBreadcrumb = document.querySelector('nav a[href="/products"]');
+generateSEQL(productsBreadcrumb);
+// "v1: nav[aria-label="Breadcrumb"] :: a[href="/products"]"
+```
+
+## Dropdown Menu
+
+```html
+<nav>
+  <button aria-expanded="false" aria-haspopup="true">Menu</button>
+  <ul hidden>
+    <li><a href="/settings">Settings</a></li>
+    <li><a href="/logout">Logout</a></li>
+  </ul>
+</nav>
+```
+
+```typescript
+const logoutLink = document.querySelector('nav ul a[href="/logout"]');
+generateSEQL(logoutLink);
+// "v1: nav :: ul > li > a[href="/logout",text="Logout"]"
+```
+
+
+# File: docs/examples/README.md
+
+# Examples
+
+Real-world examples demonstrating SEQL usage across different scenarios.
+
+## Quick Navigation
+
+- **[Basic Examples](./basic-examples.md)** - 15 essential patterns
+- **[Forms](./forms.md)** - Form elements and validation
+- **[Navigation](./navigation.md)** - Menus, tabs, breadcrumbs
+- **[Tables](./tables.md)** - Table cells with nth-child
+- **[SVG Elements](./svg-elements.md)** - SVG graphics and icons
+- **[Edge Cases](./edge-cases.md)** - Complex scenarios
+- **[Migration](./migration.md)** - Moving from CSS/XPath
+
+## Example Categories
+
+### By Use Case
+
+| Use Case           | Examples                         | Link                                          |
+| ------------------ | -------------------------------- | --------------------------------------------- |
+| Button clicks      | Submit buttons, actions, dialogs | [Basic Examples](./basic-examples.md#buttons) |
+| Form inputs        | Text, email, checkboxes, selects | [Forms](./forms.md)                           |
+| Links & navigation | Nav menus, breadcrumbs, tabs     | [Navigation](./navigation.md)                 |
+| Tables             | Cells, rows, headers             | [Tables](./tables.md)                         |
+| Dynamic content    | Modals, dropdowns, tooltips      | [Edge Cases](./edge-cases.md)                 |
+| Graphics           | SVG icons, charts                | [SVG Elements](./svg-elements.md)             |
+
+### By Complexity
+
+| Level        | Description                       | Examples                                                         |
+| ------------ | --------------------------------- | ---------------------------------------------------------------- |
+| Beginner     | Single elements, simple selectors | [Basic Examples](./basic-examples.md)                            |
+| Intermediate | Forms, navigation, tables         | [Forms](./forms.md), [Navigation](./navigation.md)               |
+| Advanced     | SVG, dynamic content, edge cases  | [SVG Elements](./svg-elements.md), [Edge Cases](./edge-cases.md) |
+
+## Common Patterns
+
+### Pattern: Track User Clicks
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+document.addEventListener('click', (event) => {
+  const target = event.target as Element;
+  const selector = generateSEQL(target);
+
+  if (selector) {
+    // Send to analytics
+    console.log('Clicked:', selector);
+  }
+});
+```
+
+See: [Basic Examples - Event Tracking](./basic-examples.md#event-tracking)
+
+### Pattern: Form Field Identification
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const emailInput = document.querySelector('input[type="email"]');
+const selector = generateSEQL(emailInput);
+// Result: "v1: form :: input[type="email",name="email"]"
+```
+
+See: [Forms - Input Fields](./forms.md#input-fields)
+
+### Pattern: Table Cell Selection
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const cell = document.querySelector('table tr:nth-child(2) td:nth-child(3)');
+const selector = generateSEQL(cell);
+// Result: "v1: table :: tr[nthChild=2] > td[nthChild=3]"
+```
+
+See: [Tables - Cell Identification](./tables.md#cell-identification)
+
+## Testing Your Selectors
+
+All examples can be tested in your browser console:
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// 1. Generate selector
+const element = document.querySelector('button');
+const selector = generateSEQL(element);
+
+console.log('Selector:', selector);
+
+// 2. Resolve it back
+const resolved = resolveSEQL(selector, document);
+
+console.log('Resolved:', resolved[0]);
+console.log('Match:', resolved[0] === element); // Should be true
+```
+
+## Next Steps
+
+- Start with [Basic Examples](./basic-examples.md) if you're new to SEQL
+- Check [Forms](./forms.md) for common form scenarios
+- See [Migration](./migration.md) if moving from CSS/XPath
+- Review [Edge Cases](./edge-cases.md) for complex scenarios
+
+
+# File: docs/examples/svg-elements.md
+
+# SVG Examples
+
+SVG icons and graphics identification.
+
+## SVG Icon Button
+
+```html
+<button aria-label="Close">
+  <svg viewBox="0 0 24 24">
+    <path
+      d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+    />
+  </svg>
+</button>
+```
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+const closeButton = document.querySelector('button[aria-label="Close"]');
+const selector = generateSEQL(closeButton);
+// "v1: button[aria-label="Close"]"
+// SVG fingerprint included in EID but not in compact SEQL selector
+```
+
+## SVG Link
+
+```html
+<a href="/home">
+  <svg><use href="#home-icon"></use></svg>
+  Home
+</a>
+```
+
+```typescript
+const homeLink = document.querySelector('a[href="/home"]');
+generateSEQL(homeLink);
+// "v1: a[href="/home",text="Home"]"
+```
+
+## Chart Element
+
+```html
+<svg id="sales-chart">
+  <rect class="bar" x="0" y="50" width="20" height="50"></rect>
+  <rect class="bar" x="25" y="30" width="20" height="70"></rect>
+</svg>
+```
+
+```typescript
+const secondBar = document.querySelector('svg#sales-chart rect:nth-child(2)');
+generateSEQL(secondBar);
+// Includes SVG-specific fingerprinting for stability
+```
+
+
+# File: docs/examples/tables.md
+
+# Table Examples
+
+Identifying table cells using nth-child positioning (v1.1.0).
+
+## Simple Table
+
+```html
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Age</th>
+      <th>City</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>John</td>
+      <td>25</td>
+      <td>NYC</td>
+    </tr>
+    <tr>
+      <td>Jane</td>
+      <td>30</td>
+      <td>LA</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+// Target the "Age" cell in second row
+const ageCell = document.querySelector('tbody tr:nth-child(2) td:nth-child(2)');
+const selector = generateSEQL(ageCell);
+// "v1: table :: tbody > tr[nthChild=2] > td[nthChild=2]"
+```
+
+## Table Header
+
+```typescript
+const nameHeader = document.querySelector('th:first-child');
+generateSEQL(nameHeader);
+// "v1: table :: thead > tr > th[nthChild=1,text="Name"]"
+```
+
+## Data Table with Actions
+
+```html
+<table>
+  <tr>
+    <td>Product A</td>
+    <td>$99</td>
+    <td><button>Edit</button></td>
+  </tr>
+</table>
+```
+
+```typescript
+const editBtn = document.querySelector('tr:first-child td:last-child button');
+generateSEQL(editBtn);
+// "v1: table :: tr[nthChild=1] > td[nthChild=3] > button[text="Edit"]"
+```
+
+## Tracking Cell Clicks
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+document.querySelectorAll('td').forEach((cell) => {
+  cell.addEventListener('click', () => {
+    const selector = generateSEQL(cell);
+    console.log('Cell clicked:', selector);
+  });
+});
+```
+
+
+# File: docs/getting-started/basic-usage.md
+
+# Basic Usage
+
+This guide covers the most common SEQL patterns you'll use in your projects.
+
+## Pattern 1: Generate and Resolve SEQL Selectors
+
+The most common workflow: generate a selector from an element, send it somewhere, and resolve it later.
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// Step 1: Generate SEQL selector from a DOM element
+const button = document.querySelector('.submit-button');
+const selector = generateSEQL(button);
+console.log(selector);
+// Output: "v1: form :: div.actions > button[type="submit",text="Order Now"]"
+
+// Step 2: Store or send the selector
+localStorage.setItem('lastClickedElement', selector);
+// or send to analytics: gtag('event', 'click', { element: selector });
+
+// Step 3: Later, resolve the selector back to the element
+const restoredSelector = localStorage.getItem('lastClickedElement');
+const elements = resolveSEQL(restoredSelector!, document);
+
+if (elements.length > 0) {
+  console.log('Found element:', elements[0]);
+} else {
+  console.log('Element not found');
+}
+```
+
+## Pattern 2: Working with EID Objects
+
+For advanced use cases requiring programmatic access to semantic structure:
+
+```typescript
+import { generateEID, resolve } from 'seql-js';
+
+// Generate EID (JSON object)
+const button = document.querySelector('.submit-button');
+const eid = generateEID(button);
+
+console.log('EID structure:', eid);
+// Output: {
+//   anchor: { tag: 'form', semantics: {...}, nthChild: 1 },
+//   path: [...],
+//   target: { tag: 'button', semantics: {...}, nthChild: 2 },
+//   constraints: {...}
+// }
+
+// Resolve EID back to element(s)
+const result = resolve(eid, document);
+
+if (result.status === 'success') {
+  console.log('Found:', result.elements[0]);
+  console.log('Confidence:', result.confidence);
+} else if (result.status === 'ambiguous') {
+  console.log('Multiple matches found:', result.elements);
+} else {
+  console.log('Resolution failed:', result.status);
+}
+```
+
+## Pattern 3: Tracking User Interactions
+
+Track clicks, inputs, and other user actions with semantic identifiers:
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+// Track all button clicks
+document.addEventListener('click', (event) => {
+  const target = event.target as Element;
+
+  if (target.tagName === 'BUTTON' || target.closest('button')) {
+    const button = target.closest('button') || target;
+    const selector = generateSEQL(button);
+
+    // Send to analytics
+    gtag('event', 'button_click', {
+      element_selector: selector,
+      timestamp: Date.now(),
+    });
+  }
+});
+
+// Track form inputs
+document.addEventListener('input', (event) => {
+  const target = event.target as HTMLInputElement;
+
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+    const selector = generateSEQL(target);
+
+    console.log(`User interacted with: ${selector}`);
+  }
+});
+```
+
+## Pattern 4: Batch Processing
+
+Generate selectors for multiple elements efficiently:
+
+```typescript
+import { generateEIDBatch, stringifySEQL } from 'seql-js';
+
+// Get all interactive elements on the page
+const interactiveElements = document.querySelectorAll('button, a, input, select, textarea');
+
+// Generate EIDs in batch (more efficient than individual calls)
+const eids = generateEIDBatch(Array.from(interactiveElements));
+
+// Convert to SEQL selectors
+const selectors = eids.filter((eid) => eid !== null).map((eid) => stringifySEQL(eid!));
+
+console.log(`Generated ${selectors.length} selectors`);
+
+// Send batch to analytics
+fetch('/api/analytics/elements', {
+  method: 'POST',
+  body: JSON.stringify({ selectors }),
+});
+```
+
+## Pattern 5: Custom Options
+
+Configure generation and resolution behavior:
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// Custom generator options
+const button = document.querySelector('button');
+const selector = generateSEQL(
+  button,
+  {
+    maxPathDepth: 5, // Limit path depth (default: 10)
+    enableSvgFingerprint: true, // Enable SVG fingerprinting (default: true)
+    confidenceThreshold: 0.3, // Minimum confidence score (default: 0.0, v1.3.0+)
+  },
+  {
+    verbose: false, // Compact selector format (default: false)
+  }
+);
+
+// Custom resolver options
+const elements = resolveSEQL(selector, document, {
+  strictMode: false, // Allow degraded matches (default: false)
+  requireUniqueness: true, // Require single match (default: false)
+});
+```
+
+## Error Handling
+
+Always check results when resolving selectors:
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+const selector = 'v1: form :: button[type="submit"]';
+
+try {
+  const elements = resolveSEQL(selector, document);
+
+  if (elements.length === 0) {
+    console.warn('Element not found - may have been removed');
+  } else if (elements.length > 1) {
+    console.warn('Multiple matches - selector may be ambiguous');
+  } else {
+    const element = elements[0];
+    // Use element safely
+    element.click();
+  }
+} catch (error) {
+  console.error('Failed to resolve selector:', error);
+}
+```
+
+## Working with Dynamic Content
+
+Handle elements that may not exist yet:
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+const waitForElement = async (selector: string, timeout = 5000): Promise<Element | null> => {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeout) {
+    const elements = resolveSEQL(selector, document);
+    if (elements.length > 0) {
+      return elements[0];
+    }
+
+    // Wait 100ms before trying again
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  return null;
+};
+
+// Usage
+const modalButton = await waitForElement('v1: div[role="dialog"] :: button[text="Close"]');
+if (modalButton) {
+  modalButton.click();
+} else {
+  console.log('Modal button not found within timeout');
+}
+```
+
+## Common Pitfalls
+
+### 1. Don't Cache DOM Elements, Cache Selectors
+
+❌ **Bad**: Caching DOM elements directly
+
+```typescript
+const cachedElement = document.querySelector('.submit'); // Element may become stale
+```
+
+✅ **Good**: Cache SEQL selectors and resolve when needed
+
+```typescript
+const selector = generateSEQL(document.querySelector('.submit'));
+// Later...
+const element = resolveSEQL(selector, document)[0];
+```
+
+### 2. Handle Multiple Matches
+
+❌ **Bad**: Assuming single match
+
+```typescript
+const element = resolveSEQL(selector, document)[0]; // May be undefined
+element.click(); // Error if no matches
+```
+
+✅ **Good**: Check array length
+
+```typescript
+const elements = resolveSEQL(selector, document);
+if (elements.length > 0) {
+  elements[0].click();
+}
+```
+
+### 3. Use Appropriate Root Context
+
+❌ **Bad**: Always using `document`
+
+```typescript
+const element = resolveSEQL(selector, document); // Searches entire document
+```
+
+✅ **Good**: Scope to specific container when possible
+
+```typescript
+const modal = document.querySelector('.modal');
+const button = resolveSEQL(selector, modal)[0]; // Searches only within modal
+```
+
+## Next Steps
+
+- [Concepts](./concepts.md) - Deep dive into EID and SEQL
+- [API Reference](../api/) - Complete API documentation
+- [Examples](../examples/) - More real-world examples
+- [Guides](../guides/) - Advanced topics
+
+
+# File: docs/getting-started/concepts.md
+
+# Core Concepts
+
+Understanding SEQL's fundamental concepts will help you use the library effectively.
+
+## The Identity Problem
+
+Traditional selectors describe **how to navigate** to an element:
+
+```css
+/* CSS Selector: Navigate down the tree */
+.modal > div:nth-child(2) > button.primary
+
+/* XPath: Similar navigation approach */
+//div[@class='modal']/div[2]/button[@class='primary']
+```
+
+**Problem**: These selectors break when:
+
+- DOM structure changes (new divs added, elements moved)
+- CSS classes are renamed or removed
+- nth-child positions shift
+
+**SEQL's Approach**: Describe **what the element is semantically**:
+
+```
+v1: div[role="dialog"] :: button[type="button",text="Confirm"]
+```
+
+This remains valid regardless of structural changes because it identifies the element by its semantic properties.
+
+## The Two Formats: EID vs SEQL
+
+SEQL provides two complementary formats for element identification:
+
+### SEQL Selector (String Format)
+
+**Purpose**: Compact, human-readable, URL-safe string representation.
+
+**Use Cases**:
+
+- Sending to analytics platforms
+- Storing in databases or logs
+- Embedding in URLs
+- Human-readable debugging
+
+**Example**:
+
+```
+v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
+```
+
+**Advantages**:
+
+- Compact (~100-200 characters typically)
+- Easy to transmit and store
+- URL-safe (when properly encoded)
+- Human-readable
+
+### EID (Element Identity Descriptor, JSON Format)
+
+**Purpose**: Structured, programmatically accessible semantic description.
+
+**Use Cases**:
+
+- Programmatic analysis of semantics
+- Custom resolution logic
+- Debug and introspection
+- Internal processing
+
+**Example**:
+
+```json
+{
+  "anchor": {
+    "tag": "form",
+    "semantics": {
+      "attributes": { "aria-label": "Login" }
+    },
+    "nthChild": 1
+  },
+  "path": [
+    {
+      "tag": "div",
+      "semantics": { "classes": ["fields"] }
+    }
+  ],
+  "target": {
+    "tag": "input",
+    "semantics": {
+      "attributes": { "type": "email", "name": "email" }
+    },
+    "nthChild": 2
+  }
+}
+```
+
+**Advantages**:
+
+- Full semantic metadata
+- Type-safe (with TypeScript)
+- Programmatically accessible
+- Preserves all details
+
+### Conversion Between Formats
+
+```typescript
+import { generateEID, stringifySEQL, parseSEQL, resolve } from 'seql-js';
+
+// Element → EID → SEQL Selector
+const element = document.querySelector('button');
+const eid = generateEID(element);
+const selector = stringifySEQL(eid);
+
+// SEQL Selector → EID → Elements
+const parsedEID = parseSEQL(selector);
+const result = resolve(parsedEID, document);
+```
+
+## The Identity Model: Anchor-Path-Target
+
+Every SEQL identifier consists of three components:
+
+### 1. Anchor (Semantic Root)
+
+The **anchor** is a stable, semantic starting point in the DOM.
+
+**Purpose**: Provide a stable reference point that's unlikely to change.
+
+**Anchor Priority** (Tier A → C):
+
+- **Tier A**: Semantic HTML tags
+  - `<form>`, `<main>`, `<nav>`, `<section>`, `<article>`, `<header>`, `<footer>`
+- **Tier B**: ARIA roles
+  - `role="navigation"`, `role="main"`, `role="region"`, `role="dialog"`
+- **Tier C**: Fallback
+  - Elements with stable test IDs (`data-testid`)
+  - `<body>` as last resort
+
+**Example**:
+
+```typescript
+// Anchor: <form> tag (Tier A)
+v1: form :: button[type="submit"]
+
+// Anchor: <div role="dialog"> (Tier B)
+v1: div[role="dialog"] :: button[text="Close"]
+```
+
+### 2. Path (Semantic Traversal)
+
+The **path** describes the semantic journey from anchor to target's parent.
+
+**Purpose**: Capture meaningful intermediate steps while ignoring noise.
+
+**Path Filtering**:
+
+- Includes: Semantic tags, elements with classes/IDs, role attributes
+- Excludes: Generic `<div>` and `<span>` without semantic value
+
+**Example**:
+
+```html
+<form>
+  <div class="wrapper">
+    <div>
+      <!-- Filtered out: no semantic value -->
+      <div class="fields">
+        <!-- Included: has semantic class -->
+        <input type="email" />
+      </div>
+    </div>
+  </div>
+</form>
+```
+
+Results in path: `div.wrapper > div.fields`
+
+The anonymous `<div>` is skipped because it adds no semantic value.
+
+### 3. Target (The Element Itself)
+
+The **target** is the element you're identifying.
+
+**Purpose**: Capture sufficient semantic features for unique identification.
+
+**Target Semantics**:
+
+- **Tag name**: `button`, `input`, `a`
+- **Type**: `type="submit"`, `type="email"`
+- **Text content**: `text="Login"`, `text="Submit"`
+- **Name**: `name="email"`, `name="password"`
+- **Classes** (filtered): Semantic classes only, no utility classes
+- **ARIA attributes**: `aria-label="Close"`, `role="button"`
+- **nth-child** (v1.1.0): Position among siblings for disambiguation
+
+**Example**:
+
+```typescript
+// Target with multiple semantic features
+button[type="submit",text="Create Account",aria-label="Submit form"]
+
+// Target with nth-child for precision (v1.1.0)
+input[type="radio",name="plan",nthChild=2]
+```
+
+## Constraints: Disambiguation Rules
+
+**Constraints** help resolve ambiguity when multiple elements match the same semantics.
+
+### Constraint Types
+
+1. **Uniqueness Constraint**
+   - Ensures only one element matches
+   - Fails resolution if multiple matches found
+
+2. **Text Proximity Constraint**
+   - Element must be near specific text
+   - Example: Button near "Total: $99.00"
+
+3. **Position Constraint**
+   - Element at specific position in list
+   - Example: 3rd item in a menu
+
+4. **Visibility Constraint**
+   - Element must be visible
+   - Filters out hidden or display:none elements
+
+**Example**:
+
+```json
+{
+  "constraints": {
+    "uniqueness": true,
+    "textProximity": {
+      "text": "Total: $99.00",
+      "maxDistance": 200
+    }
+  }
+}
+```
+
+## State Independence (v1.0.3)
+
+SEQL identifies elements by their **semantic identity**, not their current state.
+
+**State attributes are filtered out**:
+
+- `aria-selected="true"` → Ignored
+- `aria-expanded="false"` → Ignored
+- `data-state="active"` → Ignored
+- `disabled` → Ignored
+
+**Identity attributes are preserved**:
+
+- `aria-label="Close"` → Preserved
+- `role="button"` → Preserved
+- `type="submit"` → Preserved
+- `name="email"` → Preserved
+
+**Why**: An element's identity doesn't change when its state changes. A "Close" button is still a "Close" button whether the modal is open or closed.
+
+**Example**:
+
+```html
+<!-- State changes don't affect identity -->
+<button aria-label="Menu" aria-expanded="false">Menu</button>
+<button aria-label="Menu" aria-expanded="true">Menu</button>
+
+<!-- Both generate the same SEQL selector -->
+v1: button[aria-label="Menu"]
+```
+
+## nth-child Positioning (v1.1.0)
+
+For elements that are otherwise identical, **nth-child** provides precise disambiguation.
+
+**When nth-child is used**:
+
+- Multiple sibling elements with identical semantics
+- Table cells, list items, form fields
+- When order is semantically meaningful
+
+**Example**:
+
+```html
+<table>
+  <tr>
+    <td>Name</td>
+    <td>Age</td>
+    <td>City</td>
+  </tr>
+  <tr>
+    <td>John</td>
+    <td>25</td>
+    <td>NYC</td>
+  </tr>
+</table>
+```
+
+```typescript
+// Target the "Age" cell in first data row
+v1: table :: tr[nthChild=2] > td[nthChild=2]
+```
+
+## Semantic Filtering
+
+SEQL automatically filters out non-semantic noise to focus on meaningful identifiers.
+
+### Class Filtering
+
+**Filtered out** (utility/framework classes):
+
+- Tailwind: `flex`, `p-4`, `text-center`, `bg-blue-500`
+- Bootstrap: `btn`, `btn-primary`, `col-md-6`, `d-flex`
+- Generated: `css-1y7f3z`, `MuiButton-root`
+
+**Preserved** (semantic classes):
+
+- Component names: `login-form`, `submit-button`, `user-profile`
+- State modifiers: `active`, `selected`, `highlighted`
+- Semantic identifiers: `primary-action`, `navigation-menu`
+
+### Attribute Filtering (v1.0.3)
+
+**Filtered out** (state/generated):
+
+- State: `aria-selected`, `aria-expanded`, `data-state`
+- Library-generated: `data-radix-id`, `data-headlessui-state`
+- Auto-generated IDs: `radix-1`, `headlessui-menu-button-2`
+
+**Preserved** (identity):
+
+- Test markers: `data-testid`, `data-cy`, `data-qa`
+- Semantic: `aria-label`, `role`, `name`, `type`
+- Stable IDs: User-defined IDs that follow semantic patterns
+
+## Resolution Algorithm (5 Phases)
+
+SEQL uses a multi-phase resolution algorithm for robustness:
+
+### Phase 1: CSS Narrowing
+
+- Generate optimized CSS selector from EID
+- Narrow down candidates using browser's native query
+
+### Phase 2: Semantic Filtering
+
+- Score remaining candidates by semantic similarity
+- Filter out low-scoring matches
+
+### Phase 3: Uniqueness Check
+
+- If only one candidate remains, return early
+- Skip remaining phases for performance
+
+### Phase 4: Constraints Evaluation
+
+- Apply uniqueness, visibility, text proximity constraints
+- Filter candidates that don't meet constraints
+
+### Phase 5: Handle Ambiguity
+
+- If multiple matches remain, return all (status: 'ambiguous')
+- If no matches, check fallback rules
+- Return results with confidence score
+
+**Example**:
+
+```typescript
+const result = resolve(eid, document);
+
+// result.status can be:
+// - 'success': Single match found
+// - 'ambiguous': Multiple matches found
+// - 'degraded-fallback': Partial match with degraded confidence
+// - 'error': No matches found
+
+// result.confidence: 0.0 to 1.0
+// - 1.0: Perfect match
+// - 0.7-0.9: Good match
+// - 0.5-0.7: Acceptable match
+// - < 0.5: Degraded match
+```
+
+## Practical Decision Guide
+
+### When to use SEQL Selector?
+
+- Sending to analytics platforms
+- Storing in logs or databases
+- Simple, string-based workflows
+- Human-readable output needed
+
+### When to use EID?
+
+- Need programmatic access to semantics
+- Building custom resolution logic
+- Debugging semantic extraction
+- Internal processing pipelines
+
+### When to use batch processing?
+
+- Generating selectors for 10+ elements
+- Performance-critical scenarios
+- Initial page load analysis
+- Bulk element tracking
+
+## Next Steps
+
+- [API Reference](../api/) - Explore the complete API
+- [Examples](../examples/) - See real-world use cases
+- [Specification](../specification/) - Deep dive into the formal spec
+- [Guides](../guides/) - Advanced topics and patterns
+
+
+# File: docs/getting-started/installation.md
+
+# Installation
+
+## Package Manager Installation
+
+### Using Yarn (Recommended)
+
+```bash
+yarn add @whenessel/seql-js
+```
+
+### Using npm
+
+```bash
+npm install @whenessel/seql-js
+```
+
+### Using pnpm
+
+```bash
+pnpm add @whenessel/seql-js
+```
+
+## Requirements
+
+- **Node.js**: v18.0.0 or higher
+- **Package Manager**: Yarn, npm, or pnpm
+- **Browser**: Modern browsers supporting ES2015+
+
+## Importing the Library
+
+### ES Modules (Recommended)
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+```
+
+### CommonJS
+
+```javascript
+const { generateSEQL, resolveSEQL } = require('seql-js');
+```
+
+### TypeScript
+
+SEQL is written in TypeScript and includes full type definitions out of the box. No additional `@types` package is needed.
+
+```typescript
+import {
+  generateSEQL,
+  resolveSEQL,
+  generateEID,
+  resolve,
+  type ElementIdentity,
+  type ResolveResult,
+  type GeneratorOptions,
+} from 'seql-js';
+```
+
+## Build Output
+
+The package includes multiple build formats:
+
+- **ESM**: `dist/seql-js.js` - Modern ES modules
+- **UMD**: `dist/seql-js.umd.cjs` - Universal module for legacy systems
+- **Types**: `dist/seql-js.d.ts`, `dist/seql-js.d.cts` - TypeScript definitions
+
+Your bundler (Webpack, Vite, Rollup, etc.) will automatically select the appropriate format.
+
+## Browser Usage (CDN)
+
+For quick prototyping or non-bundled projects, you can use a CDN:
+
+### Using unpkg
+
+```html
+<script type="module">
+  import { generateSEQL } from 'https://unpkg.com/@whenessel/seql-js@1.1.0/dist/seql-js.js';
+
+  const selector = generateSEQL(document.querySelector('button'));
+  console.log(selector);
+</script>
+```
+
+### Using jsDelivr
+
+```html
+<script type="module">
+  import { generateSEQL } from 'https://cdn.jsdelivr.net/npm/@whenessel/seql-js@1.1.0/dist/seql-js.js';
+
+  const selector = generateSEQL(document.querySelector('button'));
+  console.log(selector);
+</script>
+```
+
+## Verifying Installation
+
+After installation, verify everything works:
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+// Create a simple test element
+const testElement = document.createElement('button');
+testElement.textContent = 'Test Button';
+testElement.type = 'button';
+document.body.appendChild(testElement);
+
+// Generate a selector
+const selector = generateSEQL(testElement);
+console.log('SEQL Selector:', selector);
+
+// Clean up
+document.body.removeChild(testElement);
+```
+
+You should see output like:
+
+```
+SEQL Selector: v1: button[type="button",text="Test Button"]
+```
+
+## Tree Shaking
+
+SEQL is designed to be tree-shakeable. Import only what you need:
+
+```typescript
+// Import only SEQL string functions (smaller bundle)
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// Import EID functions as well (larger bundle)
+import { generateEID, resolve, generateSEQL, resolveSEQL } from 'seql-js';
+```
+
+## Dependencies
+
+**Zero runtime dependencies.** SEQL is a standalone library with no external dependencies, keeping your bundle size small.
+
+## Next Steps
+
+- [Basic Usage](./basic-usage.md) - Learn common patterns
+- [Concepts](./concepts.md) - Understand the identity model
+- [API Reference](../api/) - Explore the complete API
+
+
+# File: docs/getting-started/README.md
+
+# Getting Started with SEQL
+
+Welcome to SEQL (Semantic Element Query Language) - a robust solution for stable DOM element identification.
+
+## What is SEQL?
+
+SEQL provides semantic-first element identification that survives DOM restructuring, CSS changes, and framework updates. Unlike brittle CSS selectors or XPath, SEQL describes **what** an element is, not **how** to reach it.
+
+## Quick Start (5 minutes)
+
+### Installation
+
+```bash
+yarn add @whenessel/seql-js
+# or
+npm install @whenessel/seql-js
+```
+
+### Basic Usage
+
+```typescript
+import { generateSEQL, resolveSEQL } from 'seql-js';
+
+// 1. Generate a SEQL selector from an element
+const button = document.querySelector('.submit-button');
+const selector = generateSEQL(button);
+// Result: "v1: form :: div.actions > button[type="submit",text="Order Now"]"
+
+// 2. Resolve the selector back to the element
+const elements = resolveSEQL(selector, document);
+// Returns: [<button>...]
+```
+
+That's it! You've just created a stable identifier for a DOM element.
+
+## Why SEQL?
+
+**Problem**: CSS selectors like `.modal > div:nth-child(3) > button.primary` break when:
+
+- Developers add a new div above your target
+- CSS classes are renamed during refactoring
+- The component library is updated
+
+**Solution**: SEQL uses semantic features:
+
+- Semantic HTML tags (`<form>`, `<main>`, `<nav>`)
+- ARIA roles and labels
+- Stable attributes (test IDs, names, types)
+- Text content
+- Structural relationships
+
+**Example**:
+
+```typescript
+// Brittle CSS selector
+const badSelector = '.modal > div:nth-child(3) > button.primary';
+
+// SEQL semantic selector
+const goodSelector = 'v1: main[role="dialog"] :: button[type="submit",text="Save"]';
+```
+
+The SEQL selector remains valid even if:
+
+- The modal's CSS classes change
+- Divs are added/removed above the button
+- The button's position changes in the DOM
+
+## Core Concepts
+
+### EID vs SEQL Selector
+
+SEQL offers two formats:
+
+1. **SEQL Selector (String)** - Compact, URL-safe format for analytics and transport
+
+   ```typescript
+   "v1: form :: div.actions > button[text='Submit']";
+   ```
+
+2. **EID (JSON)** - Detailed structure for internal operations and high precision
+
+   ```typescript
+   {
+     "anchor": { "tag": "form", "semantics": {...} },
+     "path": [...],
+     "target": { "tag": "button", "semantics": {...} }
+   }
+   ```
+
+Use **SEQL Selector** for most use cases. Use **EID** when you need programmatic access to the full semantic structure.
+
+### The Identity Model
+
+Every SEQL identifier consists of:
+
+- **Anchor**: A semantic root element (e.g., `<form>`, `<main>`, ARIA landmark)
+- **Path**: Semantic traversal from anchor to target's parent
+- **Target**: The specific element being identified
+- **Constraints**: Disambiguation rules (uniqueness, visibility, text proximity)
+
+Example breakdown:
+
+```
+v1: form[aria-label="Login"] :: div.fields > input[type="email",name="email"]
+│   └────────anchor────────┘    └──────path──────┘  └────────target─────────┘
+└─ version
+```
+
+## Next Steps
+
+- [Installation](./installation.md) - Detailed setup instructions
+- [Basic Usage](./basic-usage.md) - Common patterns and examples
+- [Concepts](./concepts.md) - Deep dive into the identity model
+- [API Reference](../api/) - Complete API documentation
+- [Examples](../examples/) - Real-world use cases
+
+## Common Use Cases
+
+### Session Replay (rrweb)
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+// During recording
+document.addEventListener('click', (event) => {
+  const selector = generateSEQL(event.target as Element);
+  sendAnalytics({ type: 'click', element: selector });
+});
+```
+
+### Web Analytics
+
+```typescript
+import { generateSEQL } from 'seql-js';
+
+// Track button clicks
+const trackClick = (button: HTMLButtonElement) => {
+  const selector = generateSEQL(button);
+  gtag('event', 'button_click', { element: selector });
+};
+```
+
+### Test Automation
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+
+// Find elements by semantic identity
+const findLoginButton = () => {
+  const selector = 'v1: form[aria-label="Login"] :: button[type="submit"]';
+  return resolveSEQL(selector, document)[0];
+};
+```
+
+## Requirements
+
+- **Node.js**: v18 or higher
+- **Browser**: Modern browsers with ES2015+ support
+- **TypeScript**: v4.5+ (optional, but recommended)
+
+## Getting Help
+
+- [Troubleshooting](../troubleshooting/) - Common issues and solutions
+- [GitHub Issues](https://github.com/whenessel/seql-js/issues) - Report bugs or request features
+- [Examples](../examples/) - More real-world examples
+
+
+# File: docs/guides/batch-processing.md
+
+# Batch Processing Guide
+
+Efficiently process multiple elements.
+
+## When to Use Batch
+
+- Processing 10+ elements
+- Initial page load analysis
+- Bulk export/import
+
+## Basic Usage
+
+```typescript
+import { generateEIDBatch } from 'seql-js';
+
+const elements = Array.from(document.querySelectorAll('button'));
+const eids = generateEIDBatch(elements);
+
+console.log(`Generated ${eids.filter((e) => e).length}/${elements.length} EIDs`);
+```
+
+## With Options
+
+```typescript
+generateEIDBatch(elements, {
+  maxPathDepth: 5,
+  enableSvgFingerprint: false,
+});
+```
+
+## Performance
+
+Batch processing is 30-50% faster than individual calls for 10+ elements.
+
+## Chunking for Large DOMs
+
+```typescript
+async function processLarge(elements: Element[], chunkSize = 100) {
+  const allEIDs = [];
+
+  for (let i = 0; i < elements.length; i += chunkSize) {
+    const chunk = elements.slice(i, i + chunkSize);
+    const chunkEIDs = generateEIDBatch(chunk);
+    allEIDs.push(...chunkEIDs);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  return allEIDs;
+}
+```
+
+
+# File: docs/guides/caching.md
+
+# Caching Guide
+
+Optimize performance with caching.
+
+## Global Cache (Default)
+
+Automatically used:
+
+```typescript
+import { generateEID } from 'seql-js';
+
+const eid = generateEID(element); // Uses global cache
+```
+
+## Custom Cache
+
+Create isolated cache:
+
+```typescript
+import { createEIDCache, generateEID } from 'seql-js';
+
+const cache = createEIDCache({ maxSize: 500 });
+
+generateEID(element, { cache });
+```
+
+## Monitoring
+
+```typescript
+import { getGlobalCache } from 'seql-js';
+
+const stats = getGlobalCache().getStats();
+console.log('Hit rate:', stats.hitRate);
+console.log('Size:', stats.size);
+```
+
+## Clearing
+
+```typescript
+getGlobalCache().clear(); // Clear all cached data
+```
+
+## Best Practices
+
+1. Use global cache for general use
+2. Create custom cache for isolated features
+3. Clear cache on major DOM changes
+4. Monitor hit rate in development
+
+
+# File: docs/guides/configuration.md
+
+# Configuration Guide
+
+Customizing SEQL behavior.
+
+## Generator Options
+
+```typescript
+interface GeneratorOptions {
+  maxPathDepth?: number; // Default: 10
+  enableSvgFingerprint?: boolean; // Default: true
+  confidenceThreshold?: number; // Default: 0.0 (v1.3.0+)
+  fallbackToBody?: boolean; // Default: true
+  cache?: EIDCache; // Default: global cache
+}
+```
+
+### Confidence Threshold (v1.3.0 Change)
+
+**Since v1.3.0**: Default `confidenceThreshold` is `0.0`, meaning `generateEID` always returns an EID for valid DOM elements.
+
+- **v1.3.0+**: Returns EID with low confidence indicated via `meta.confidence` field
+- **v1.2.0 and earlier**: Returned `null` for elements below threshold `0.1`
+
+**Migration**: If your code relies on `null` returns to filter low-quality EIDs:
+
+```typescript
+// Old behavior (v1.2.0)
+const eid = generateEID(element); // null if confidence < 0.1
+
+// New behavior (v1.3.0+) - check confidence manually
+const eid = generateEID(element); // always returns EID
+if (eid && eid.meta.confidence < 0.1) {
+  // Handle low-confidence case
+}
+
+// OR restore old behavior with explicit threshold
+const eid = generateEID(element, { confidenceThreshold: 0.1 });
+```
+
+## Resolver Options
+
+```typescript
+interface ResolverOptions {
+  strictMode?: boolean; // Default: false
+  requireUniqueness?: boolean; // Default: false
+  enableFallback?: boolean; // Default: true
+  maxCandidates?: number; // Default: 100
+}
+```
+
+## Stringify Options
+
+```typescript
+interface StringifyOptions {
+  verbose?: boolean; // Default: false
+  includeNthChild?: boolean; // Default: true
+}
+```
+
+## Example Configurations
+
+### High Quality Only
+
+Filter for only high-confidence EIDs:
+
+```typescript
+generateEID(element, {
+  maxPathDepth: 15,
+  confidenceThreshold: 0.5, // Only return EIDs with confidence >= 0.5
+});
+```
+
+### Performance Optimized
+
+```typescript
+generateEID(element, {
+  maxPathDepth: 5,
+  enableSvgFingerprint: false,
+});
+```
+
+### Strict Resolution
+
+```typescript
+resolve(eid, document, {
+  strictMode: true,
+  requireUniqueness: true,
+  enableFallback: false,
+});
+```
+
+
+# File: docs/guides/generation.md
+
+# Generation Guide
+
+Deep dive on generating Element Identity Descriptors.
+
+## Basic Generation
+
+```typescript
+import { generateEID } from 'seql-js';
+
+const element = document.querySelector('button');
+const eid = generateEID(element);
+```
+
+## Options
+
+### Max Path Depth
+
+Control how far the path extends:
+
+```typescript
+generateEID(element, { maxPathDepth: 5 }); // Shorter paths
+```
+
+### Confidence Threshold
+
+**Since v1.3.0**: Default is `0.0` (always generate EID). Set explicit threshold to filter low-confidence:
+
+```typescript
+// v1.3.0+ default: Always returns EID
+const eid = generateEID(element); // confidence threshold: 0.0
+
+// Explicit filtering for high-quality only
+const eid = generateEID(element, { confidenceThreshold: 0.3 }); // May return null
+```
+
+### SVG Fingerprinting
+
+Control SVG processing:
+
+```typescript
+generateEID(element, { enableSvgFingerprint: false }); // Skip SVG
+```
+
+## Understanding Results
+
+```typescript
+const eid = generateEID(element);
+
+if (!eid) {
+  // v1.3.0+: Only happens for invalid elements (disconnected, null, etc.)
+  console.warn('Invalid element - cannot generate EID');
+} else {
+  console.log('Confidence:', eid.meta.confidence);
+  console.log('Degraded:', eid.meta.degraded);
+  
+  // Check confidence quality (v1.3.0+)
+  if (eid.meta.confidence < 0.3) {
+    console.warn('Low confidence - element has minimal semantics');
+  }
+
+  if (eid.meta.degraded) {
+    console.warn('Reason:', eid.meta.degradationReason);
+  }
+}
+```
+
+## Best Practices
+
+1. Check for null return value
+2. Monitor confidence scores
+3. Use custom cache for isolated features
+4. Batch process when generating many EIDs
+
+
+# File: docs/guides/migration-v1.3.0.md
+
+# Migration Guide: v1.2.0 → v1.3.0
+
+This guide helps you migrate from seql-js v1.2.0 to v1.3.0.
+
+## Breaking Changes
+
+### 1. `generateEID` Always Returns EID for Valid Elements
+
+**What Changed**: Default `confidenceThreshold` reduced from `0.1` to `0.0`.
+
+**v1.2.0 Behavior**:
+
+```typescript
+const element = document.querySelector('.minimal-div');
+const eid = generateEID(element);
+
+if (!eid) {
+  console.log('Element has low semantic quality');
+  // null returned for confidence < 0.1
+}
+```
+
+**v1.3.0 Behavior**:
+
+```typescript
+const element = document.querySelector('.minimal-div');
+const eid = generateEID(element);
+
+// EID is always returned (unless element is invalid)
+if (eid && eid.meta.confidence < 0.1) {
+  console.log('Element has low semantic quality');
+}
+```
+
+### Migration Strategies
+
+#### Strategy 1: Check `meta.confidence` Manually
+
+Recommended if you want to handle low-confidence cases gracefully:
+
+```typescript
+// Old code (v1.2.0)
+const eid = generateEID(element);
+if (!eid) {
+  // Handle low quality
+  return fallbackIdentification(element);
+}
+processEID(eid);
+
+// New code (v1.3.0)
+const eid = generateEID(element);
+if (!eid) {
+  // Only happens for invalid elements now
+  throw new Error('Invalid element');
+}
+
+if (eid.meta.confidence < 0.1) {
+  // Handle low quality
+  return fallbackIdentification(element);
+}
+processEID(eid);
+```
+
+#### Strategy 2: Restore Old Behavior with Explicit Threshold
+
+If you want identical v1.2.0 behavior:
+
+```typescript
+// Restore v1.2.0 behavior exactly
+const eid = generateEID(element, { confidenceThreshold: 0.1 });
+
+if (!eid) {
+  // Element has confidence < 0.1 (same as v1.2.0)
+  return fallbackIdentification(element);
+}
+```
+
+#### Strategy 3: Use Low-Confidence EIDs
+
+Embrace the new behavior and use all generated EIDs:
+
+```typescript
+const eid = generateEID(element);
+
+if (!eid) {
+  throw new Error('Invalid element');
+}
+
+// Use EID regardless of confidence
+// Low confidence is acceptable for your use case
+analytics.track('click', { selector: stringifySEQL(eid) });
+
+// Optional: Add confidence metadata
+if (eid.meta.confidence < 0.3) {
+  analytics.track('low_confidence_element', {
+    selector: stringifySEQL(eid),
+    confidence: eid.meta.confidence,
+  });
+}
+```
+
+## Non-Breaking Changes
+
+### 2. Improved Anchor Scoring for Stable IDs
+
+**What Changed**: `ANCHOR_SCORE.STABLE_ID` increased from `0.1` to `0.25`.
+
+**Impact**: Elements with stable IDs (`#root`, `#app`, `#main`, etc.) now receive higher confidence scores.
+
+**Example**:
+
+```typescript
+// Element: <div id="root"><div class="container">...</div></div>
+
+// v1.2.0: confidence ≈ 0.09 (might return null with default threshold)
+// v1.3.0: confidence ≈ 0.35 (always generates EID)
+```
+
+**Action Required**: None - this is a quality improvement. Your code will automatically benefit from more accurate confidence scores.
+
+## Updated API Signatures
+
+No signature changes - all APIs remain backward compatible. Only default values changed:
+
+```typescript
+// v1.2.0
+interface GeneratorOptions {
+  confidenceThreshold?: number; // default: 0.1
+}
+
+// v1.3.0
+interface GeneratorOptions {
+  confidenceThreshold?: number; // default: 0.0
+}
+```
+
+## Testing Your Migration
+
+### Test Cases to Verify
+
+1. **Elements that previously returned `null`**:
+
+```typescript
+// Find elements that would have returned null in v1.2.0
+const testElements = document.querySelectorAll('div, span');
+
+testElements.forEach((el) => {
+  const eid = generateEID(el, { confidenceThreshold: 0.1 }); // v1.2.0 behavior
+
+  if (!eid) {
+    // This element would have returned null in v1.2.0
+    const newEid = generateEID(el); // v1.3.0 behavior
+    console.log('Now generates EID with confidence:', newEid?.meta.confidence);
+  }
+});
+```
+
+1. **Verify confidence distribution**:
+
+```typescript
+const allElements = document.querySelectorAll('*');
+const confidences = [];
+
+allElements.forEach((el) => {
+  const eid = generateEID(el);
+  if (eid) {
+    confidences.push(eid.meta.confidence);
+  }
+});
+
+console.log('Confidence distribution:', {
+  min: Math.min(...confidences),
+  max: Math.max(...confidences),
+  avg: confidences.reduce((a, b) => a + b, 0) / confidences.length,
+});
+```
+
+## Rollback Plan
+
+If you need to rollback to v1.2.0 behavior without downgrading:
+
+```typescript
+// Create a wrapper that mimics v1.2.0 exactly
+function generateEID_v1_2_0(element, options = {}) {
+  // Force v1.2.0 default threshold
+  const v1_2_options = {
+    ...options,
+    confidenceThreshold: options.confidenceThreshold ?? 0.1,
+  };
+
+  return generateEID(element, v1_2_options);
+}
+
+// Use wrapper in your codebase
+const eid = generateEID_v1_2_0(element);
+if (!eid) {
+  // Same behavior as v1.2.0
+}
+```
+
+## Common Migration Patterns
+
+### Pattern 1: Analytics Tracking
+
+**Before (v1.2.0)**:
+
+```typescript
+function trackElement(element) {
+  const eid = generateEID(element);
+
+  if (!eid) {
+    // Skip tracking for low-quality elements
+    return;
+  }
+
+  analytics.track('click', { selector: stringifySEQL(eid) });
+}
+```
+
+**After (v1.3.0)** - Option A (track everything):
+
+```typescript
+function trackElement(element) {
+  const eid = generateEID(element);
+
+  if (!eid) {
+    // Invalid element
+    return;
+  }
+
+  // Track with confidence metadata
+  analytics.track('click', {
+    selector: stringifySEQL(eid),
+    confidence: eid.meta.confidence,
+  });
+}
+```
+
+**After (v1.3.0)** - Option B (maintain filtering):
+
+```typescript
+function trackElement(element) {
+  const eid = generateEID(element, { confidenceThreshold: 0.1 });
+
+  if (!eid) {
+    // Low quality - skip tracking (same as v1.2.0)
+    return;
+  }
+
+  analytics.track('click', { selector: stringifySEQL(eid) });
+}
+```
+
+### Pattern 2: Session Replay
+
+**Before (v1.2.0)**:
+
+```typescript
+function captureInteraction(event) {
+  const eid = generateEID(event.target);
+
+  if (!eid) {
+    // Fall back to CSS selector
+    return { selector: getCssPath(event.target), type: 'css' };
+  }
+
+  return { selector: stringifySEQL(eid), type: 'seql' };
+}
+```
+
+**After (v1.3.0)**:
+
+```typescript
+function captureInteraction(event) {
+  const eid = generateEID(event.target);
+
+  if (!eid) {
+    // Invalid element (disconnected, etc.)
+    return null;
+  }
+
+  // Always use SEQL, add quality flag
+  return {
+    selector: stringifySEQL(eid),
+    type: 'seql',
+    quality: eid.meta.confidence >= 0.3 ? 'high' : 'low',
+  };
+}
+```
+
+## Need Help?
+
+- **Issues**: [GitHub Issues](https://github.com/whenessel/seql-js/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/whenessel/seql-js/discussions)
+- **Documentation**: [Full Docs](../README.md)
+
+## Version History
+
+- **v1.3.0** (2026-01-27): Always-generate guarantee + improved stable ID scoring
+- **v1.2.0** (2026-01-26): Previous stable release
+- **v1.1.0** (2026-01-22): nth-child positioning
+- **v1.0.3** (2026-01-21): Attribute stability filtering
+
+
+# File: docs/guides/README.md
+
+# Guides
+
+In-depth guides for using SEQL effectively.
+
+- **[Generation](./generation.md)** - Deep dive on generating EIDs
+- **[Resolution](./resolution.md)** - Understanding resolution
+- **[Batch Processing](./batch-processing.md)** - Efficient batch operations
+- **[Caching](./caching.md)** - Performance optimization
+- **[Configuration](./configuration.md)** - Options and customization
+- **[rrweb Integration](./rrweb-integration.md)** - Session replay use case
+
+
+# File: docs/guides/resolution.md
+
+# Resolution Guide
+
+Understanding how EIDs are resolved back to elements.
+
+## Basic Resolution
+
+```typescript
+import { resolve } from 'seql-js';
+
+const eid = {...};  // Previously generated
+const result = resolve(eid, document);
+
+console.log('Status:', result.status);
+console.log('Elements:', result.elements);
+console.log('Confidence:', result.confidence);
+```
+
+## Handling Different Statuses
+
+### Success (Single Match)
+
+```typescript
+if (result.status === 'success') {
+  const element = result.elements[0];
+  element.click();
+}
+```
+
+### Ambiguous (Multiple Matches)
+
+```typescript
+if (result.status === 'ambiguous') {
+  console.warn(`Found ${result.elements.length} matches`);
+  // Use first, ask user, or apply additional filters
+}
+```
+
+### Error (No Matches)
+
+```typescript
+if (result.status === 'error') {
+  console.error('Element not found');
+  result.warnings.forEach((w) => console.warn(w));
+}
+```
+
+## Resolution Options
+
+### Strict Mode
+
+```typescript
+resolve(eid, document, { strictMode: true });
+// Rejects degraded matches
+```
+
+### Require Uniqueness
+
+```typescript
+resolve(eid, document, { requireUniqueness: true });
+// Fails if multiple matches
+```
+
+## Scoped Resolution
+
+Search within a container:
+
+```typescript
+const modal = document.querySelector('.modal');
+const result = resolve(eid, modal); // Search only in modal
+```
+
+
+# File: docs/guides/rrweb-integration.md
+
+# rrweb Integration Guide
+
+Using SEQL with session replay.
+
+## Recording Phase
+
+```typescript
+import { generateSEQL } from 'seql-js';
+import { record } from 'rrweb';
+
+record({
+  emit(event) {
+    // Add SEQL selector to click events
+    if (event.type === 'IncrementalSnapshot' && event.data.source === 'MouseInteraction') {
+      const target = event.data.id; // rrweb node ID
+      const element = getElementById(target); // Convert to DOM element
+
+      if (element) {
+        event.data.seqlSelector = generateSEQL(element);
+      }
+    }
+
+    // Send to backend
+    sendToBackend(event);
+  },
+});
+```
+
+## Replay Phase
+
+```typescript
+import { resolveSEQL } from 'seql-js';
+import { Replayer } from 'rrweb';
+
+const replayer = new Replayer(events);
+
+// Highlight clicked elements
+events.forEach((event) => {
+  if (event.data?.seqlSelector) {
+    const elements = resolveSEQL(event.data.seqlSelector, replayer.iframe.contentDocument);
+
+    if (elements.length > 0) {
+      elements[0].classList.add('rrweb-highlight');
+    }
+  }
+});
+```
+
+## Analytics Correlation
+
+```typescript
+// During recording, send both rrweb and SEQL data
+const selector = generateSEQL(element);
+
+analytics.track('click', {
+  seql_selector: selector,
+  rrweb_session_id: sessionId,
+});
+
+// Later, correlate rrweb sessions with analytics data
+```
+
+
+# File: docs/README.md
+
+# SEQL Documentation
+
+Complete documentation for seql-js v1.3.0.
+
+## For Users
+
+Start here if you're using SEQL in your project:
+
+- **[Getting Started](./getting-started/)** - Installation and quick start
+- **[API Reference](./api/)** - Complete API documentation
+- **[Examples](./examples/)** - Practical code examples
+- **[Guides](./guides/)** - In-depth topics
+- **[Migration Guide v1.3.0](./guides/migration-v1.3.0.md)** - Upgrading from v1.2.0 ⭐
+- **[Troubleshooting](./troubleshooting/)** - Common issues and solutions
+
+## For Contributors
+
+Resources for contributing to seql-js:
+
+- **[Contributing](./contributing/)** - Development guide
+- **[Architecture](./architecture/)** - System design
+- **[Specification](./specification/)** - Technical specifications
+
+## Quick Links
+
+- [GitHub Repository](https://github.com/whenessel/seql-js)
+- [NPM Package](https://www.npmjs.com/package/@whenessel/seql-js)
+- [Issue Tracker](https://github.com/whenessel/seql-js/issues)
+
+## Documentation Structure
+
+```
+docs/
+├── getting-started/     # Quick start guides
+├── api/                # API reference
+├── examples/           # Code examples
+├── guides/             # In-depth topics
+├── specification/      # Technical specs
+├── architecture/       # System design
+├── troubleshooting/    # Common issues
+├── contributing/       # Development guide
+└── archive/            # Archived documentation
+    ├── legacy-specs-russian/  # Original Russian specs
+    └── issues-resolved/       # Resolved bug documentation
+```
+
+## Archive
+
+Previous documentation versions are preserved in [archive/](./archive/):
+
+- **Russian specifications** (v1.0): `archive/legacy-specs-russian/`
+- **Resolved issues**: `archive/issues-resolved/`
+
+## Version History
+
+- **v1.3.0** (2026-01-27): Always-generate guarantee, improved stable ID scoring
+- **v1.1.0** (2026-01-22): nth-child positioning, documentation restructuring
+- **v1.0.3** (2026-01-21): Attribute stability filtering
+- **v1.0.0** (2025-01-15): Initial stable release
+
+## Languages
+
+All current documentation is in **English**. Original Russian specifications are preserved in the archive for reference.
+
+
+# File: docs/ROOT_ELEMENTS_FIX.md
+
+# Root Elements Fix - Implementation Summary
+
+## Overview
+
+Fixed CSS selector generation for root DOM elements (html, head, body, and elements inside head). Previously, the system generated incorrect selectors like `body html` (invalid) or `body meta` (incorrect hierarchy). Now generates correct selectors like `html`, `html > head`, and `html > head > meta[name="..."]`.
+
+## Implementation Date
+
+2026-01-27
+
+## Problem Statement
+
+The EID system failed to generate correct CSS selectors for root DOM elements:
+
+- **HTML element**: Generated `body html` ❌ (html is parent of body)
+- **HEAD element**: Generated `body head` ❌ (head is sibling of body)
+- **META in head**: Generated `body meta` ❌ (meta is not in body)
+- **Result**: `document.querySelectorAll(selector)` returned empty arrays
+
+## Root Causes
+
+1. **anchor-finder.ts:49** - Search started from `target.parentElement`, so target itself was never considered as anchor
+2. **anchor-finder.ts:54-66** - Algorithm stopped at `<body>`, treating it as root, preventing anchor discovery for elements above body
+3. **css-generator.ts:99-145** - Selector generation concatenated anchor and target without validating parent-child relationship
+
+## Solution Architecture
+
+**Approach**: Special Case Root Elements
+
+Added explicit checks for root elements (html, head, body, and elements inside head) **before** normal anchor-finding logic. This:
+
+- Preserves the semantic anchor→path→target model for 99% of cases
+- Doesn't break existing EIDs
+- Generates obviously correct CSS selectors
+- Requires medium complexity implementation
+
+## Files Modified
+
+### 1. `src/utils/constants.ts`
+
+Added constants for root element identification:
+
+```typescript
+export const ROOT_ELEMENTS = new Set(['html', 'head', 'body']);
+
+export const HEAD_ELEMENTS = new Set([
+  'title', 'meta', 'link', 'style', 'script', 'base', 'noscript'
+]);
+```
+
+### 2. `src/generator/anchor-finder.ts`
+
+**Changes:**
+
+- Added special case handling at the start of `findAnchor()`:
+  - For `<html>`: returns html itself as anchor (score=1.0, tier='A', depth=0)
+  - For `<head>` or elements inside head: returns html as anchor
+  - For `<body>`: returns html as anchor
+- Added `isInsideHead(element)` method to detect elements inside `<head>`
+- Added `cacheResult()` helper method
+
+**Result:** Root elements now correctly identify html as their anchor.
+
+### 3. `src/generator/path-builder.ts`
+
+**Changes:**
+
+- Added special case handling in `buildPath()`:
+  - If anchor=html and target=head/body: returns empty path
+  - If anchor=html and target inside head: calls `buildHeadPath()`
+- Added validation: checks if target is descendant of anchor
+- Added `isInsideHead(element)` method (same logic as in anchor-finder)
+- Added `buildHeadPath()` method to build paths through head element
+
+**Result:** Paths for root elements are correctly built with head included when needed.
+
+### 4. `src/resolver/css-generator.ts`
+
+**Changes:**
+
+- Added special case handling at start of `buildSelector()`:
+  - If target=html: returns `'html'`
+  - If anchor=html and path empty: returns `'html > ${targetSelector}'`
+  - If anchor=html and path[0]=head: calls `buildHeadSelector()`
+- Added `buildHeadSelector()` method that uses child combinator (`>`) for strict structure
+
+**Result:** CSS selectors for root elements use correct combinators and hierarchy.
+
+### 5. `src/generator/generator.ts`
+
+**Changes:**
+
+- Added fast-path for html element at start of `generateEID()`:
+  - Skips normal anchor finding
+  - Calls `generateHtmlEID()` function
+- Added `generateHtmlEID()` function that creates EID where anchor=target=html
+
+**Result:** HTML element generation is optimized and always correct.
+
+## CSS Selector Examples
+
+### Before (Incorrect)
+
+```
+html:     "body html"           ❌ querySelector returns []
+head:     "body head"           ❌ querySelector returns []
+meta:     "body meta"           ❌ querySelector returns []
+```
+
+### After (Correct)
+
+```
+html:     "html"                                                    ✅
+head:     "html > head"                                             ✅
+body:     "html > body"                                             ✅
+meta:     "html > head > meta[name='description']"                  ✅
+title:    "html > head > title"                                     ✅
+link:     "html > head > link[rel='stylesheet']"                    ✅
+```
+
+## Test Coverage
+
+### Unit Tests (tests/unit/root-elements.test.ts)
+
+**20 tests covering:**
+
+- HTML element (5 tests): EID generation, CSS selector, resolution, confidence, degradation
+- HEAD element (5 tests): EID generation, anchor validation, path validation, CSS selector, resolution
+- Elements in HEAD (7 tests): meta, title, link with various attributes and disambiguation
+- BODY element (3 tests): EID generation, anchor validation, CSS selector
+
+### Integration Tests (tests/integration/root-elements.test.ts)
+
+**10 round-trip tests covering:**
+
+- HTML, HEAD, BODY elements
+- META with unique name attribute
+- META without name (using nth-child)
+- TITLE element
+- LINK element with href
+- SCRIPT element
+- Complex head structure (6 different elements)
+- Nested style element
+
+### Regression Tests
+
+**All 863 existing tests pass** - no breaking changes introduced.
+
+## Performance Impact
+
+- **HTML element**: < 0.5ms (fast-path optimization)
+- **HEAD element**: < 1ms
+- **META element**: < 2ms
+- **Body elements**: < 1% regression (negligible)
+
+## Backward Compatibility
+
+✅ **No breaking changes**
+
+- Implementation is purely additive
+- Existing EIDs for elements in body work unchanged
+- Only adds support for previously unsupported elements
+- EID structure unchanged
+
+## Code Quality
+
+All code follows project standards from `.ai/README.md`:
+
+- **Naming**: UPPER_SNAKE_CASE for constants, camelCase for functions, PascalCase for classes
+- **Documentation**: TSDoc comments with @param, @returns, @remarks, @example
+- **Testing**: Full coverage with unit and integration tests
+- **Type Safety**: All TypeScript checks pass
+- **Build**: Clean build with no warnings
+
+## Edge Cases Handled
+
+- **Disconnected elements**: Already handled via `isConnected` check → returns null
+- **iframes**: Work through `ownerDocument` without changes
+- **SVG in head**: Handled correctly via `isInsideHead()`
+- **Shadow DOM**: Out of scope (separate feature)
+- **Malformed HTML**: Handles actual DOM structure as-is
+
+## Verification
+
+To manually verify the fix works:
+
+1. Build: `yarn build`
+2. Open `tests/manual/test-root-elements.html` in browser
+3. All 5 tests should show green (pass)
+
+## Success Criteria
+
+✅ CSS selector for `<html>` = `'html'` and finds element
+✅ CSS selector for `<head>` includes html and head, finds element
+✅ CSS selector for `<meta>` in head correctly resolves
+✅ All existing tests pass (863/863)
+✅ New unit and integration tests cover all cases (30/30)
+✅ No breaking changes for existing EIDs
+
+## References
+
+- Plan document: Located in conversation transcript
+- Specification: `docs/specs/SPECIFICATION.md`
+- Architecture: `docs/specs/ARCHITECTURE.md`
+
+
+# File: docs/specification/anchor-strategy.md
+
+# Anchor Finding Strategy
+
+Algorithm for finding semantic anchor elements.
+
+## Algorithm
+
+```
+1. Start from target element
+2. Traverse upward (max 10 levels)
+3. Check each ancestor against tier criteria
+4. Return first match or fallback
+```
+
+## Anchor Tiers
+
+### Tier A: Native Semantic Tags (Highest Priority)
+
+- `<form>`
+- `<main>`
+- `<nav>`
+- `<section>`
+- `<article>`
+- `<header>`
+- `<footer>`
+
+### Tier B: ARIA Roles
+
+- `role="navigation"`
+- `role="main"`
+- `role="region"`
+- `role="dialog"`
+- `role="form"`
+
+### Tier C: Fallback
+
+- Elements with `data-testid`
+- Elements with stable `id`
+- `<body>` as last resort
+
+## Selection Logic
+
+```typescript
+function findAnchor(target: Element): AnchorResult | null {
+  let current = target.parentElement;
+  let depth = 0;
+
+  while (current && depth < 10) {
+    // Check Tier A
+    if (SEMANTIC_TAGS.has(current.tagName.toLowerCase())) {
+      return { element: current, tier: 'A', depth };
+    }
+
+    // Check Tier B
+    const role = current.getAttribute('role');
+    if (role && SEMANTIC_ROLES.has(role)) {
+      return { element: current, tier: 'B', depth };
+    }
+
+    // Check Tier C
+    if (hasStableTestId(current) || hasStableId(current)) {
+      return { element: current, tier: 'C', depth };
+    }
+
+    current = current.parentElement;
+    depth++;
+  }
+
+  // Fallback to body
+  return { element: document.body, tier: 'C', depth: 10 };
+}
+```
+
+## Depth Penalty
+
+Anchors found at greater depths receive lower confidence scores:
+
+- Depth 0-3: No penalty
+- Depth 4-6: 10% confidence reduction
+- Depth 7-9: 20% confidence reduction
+- Depth 10+: 30% confidence reduction (degraded)
+
+## Examples
+
+**Tier A:**
+
+```html
+<form>
+  <input type="email" />
+  <!-- Anchor: <form>, Tier A, Depth 1 -->
+</form>
+```
+
+**Tier B:**
+
+```html
+<div role="dialog">
+  <button>Close</button>
+  <!-- Anchor: div[role="dialog"], Tier B, Depth 1 -->
+</div>
+```
+
+**Tier C:**
+
+```html
+<div data-testid="user-profile">
+  <h1>Profile</h1>
+  <!-- Anchor: div[data-testid="user-profile"], Tier C, Depth 1 -->
+</div>
+```
+
+
+# File: docs/specification/attribute-filtering.md
+
+# Attribute Filtering (v1.4.0)
+
+Separating state attributes from identity attributes for stable element identification.
+
+## Principle
+
+Element **identity** ≠ Element **state**
+
+An element's identity (what it is) should not change when its state (how it appears) changes.
+
+## Stable Attributes (Identity)
+
+✅ **Preserved** - Define what the element is:
+
+**Semantic Attributes:**
+
+- `type`, `name`, `value` (for inputs)
+- `href`, `src`, `action`
+- `role`, `aria-label`, `aria-labelledby`, `aria-describedby`
+- `for`, `form`, `placeholder`
+
+**Test/Debug Markers:**
+
+- `data-testid`, `data-test`, `data-qa`
+- `data-cy` (Cypress)
+- `data-test-*` patterns
+
+**Stable IDs:**
+
+- User-defined IDs
+- Non-generated IDs
+
+## State Attributes (Filtered Out)
+
+❌ **Excluded** - Describe current state:
+
+**ARIA State:**
+
+- `aria-selected`, `aria-checked`, `aria-pressed`
+- `aria-expanded`, `aria-hidden`, `aria-current`
+- `aria-disabled`, `aria-busy`, `aria-invalid`
+
+**Data State:**
+
+- `data-state`, `data-active`, `data-open`
+- `data-selected`, `data-expanded`, `data-orientation`
+
+**HTML State:**
+
+- `disabled`, `readonly`, `checked`
+- `hidden`, `open`
+
+**Library-Generated:**
+
+- `data-radix-*`, `data-headlessui-*`, `data-reach-*`
+- `data-mui-*`, `data-chakra-*`
+
+## Example
+
+```html
+<!-- Same element in different states -->
+<button aria-label="Menu" aria-expanded="false" data-state="closed">Menu</button>
+
+<button aria-label="Menu" aria-expanded="true" data-state="open">Menu</button>
+```
+
+Both generate **same EID**:
+
+```json
+{
+  "target": {
+    "tag": "button",
+    "semantics": {
+      "attributes": { "aria-label": "Menu" },
+      "text": "Menu"
+    }
+  }
+}
+```
+
+## Analytics & Tracking Attributes (v1.4.0)
+
+### Overview
+
+❌ **Excluded** - Third-party analytics, tracking, and experimentation attributes
+
+These attributes are used by analytics platforms, session recording tools, A/B testing frameworks, and advertising pixels. They change based on marketing campaigns and tracking configuration, not element identity.
+
+### Filtered Patterns
+
+#### Google Analytics / GTM
+
+- `data-ga*`, `data-gtm*`, `data-google-*`
+- `data-layer*`, `data-event*`
+- `data-category`, `data-action`, `data-label`, `data-value`
+
+**Rationale**: GA attributes change per campaign, environment, and tracking requirements.
+
+#### Yandex Metrica
+
+- `data-yandex*`, `data-ym*`, `data-metrika*`
+
+**Rationale**: Russian analytics platform with dynamic tracking attributes.
+
+#### Session Recording
+
+- **Hotjar**: `data-hj*`, `data-hotjar*`
+- **FullStory**: `data-fs*`
+- **Mouseflow**: `data-mouseflow*`, `data-mf*`
+- **Smartlook**: `data-smartlook*`, `data-sl*`
+
+**Rationale**: Session replay tools inject tracking attributes for heatmaps and recordings.
+
+#### A/B Testing
+
+- **Optimizely**: `data-optimizely*`
+- **VWO**: `data-vwo*`
+- **Google Optimize**: `data-optimize*`
+
+**Rationale**: Experiment variations change frequently and are environment-specific.
+
+#### Social / Ad Pixels
+
+- **Facebook**: `data-fb*`, `data-facebook*`
+- **TikTok**: `data-tt*`
+- **LinkedIn**: `data-li*`
+
+**Rationale**: Advertising pixels track conversions, not element identity.
+
+#### Generic Tracking
+
+- `data-track*`, `data-tracking*`
+- `data-click*`, `data-impression*`
+- `data-conversion*`, `data-segment*`
+- `data-analytics*`
+
+**Rationale**: Custom tracking implementations vary by marketing needs.
+
+### Important Edge Cases
+
+#### Analytics `-id` Suffix Conflict
+
+**Problem**: Some analytics attributes end with `-id` (e.g., `data-tracking-id`, `data-analytics-id`), which might suggest they're stable identifiers.
+
+**Decision**: Analytics prefix matching takes **precedence** over the `-id` suffix rule. These attributes are **blocked**.
+
+**Examples**:
+
+- ❌ `data-tracking-id="track-123"` → BLOCKED (analytics)
+- ❌ `data-analytics-id="ga-456"` → BLOCKED (analytics)
+- ❌ `data-event-id="evt-789"` → BLOCKED (analytics)
+- ✅ `data-product-id="12345"` → ALLOWED (semantic ID)
+- ✅ `data-user-id="abc"` → ALLOWED (semantic ID)
+
+#### Test Attributes Protected
+
+Test and QA attributes are **always allowed** regardless of name similarity:
+
+- ✅ `data-testid`, `data-test`, `data-qa`, `data-cy` → ALLOWED (whitelisted)
+
+#### Semantic Conflicts
+
+Some analytics attributes have semantic-sounding names:
+
+- ❌ `data-category` → BLOCKED (GA category, use `data-product-category` instead)
+- ❌ `data-label` → BLOCKED (GA label, use `aria-label` or semantic HTML)
+- ❌ `data-value` → BLOCKED (GA value, use `data-amount`, `data-price`, etc.)
+
+### Migration Guide
+
+If your application uses `data-tracking-id` or `data-analytics-id` for semantic identification:
+
+**Before:**
+
+```html
+<button data-tracking-id="user-submit-btn">Submit</button>
+```
+
+**After (use semantic naming):**
+
+```html
+<button data-component-id="user-submit-btn">Submit</button>
+<!-- or -->
+<button data-entity-id="user-submit-btn">Submit</button>
+<!-- or -->
+<button data-testid="user-submit-btn">Submit</button>
+```
+
+### Benefits
+
+- ✅ Stable EIDs across marketing campaigns
+- ✅ Consistent identification across dev/staging/prod
+- ✅ No false mismatches due to analytics changes
+- ✅ Smaller EID payloads (fewer attributes)
+- ✅ Better privacy (no tracking data in EIDs)
+
+## Benefits
+
+- ✅ Stable across state changes (open/closed, active/inactive)
+- ✅ Resilient to framework state management
+- ✅ Consistent identification for analytics
+- ✅ Better matching across sessions
+- ✅ No instability from third-party tracking tools
+
+
+# File: docs/specification/constraints.md
+
+# Constraints
+
+Disambiguation rules for element resolution.
+
+## Constraint Types
+
+### 1. Uniqueness Constraint
+
+Ensures only one element matches.
+
+```typescript
+interface UniquenessConstraint {
+  type: 'uniqueness';
+  required: boolean; // Fail if multiple matches
+}
+```
+
+### 2. Text Proximity Constraint
+
+Element must be near specific text.
+
+```typescript
+interface TextProximityConstraint {
+  type: 'textProximity';
+  text: string; // Text to find
+  maxDistance: number; // Max pixels away
+}
+```
+
+### 3. Position Constraint
+
+Element at specific position in list.
+
+```typescript
+interface PositionConstraint {
+  type: 'position';
+  index: number; // 0-based index
+}
+```
+
+### 4. Visibility Constraint
+
+Element must be visible.
+
+```typescript
+interface VisibilityConstraint {
+  type: 'visibility';
+  required: boolean;
+}
+```
+
+## Application
+
+Constraints are applied in Phase 4 of resolution, after semantic filtering.
+
+## Example
+
+```json
+{
+  "constraints": [
+    { "type": "uniqueness", "required": true },
+    { "type": "visibility", "required": true }
+  ]
+}
+```
+
+
+# File: docs/specification/eid-format.md
+
+# EID Format Specification
+
+Element Identity Descriptor (EID) JSON structure specification v1.0 (with v1.1.0 extensions).
+
+## Schema
+
+```typescript
+interface ElementIdentity {
+  version: string; // Format version (e1.0")
+  anchor: AnchorNode; // Semantic root element
+  path: PathNode[]; // Semantic traversal
+  target: TargetNode; // Element being identified
+  constraints?: Constraint[]; // Disambiguation rules
+  fallbackRules?: FallbackRules; // Fallback resolution rules
+  meta: EIDMeta; // Metadata
+}
+```
+
+## Anchor Node
+
+```typescript
+interface AnchorNode {
+  tag: string; // Tag name (e.g., "form", "main")
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position among siblings (v1.1.0)
+}
+```
+
+**Example:**
+
+```json
+{
+  "tag": "form",
+  "semantics": {
+    "attributes": { "aria-label": "Login" }
+  },
+  "nthChild": 1
+}
+```
+
+## Path Node
+
+```typescript
+interface PathNode {
+  tag: string; // Tag name
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position (v1.1.0)
+}
+```
+
+**Example:**
+
+```json
+{
+  "tag": "div",
+  "semantics": {
+    "classes": ["fields"]
+  }
+}
+```
+
+## Target Node
+
+```typescript
+interface TargetNode {
+  tag: string; // Tag name
+  semantics: ElementSemantics; // Semantic features
+  nthChild?: number; // Position (v1.1.0)
+}
+```
+
+**Example:**
+
+```json
+{
+  "tag": "button",
+  "semantics": {
+    "attributes": { "type": "submit" },
+    "text": "Login"
+  },
+  "nthChild": 2
+}
+```
+
+## Element Semantics
+
+```typescript
+interface ElementSemantics {
+  id?: string; // Stable ID (if present)
+  classes?: string[]; // Semantic classes (filtered)
+  attributes?: Record<string, string>; // Identity attributes
+  role?: string; // ARIA role
+  text?: string; // Text content
+  svgFingerprint?: SvgFingerprint; // SVG-specific
+}
+```
+
+## Metadata
+
+```typescript
+interface EIDMeta {
+  confidence: number; // Quality score (0-1)
+  generatedAt: string; // ISO timestamp
+  degraded: boolean; // True if conditions not ideal
+  degradationReason?: string; // Why degraded
+}
+```
+
+## Complete Example
+
+```json
+{
+  "version": "1.0",
+  "anchor": {
+    "tag": "form",
+    "semantics": {
+      "attributes": { "aria-label": "Login Form" }
+    },
+    "nthChild": 1
+  },
+  "path": [
+    {
+      "tag": "div",
+      "semantics": {
+        "classes": ["form-fields"]
+      }
+    }
+  ],
+  "target": {
+    "tag": "input",
+    "semantics": {
+      "attributes": {
+        "type": "email",
+        "name": "email"
+      }
+    },
+    "nthChild": 1
+  },
+  "meta": {
+    "confidence": 0.92,
+    "generatedAt": "2026-01-22T10:30:00Z",
+    "degraded": false
+  }
+}
+```
+
+## nth-child Property (v1.1.0)
+
+The `nthChild` property indicates an element's position among its siblings:
+
+- **1-based indexing** (matches CSS `:nth-child()`)
+- Optional - only included when needed for disambiguation
+- Helps identify elements in lists, tables, or with identical siblings
+
+**When included:**
+
+- Anchor: For forms, sections with multiple instances
+- Path: For disambiguating intermediate nodes
+- Target: For identical siblings (same tag + semantics)
+
+**Example - Table Cell:**
+
+```json
+{
+  "anchor": { "tag": "table", "nthChild": 1 },
+  "path": [{ "tag": "tbody" }, { "tag": "tr", "nthChild": 3 }],
+  "target": { "tag": "td", "nthChild": 2 }
+}
+```
+
+
+# File: docs/specification/path-construction.md
+
+# Path Construction
+
+Rules for building the semantic path from anchor to target.
+
+## Path Building Algorithm
+
+```
+1. Start from target element
+2. Walk up to anchor element
+3. For each intermediate node:
+   - Extract semantics
+   - Skip if non-semantic
+   - Add to path array
+4. Reverse path (anchor → target order)
+```
+
+## Node Filtering
+
+**Include** nodes with:
+
+- Semantic tags (section, article, aside, etc.)
+- Classes (semantic, not utility)
+- IDs (stable only)
+- ARIA roles
+- Data attributes (stable)
+
+**Skip** nodes that are:
+
+- Generic `<div>` or `<span>` without attributes
+- Utility-class-only elements
+- Auto-generated wrappers
+
+## Example
+
+```html
+<form>
+  <div>
+    <!-- Skip: no semantic value -->
+    <div class="fields">
+      <!-- Include: has semantic class -->
+      <div>
+        <!-- Skip: no semantic value -->
+        <input type="email" />
+      </div>
+    </div>
+  </div>
+</form>
+```
+
+**Path**: `[{ tag: "div", semantics: { classes: ["fields"] } }]`
+
+## Max Path Depth
+
+Default: 10 nodes
+
+Paths longer than max are truncated from the middle, preserving:
+
+- Nodes closest to anchor (context)
+- Nodes closest to target (precision)
+
+
+# File: docs/specification/README.md
+
+# SEQL Specification
+
+Formal specifications for the Element Identity Descriptor (EID) and SEQL selector format.
+
+## Version
+
+**Current Version**: 1.0 (with v1.1.0 nth-child extensions)  
+**Status**: Stable  
+**Last Updated**: 2026-01-22
+
+## Overview
+
+The SEQL specification defines:
+
+- EID JSON format structure
+- SEQL string selector syntax
+- Anchor finding algorithm
+- Path construction rules
+- Semantic extraction guidelines
+- Resolution algorithm (5 phases)
+
+## Quick Navigation
+
+- **[EID Format](./eid-format.md)** - JSON structure specification
+- **[SEQL Syntax](./seql-syntax.md)** - String selector format
+- **[Anchor Strategy](./anchor-strategy.md)** - How anchors are found
+- **[Path Construction](./path-construction.md)** - Building semantic paths
+- **[Semantic Extraction](./semantic-extraction.md)** - What semantics are captured
+- **[Attribute Filtering](./attribute-filtering.md)** - State vs identity attributes (v1.0.3)
+- **[SVG Fingerprinting](./svg-fingerprinting.md)** - SVG element stability
+- **[Constraints](./constraints.md)** - Disambiguation rules
+- **[Resolution Phases](./resolution-phases.md)** - 5-phase resolution algorithm
+
+## Design Principles
+
+### 1. Semantic-First
+
+Prioritize semantic HTML and ARIA attributes over structural selectors.
+
+### 2. Deterministic
+
+Same DOM state always produces same EID.
+
+### 3. State-Independent (v1.0.3)
+
+Element identity is separate from element state.
+
+### 4. Stability Over Precision
+
+Trade some precision for long-term stability across DOM changes.
+
+### 5. Framework-Agnostic
+
+Works with vanilla DOM, React, Vue, Angular, etc.
+
+## Format Comparison
+
+| Aspect          | EID (JSON)          | SEQL (String)     |
+| --------------- | ------------------- | ----------------- |
+| **Size**        | ~500-2000 bytes     | ~100-300 bytes    |
+| **Readability** | Machine-friendly    | Human-friendly    |
+| **Metadata**    | Full details        | Compact           |
+| **Use Case**    | Internal processing | Transport/storage |
+| **Parsing**     | Native JSON         | Custom parser     |
+
+## Version History
+
+### v1.1.0 (2026-01-22)
+
+- Added `nthChild` property to anchor, path, and target nodes
+- Enhanced CSS selector generation with nth-child support
+
+### v1.0.3 (2026-01-21)
+
+- Introduced attribute stability filtering
+- Separated state attributes from identity attributes
+
+### v1.0.0 (2025-01-15)
+
+- Initial stable release
+- Core EID/SEQL specification
+
+## Conformance
+
+Implementations MUST:
+
+- Follow EID JSON schema exactly
+- Support all specified semantic tags
+- Implement 5-phase resolution algorithm
+- Handle attribute filtering correctly (v1.0.3+)
+- Include nth-child when disambiguating (v1.1.0+)
+
+Implementations SHOULD:
+
+- Cache generation results for performance
+- Support batch processing
+- Provide TypeScript types
+
+## Next Steps
+
+- Start with [EID Format](./eid-format.md) for JSON structure
+- See [SEQL Syntax](./seql-syntax.md) for string format
+- Review [Anchor Strategy](./anchor-strategy.md) for algorithm details
+
+
+# File: docs/specification/resolution-phases.md
+
+# Resolution Algorithm: 5 Phases
+
+The resolution algorithm converts an EID back to DOM elements in 5 phases.
+
+## Phase 1: CSS Narrowing
+
+Generate CSS selector from EID and query DOM.
+
+**Goal**: Narrow candidate set using browser's native query engine.
+
+**Process**:
+
+1. Build CSS selector from anchor + path + target
+2. Execute `querySelectorAll()` on root
+3. Limit candidates (default: 100 max)
+
+**Example**:
+
+```typescript
+// EID: form :: button[type="submit"]
+const selector = 'form button[type="submit"]';
+const candidates = document.querySelectorAll(selector);
+```
+
+## Phase 2: Semantic Filtering
+
+Score candidates by semantic similarity.
+
+**Goal**: Filter candidates that don't match target semantics.
+
+**Scoring**:
+
+- Text match: 30%
+- Attributes match: 30%
+- Class match: 20%
+- Role match: 10%
+- ID match: 10%
+
+**Process**:
+
+1. For each candidate, calculate semantic score
+2. Filter out candidates below threshold (< 0.5)
+3. Sort by score (highest first)
+
+## Phase 3: Uniqueness Check
+
+Check if exactly one candidate remains.
+
+**Goal**: Early exit for common case (single match).
+
+**Process**:
+
+```typescript
+if (filtered.length === 1) {
+  return {
+    status: 'success',
+    elements: filtered,
+    confidence: eid.meta.confidence,
+  };
+}
+```
+
+## Phase 4: Constraints Evaluation
+
+Apply disambiguation constraints.
+
+**Goal**: Further filter ambiguous results.
+
+**Constraints**:
+
+- **Uniqueness**: Must be only match
+- **Visibility**: Must be visible
+- **Text Proximity**: Must be near specific text
+- **Position**: Must be at specific position
+
+**Process**:
+
+```typescript
+for (const constraint of eid.constraints) {
+  candidates = evaluateConstraint(candidates, constraint);
+}
+```
+
+## Phase 5: Handle Ambiguity
+
+Handle multiple matches or no matches.
+
+**Goal**: Return best result with appropriate status.
+
+**Cases**:
+
+1. **No matches + fallback enabled**: Try fallback rules
+2. **No matches + no fallback**: Return error
+3. **Multiple matches**: Return all (status: 'ambiguous')
+4. **Fallback match**: Return with degraded confidence
+
+**Result Statuses**:
+
+- `success`: Single perfect match
+- `ambiguous`: Multiple matches found
+- `degraded-fallback`: Partial match via fallback
+- `error`: No matches found
+
+## Complete Flow
+
+```
+Element Identity (EID)
+  ↓
+Phase 1: CSS Narrowing (querySelectorAll)
+  ↓
+Phase 2: Semantic Filtering (score & filter)
+  ↓
+Phase 3: Uniqueness Check (early exit if 1 match)
+  ↓
+Phase 4: Constraints Evaluation (apply rules)
+  ↓
+Phase 5: Handle Ambiguity (return result)
+  ↓
+ResolveResult { status, elements, confidence }
+```
+
+## Performance
+
+- **Phase 1**: Fastest (native browser query)
+- **Phase 2**: Medium (JS scoring)
+- **Phase 3**: Instant (check length)
+- **Phase 4**: Fast (simple filters)
+- **Phase 5**: Varies (depends on fallback)
+
+**Typical timing** (1000 elements in DOM):
+
+- Phase 1: ~5ms
+- Phase 2: ~10ms
+- Phases 3-5: ~2ms
+- **Total**: ~17ms
+
+
+# File: docs/specification/semantic-extraction.md
+
+# Semantic Extraction
+
+What semantic features are captured from elements.
+
+## Extracted Features
+
+### 1. Tag Name
+
+Always captured: `div`, `button`, `input`, etc.
+
+### 2. Stable ID
+
+Captured if ID is stable (not auto-generated):
+
+- ✅ `user-profile`
+- ✅ `login-form`
+- ❌ `radix-1`
+- ❌ `headlessui-menu-button-2`
+
+### 3. Semantic Classes
+
+Filtered to exclude utility classes:
+
+- ✅ `login-form`, `submit-button`
+- ❌ `flex`, `p-4`, `bg-blue-500`
+
+### 4. Identity Attributes (v1.0.3)
+
+Stable attributes only:
+
+- ✅ `type`, `name`, `aria-label`, `role`
+- ❌ `aria-selected`, `data-state`, `disabled`
+
+### 5. ARIA Role
+
+Always captured if present.
+
+### 6. Text Content
+
+For specific elements:
+
+- Buttons: button text
+- Links: link text
+- Headings: heading text
+- Labels: label text
+
+Normalized (whitespace collapsed, trimmed).
+
+### 7. SVG Fingerprint
+
+For SVG elements (if enabled):
+
+- Shape type
+- Path data hash
+- ViewBox geometry
+- Animation status
+
+
+# File: docs/specification/seql-syntax.md
+
+# SEQL Syntax Specification
+
+SEQL selector string format specification.
+
+## Format
+
+```
+v1: <anchor> :: <path> > <target>
+```
+
+- `v1:` - Version prefix
+- `<anchor>` - Anchor node with semantics
+- `::` - Anchor-to-path separator
+- `<path>` - Path nodes (`>` separated)
+- `<target>` - Target node with semantics
+
+## Element Syntax
+
+Elements are represented as:
+
+```
+tag[attr1="value1",attr2="value2",text="content"]
+```
+
+**Examples:**
+
+- `form` - Just tag
+- `button[type="submit"]` - Tag + attribute
+- `a[href="/about",text="About"]` - Tag + multiple attributes
+- `div[role="dialog",aria-label="Confirm"]` - ARIA attributes
+
+## Complete Examples
+
+### Simple Button
+
+```
+v1: button[type="submit",text="Save"]
+```
+
+### Form Input
+
+```
+v1: form :: input[type="email",name="email"]
+```
+
+### Navigation Link
+
+```
+v1: nav[role="navigation"] :: a[href="/products",text="Products"]
+```
+
+### Complex Path
+
+```
+v1: form :: div.fields > div.row > input[type="text",name="username"]
+```
+
+### With nth-child (v1.1.0)
+
+```
+v1: table :: tbody > tr[nthChild=3] > td[nthChild=2]
+```
+
+## Syntax Rules
+
+1. **Version prefix**: Always `v1:` for current version
+2. **Anchor separator**: Always `::` (space-colon-colon-space)
+3. **Path separator**: Always `>` (space-greater-than-space)
+4. **Attribute separator**: Always `,` (comma)
+5. **String values**: Always quoted with `"`
+6. **Classes**: Use `.` prefix (e.g., `div.container`)
+7. **nth-child**: Integer value (e.g., `nthChild=2`)
+
+## Escaping
+
+Special characters in values must be escaped:
+
+- Quote: `\"` → `\"`
+- Backslash: `\\` → `\\`
+- Comma in value: Rare, use escaping if needed
+
+## Compact vs Verbose
+
+**Compact** (default):
+
+```
+v1: form :: button[type="submit"]
+```
+
+**Verbose** (all details):
+
+```
+v1: form[aria-label="Login",id="login-form"] :: div.fields > button[type="submit",text="Submit",aria-label="Submit form"]
+```
+
+
+# File: docs/specification/svg-fingerprinting.md
+
+# SVG Fingerprinting
+
+Stable identification of SVG elements.
+
+## SVG Fingerprint Structure
+
+```typescript
+interface SvgFingerprint {
+  shapeType: string; // "path" | "circle" | "rect" | "polygon"
+  pathHash?: string; // Hash of path data
+  geometry?: {
+    viewBox?: string;
+    width?: number;
+    height?: number;
+  };
+  animated: boolean;
+}
+```
+
+## Fingerprinting Algorithm
+
+1. **Identify shape type**: path, circle, rect, etc.
+2. **Hash path data**: For `<path>` elements, hash the `d` attribute
+3. **Capture geometry**: ViewBox, dimensions
+4. **Check animation**: Presence of `<animate>` or CSS animations
+
+## Example
+
+```html
+<svg viewBox="0 0 24 24">
+  <path d="M19 6.41L17.59 5 12 10.59..." />
+</svg>
+```
+
+Fingerprint:
+
+```json
+{
+  "shapeType": "path",
+  "pathHash": "a3f9c2...",
+  "geometry": { "viewBox": "0 0 24 24" },
+  "animated": false
+}
+```
+
+## Use Cases
+
+- Icon buttons with SVG icons
+- Charts and graphs
+- Logo elements
+- Vector graphics
+
+
+# File: docs/troubleshooting/generation-issues.md
+
+# Generation Issues
+
+Troubleshooting EID generation problems.
+
+## Returns Null
+
+**Problem**: `generateEID()` returns `null`
+
+**Since v1.3.0**: `generateEID` only returns `null` for **invalid elements**. Valid elements always get an EID (low confidence is indicated via `meta.confidence`).
+
+**Causes & Solutions**:
+
+1. **Element not connected to DOM**
+
+   ```typescript
+   const orphan = document.createElement('div');
+   generateEID(orphan); // Returns null - not in DOM
+
+   // Solution: Ensure element is in document
+   document.body.appendChild(orphan);
+   generateEID(orphan); // ✓ Now returns EID
+   ```
+
+2. **Element has no ownerDocument**
+
+   ```typescript
+   const element = document.createElement('div');
+   Object.defineProperty(element, 'ownerDocument', { value: null });
+   generateEID(element); // Returns null - invalid state
+   ```
+
+3. **Confidence below threshold** (explicit filter)
+
+   ```typescript
+   // v1.3.0+: Must explicitly set threshold to filter low-confidence
+   generateEID(element, { confidenceThreshold: 0.5 }); // May return null
+
+   // Default behavior (threshold: 0.0) - always returns EID
+   const eid = generateEID(element);
+   if (eid && eid.meta.confidence < 0.5) {
+     console.warn('Low confidence:', eid.meta.confidence);
+   }
+   ```
+
+### Migration from v1.2.0
+
+**Old behavior** (v1.2.0 and earlier):
+
+```typescript
+const eid = generateEID(element);
+if (!eid) {
+  console.log('Element has low semantic quality');
+}
+```
+
+**New behavior** (v1.3.0+):
+
+```typescript
+const eid = generateEID(element);
+if (eid && eid.meta.confidence < 0.1) {
+  console.log('Element has low semantic quality');
+}
+
+// OR restore old behavior
+const eid = generateEID(element, { confidenceThreshold: 0.1 });
+if (!eid) {
+  console.log('Element has low semantic quality');
+}
+```
+
+## Low Confidence
+
+**Problem**: `eid.meta.confidence < 0.5`
+
+**Causes**:
+
+- Weak anchor (Tier C or deep nesting)
+- Path degradation (many non-semantic nodes)
+- Sparse semantics (no classes, attributes, text)
+
+**Solutions**:
+
+- Add semantic HTML (`<form>`, `<main>`, etc.)
+- Add ARIA attributes
+- Use data-testid for important elements
+
+## Degraded EID
+
+**Problem**: `eid.meta.degraded === true`
+
+**Check reason**:
+
+```typescript
+const eid = generateEID(element);
+if (eid?.meta.degraded) {
+  console.log('Reason:', eid.meta.degradationReason);
+}
+```
+
+**Common reasons**:
+
+- `weak-anchor`: No semantic anchor found
+- `deep-path`: Path > 10 nodes
+- `sparse-semantics`: Element has minimal features
+
+
+# File: docs/troubleshooting/performance.md
+
+# Performance Optimization
+
+Tips for improving SEQL performance.
+
+## Slow Generation
+
+**Problem**: `generateEID()` takes too long
+
+**Solutions**:
+
+1. **Use Caching**
+
+   ```typescript
+   // Automatic with global cache
+   generateEID(element); // Cached automatically
+   ```
+
+2. **Reduce Path Depth**
+
+   ```typescript
+   generateEID(element, { maxPathDepth: 5 });
+   ```
+
+3. **Disable SVG Fingerprinting**
+
+   ```typescript
+   generateEID(element, { enableSvgFingerprint: false });
+   ```
+
+4. **Batch Processing**
+
+   ```typescript
+   // Bad: Individual calls
+   elements.forEach((el) => generateEID(el));
+
+   // Good: Batch
+   generateEIDBatch(elements);
+   ```
+
+## Slow Resolution
+
+**Problem**: `resolve()` takes too long
+
+**Solutions**:
+
+1. **Scope to Container**
+
+   ```typescript
+   // Bad: Search entire document
+   resolve(eid, document);
+
+   // Good: Search within container
+   const container = document.querySelector('.modal');
+   resolve(eid, container);
+   ```
+
+2. **Limit Candidates**
+
+   ```typescript
+   resolve(eid, document, { maxCandidates: 50 });
+   ```
+
+3. **Use Simple Selectors**
+   - Shorter paths resolve faster
+   - Fewer constraints = faster evaluation
+
+## Memory Issues
+
+**Problem**: High memory usage
+
+**Solutions**:
+
+1. **Limit Cache Size**
+
+   ```typescript
+   const cache = createEIDCache({ maxSize: 500 });
+   ```
+
+2. **Clear Cache Periodically**
+
+   ```typescript
+   // On navigation
+   window.addEventListener('beforeunload', () => {
+     getGlobalCache().clear();
+   });
+   ```
+
+3. **Avoid Storing DOM References**
+
+   ```typescript
+   // Bad: Storing elements
+   const elements = [element1, element2];
+
+   // Good: Storing selectors
+   const selectors = elements.map((el) => generateSEQL(el));
+   ```
+
+## Monitoring
+
+```typescript
+// Track generation time
+console.time('generation');
+const eid = generateEID(element);
+console.timeEnd('generation');
+
+// Track resolution time
+console.time('resolution');
+const result = resolve(eid, document);
+console.timeEnd('resolution');
+
+// Monitor cache
+const stats = getGlobalCache().getStats();
+console.log('Hit rate:', stats.hitRate);
+```
+
+
+# File: docs/troubleshooting/README.md
+
+# Troubleshooting
+
+Common issues and solutions.
+
+- **[Generation Issues](./generation-issues.md)** - Problems generating EIDs
+- **[Resolution Failures](./resolution-failures.md)** - Can't find elements
+- **[Performance](./performance.md)** - Optimization tips
+
+## Quick Diagnostics
+
+### Generation Returns Null
+
+1. Check if element is connected to DOM
+2. Verify element has semantic features
+3. Check confidence threshold
+
+### Resolution Finds Nothing
+
+1. Verify selector is valid
+2. Check if element still exists
+3. Try with different root context
+
+### Low Performance
+
+1. Enable caching
+2. Use batch processing for multiple elements
+3. Reduce path depth
+
+
+# File: docs/troubleshooting/resolution-failures.md
+
+# Resolution Failures
+
+Troubleshooting element resolution problems.
+
+## No Elements Found
+
+**Problem**: `result.elements.length === 0`
+
+**Causes & Solutions**:
+
+1. **Element removed from DOM**
+
+   ```typescript
+   // Check if element still exists
+   const selector = 'v1: form :: button[type="submit"]';
+   const elements = resolveSEQL(selector, document);
+
+   if (elements.length === 0) {
+     console.warn('Element may have been removed');
+   }
+   ```
+
+2. **Wrong root context**
+
+   ```typescript
+   // Bad: Wrong container
+   resolveSEQL(selector, wrongContainer);
+
+   // Good: Correct container
+   const modal = document.querySelector('.modal');
+   resolveSEQL(selector, modal);
+   ```
+
+3. **DOM structure changed**
+
+   ```typescript
+   // Regenerate selector for current DOM
+   const newSelector = generateSEQL(element);
+   ```
+
+## Multiple Matches (Ambiguous)
+
+**Problem**: `result.status === 'ambiguous'`
+
+**Solutions**:
+
+1. **Use first match**
+
+   ```typescript
+   if (result.status === 'ambiguous') {
+     const element = result.elements[0]; // Use first
+   }
+   ```
+
+2. **Require uniqueness**
+
+   ```typescript
+   const result = resolve(eid, document, {
+     requireUniqueness: true,
+   });
+   // Fails if multiple matches
+   ```
+
+3. **Add constraints to EID**
+   - Regenerate EID with more specific attributes
+   - Element may need unique identifier
+
+## Invalid Selector
+
+**Problem**: Parse error or invalid CSS
+
+**Check**:
+
+```typescript
+try {
+  const eid = parseSEQL(selector);
+  const result = resolve(eid, document);
+} catch (error) {
+  console.error('Invalid selector:', error.message);
+}
+```
+
+**Solutions**:
+
+- Verify SEQL selector format
+- Check for proper escaping
+- Regenerate selector from element

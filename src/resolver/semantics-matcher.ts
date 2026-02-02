@@ -65,6 +65,54 @@ export class SemanticsMatcher {
   }
 
   /**
+   * Lenient text matching - uses partial matching instead of exact
+   * Used as fallback when exact matching fails
+   */
+  private matchTextLenient(element: Element, text: TextContent): boolean {
+    const directTextNodes = Array.from(element.childNodes).filter(
+      (node) => node.nodeType === Node.TEXT_NODE
+    );
+
+    const directText = directTextNodes.map((node) => node.textContent?.trim() ?? '').join(' ');
+    const textToMatch = directText || (element.textContent?.trim() ?? '');
+
+    if (!textToMatch) return false;
+
+    const normalized = normalizeText(textToMatch);
+
+    // Always use partial matching in lenient mode
+    return normalized.includes(text.normalized) || text.normalized.includes(normalized);
+  }
+
+  /**
+   * Checks if a single element matches the semantics with lenient text matching
+   */
+  private matchElementLenient(element: Element, semantics: ElementSemantics): boolean {
+    // Match text with lenient mode
+    if (semantics.text && !this.matchTextLenient(element, semantics.text)) {
+      return false;
+    }
+
+    // Keep strict matching for other semantics
+    if (semantics.attributes && !this.matchAttributes(element, semantics.attributes)) {
+      return false;
+    }
+
+    if (semantics.svg && !this.matchSvgFingerprint(element as SVGElement, semantics.svg)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Filters elements with lenient matching (exported for use in resolver)
+   */
+  matchLenient(elements: Element[], semantics: ElementSemantics): Element[] {
+    return elements.filter((el) => this.matchElementLenient(el, semantics));
+  }
+
+  /**
    * Matches attributes
    */
   matchAttributes(element: Element, attrs: Record<string, string>): boolean {

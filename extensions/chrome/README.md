@@ -6,6 +6,10 @@ A Chrome DevTools Extension that generates stable SEQL selectors for DOM element
 
 - **Generate Selectors** - Batch generate SEQL selectors for all interactive elements on a page
 - **Element Picker** - Click to select any element and generate its SEQL selector
+- **Iframe Support** - Full support for working with iframe contexts (same-origin only)
+  - Automatic iframe detection with dynamic updates
+  - Seamless context switching via dropdown selector
+  - Generate and resolve selectors within iframe documents
 - **Tree View** - Hierarchical view of selectors grouped by tag or DOM structure
 - **Live Search** - Real-time SEQL selector parsing and resolution with visual feedback
 - **Tag Filter** - Filter selectors by element type (button, input, a, etc.)
@@ -77,6 +81,33 @@ Toggle between modes using the grouping dropdown.
 - Click a selector to view its details
 - Use the tag filter dropdown to filter by element type
 
+### Iframe Support
+
+The extension fully supports working with iframe contexts (same-origin only):
+
+#### Automatic Iframe Detection
+
+- Iframes are automatically detected when the page loads
+- New iframes added dynamically are detected via periodic background scanning (every 5 seconds)
+- The iframe selector dropdown shows all accessible iframes with descriptive labels
+
+#### Context Switching
+
+1. Use the **"Document Context"** dropdown in the toolbar
+2. Select "Main Document" to work with the main page
+3. Select any iframe from the list to switch to that iframe's context
+4. All operations (generate, pick, search, highlight, scroll, inspect) respect the selected context
+
+#### Iframe Labels
+
+Iframes are labeled intelligently for easy identification:
+
+- `Iframe 0 #payment-form` - Uses iframe's id attribute
+- `Iframe 1 [checkout]` - Uses iframe's name attribute
+- `Iframe 2 (secure.example.com)` - Uses iframe's src domain/path
+
+**Note**: Cross-origin iframes are automatically filtered out and will not appear in the dropdown due to browser security restrictions.
+
 ### Live Search
 
 1. Type a SEQL selector in the search input
@@ -125,7 +156,7 @@ extensions/chrome/
 ├── devtools.js             # Panel registration
 ├── panel/
 │   ├── panel.html          # Main UI
-│   ├── panel.js            # Panel logic
+│   ├── panel.js            # Panel logic (1,165 lines)
 │   └── panel.css           # Styling
 ├── content/
 │   └── content.js          # Library injection
@@ -138,6 +169,21 @@ extensions/chrome/
     ├── icon48.png
     └── icon128.png
 ```
+
+### Architecture Highlights
+
+**`panel.js` Key Components:**
+
+- **State Management** - Centralized state for selectors, iframe context, filters, and UI
+- **Iframe Support** - `buildContextPrefix()` helper for cross-context code generation
+  - Single source of truth for iframe switching logic
+  - Supports both error object and boolean return patterns
+  - Used by all 6 iframe-aware operations (generate, pick, scroll, highlight, inspect, search)
+- **Dynamic Detection** - Periodic iframe scanning (5s interval) + on-demand detection
+  - Automatically detects iframes added after page load
+  - Debounced re-scanning to prevent excessive operations
+- **Event Handling** - Comprehensive event binding for user interactions
+- **Code Execution** - `evalInPage()` wrapper for Chrome DevTools eval API
 
 ### Making Changes
 
@@ -162,13 +208,27 @@ extensions/chrome/
 
 ### Selectors Not Generating
 
-- Make sure the seql-js library is injected (check for `window.seqljs` in page console)
+- Make sure the seql-js library is injected (check for `window.SeqlJS` in page console)
 - Try refreshing the page and reopening DevTools
+- Check if you're in the correct iframe context
 
 ### Panel Not Appearing
 
 - Close and reopen DevTools
 - Try disabling and re-enabling the extension
+
+### Iframe Not Showing in Dropdown
+
+- Verify the iframe is same-origin (cross-origin iframes are automatically filtered)
+- Wait up to 5 seconds for dynamic iframe detection
+- Check browser console for "Failed to detect iframes" errors
+- For manually triggered iframes, click "Generate for All Elements" to force re-scan
+
+### Elements Not Found in Iframe
+
+- Ensure you've selected the correct iframe from the "Document Context" dropdown
+- Verify the iframe has finished loading its content
+- Cross-origin iframes cannot be accessed due to browser security restrictions
 
 ## License
 

@@ -3,6 +3,7 @@ import { generateEID } from '../generator';
 import type { EIDCache } from './eid-cache';
 import { getGlobalCache } from './eid-cache';
 import { isDynamicId } from './id-validator';
+import { getOwnerDocument } from './document-context';
 
 /**
  * Elements to skip during batch generation
@@ -149,8 +150,8 @@ function sortElementsByPriority(elements: Element[]): Element[] {
  */
 export function generateEIDBatch(options: BatchGeneratorOptions = {}): BatchResult {
   const startTime = performance.now();
-  const {
-    root = typeof document !== 'undefined' ? document.body : undefined,
+  let {
+    root,
     filter = '*',
     limit = Infinity,
     onProgress,
@@ -161,20 +162,25 @@ export function generateEIDBatch(options: BatchGeneratorOptions = {}): BatchResu
     signal,
   } = options;
 
-  if (!root) {
-    throw new Error('Root element or document is required');
-  }
-
   const cacheInstance = cache ?? getGlobalCache();
   const mergedOptions = { ...generatorOptions, cache: cacheInstance };
 
   // Get all elements
   let allElements: Element[];
   try {
-    if (root instanceof Document) {
-      allElements = Array.from(root.querySelectorAll(filter));
+    if (root) {
+      if (root instanceof Document) {
+        allElements = Array.from(root.querySelectorAll(filter));
+      } else {
+        allElements = Array.from(root.querySelectorAll(filter));
+      }
     } else {
-      allElements = Array.from(root.querySelectorAll(filter));
+      // No root provided - collect from document if available
+      if (typeof document !== 'undefined') {
+        allElements = Array.from(document.querySelectorAll(filter));
+      } else {
+        throw new Error('Root element or document is required when document is not available');
+      }
     }
   } catch {
     return {
@@ -191,6 +197,29 @@ export function generateEIDBatch(options: BatchGeneratorOptions = {}): BatchResu
       },
     };
   }
+
+  // Auto-detect root from first element if not provided
+  if (!root) {
+    if (allElements.length === 0) {
+      throw new Error('Root element or document is required when no elements are found');
+    }
+    // Auto-detect document from first element
+    const firstDoc = getOwnerDocument(allElements[0]);
+    root = firstDoc.body || firstDoc.documentElement;
+  }
+
+  // Validate all elements are from the same document
+  const rootDoc = root instanceof Document ? root : getOwnerDocument(root);
+  allElements.forEach((element, index) => {
+    const elementDoc = getOwnerDocument(element);
+    if (elementDoc !== rootDoc) {
+      throw new Error(
+        `Batch generation requires all elements from the same document. ` +
+          `Element at index ${index} is from a different document. ` +
+          `If working with iframes, ensure all elements are from the same iframe's contentDocument.`
+      );
+    }
+  });
 
   // Filter out skipped elements
   const filteredElements = allElements.filter((el) => !shouldSkipElement(el, skipNonSemantic));

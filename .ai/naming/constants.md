@@ -71,6 +71,40 @@ const HTTP_STATUS = {
 } as const;
 ```
 
+### React/Frontend Constants
+
+#### Routes
+
+```typescript
+const ROUTE_HOME = '/';
+const ROUTE_LOGIN = '/login';
+const ROUTE_PROFILE = '/profile';
+const ROUTE_SETTINGS = '/settings';
+```
+
+#### API Endpoints
+
+```typescript
+const API_USERS = '/api/users';
+const API_ORDERS = '/api/orders';
+const API_PRODUCTS = '/api/products';
+const API_AUTH_LOGIN = '/api/auth/login';
+```
+
+#### Local Component Constants
+
+For constants used within a single component/module, camelCase is acceptable:
+
+```typescript
+// Local to component - camelCase acceptable
+const defaultFormValues = { name: '', email: '' };
+const initialState = { count: 0, loading: false };
+
+// But prefer UPPER_SNAKE_CASE for true constants
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_UPLOAD_SIZE = 5242880;
+```
+
 ### Magic Numbers
 
 Replace magic numbers with named constants:

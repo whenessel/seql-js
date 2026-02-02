@@ -1,0 +1,14 @@
+
+# SEQL-JS Documentation for LLMs
+
+> @whenessel/seql-js: Semantic Element Query Language (SEQL) for stable DOM element identification.
+
+## Documentation Sets
+
+- [Complete documentation](./llms-full.txt): Full documentation compiled from `docs/` and the repository README
+- [LLM-friendly summary](./llms-friendly.txt): Condensed reference focused on APIs, data structures, and defaults
+
+## Notes
+
+- Content is sourced from this repository's documentation and codebase
+- Some docs may lag behind code; prefer `src/` for canonical defaults and behaviors

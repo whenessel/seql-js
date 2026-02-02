@@ -507,4 +507,142 @@ describe('EIQ Parser', () => {
       expect(resolved[0].getAttribute('href')).toBe('/contact');
     });
   });
+
+  describe('resolveSEQL with iframe', () => {
+    it('should resolve SEQL selector in iframe with contentDocument', () => {
+      const dom = new JSDOM(`
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <iframe id="test-frame"></iframe>
+          </body>
+        </html>
+      `);
+
+      const iframe = dom.window.document.getElementById('test-frame') as HTMLIFrameElement;
+      const iframeDoc = iframe.contentDocument!;
+
+      iframeDoc.body.innerHTML = `
+        <form id="payment-form">
+          <input id="card-number" name="cardnumber" type="text" />
+          <button type="submit">Pay Now</button>
+        </form>
+      `;
+
+      const input = iframeDoc.getElementById('card-number')!;
+      const eiq = generateSEQL(input, { root: iframeDoc });
+
+      expect(eiq).toBeTruthy();
+
+      // Resolve in iframe with contentDocument as root
+      const resolved = resolveSEQL(eiq!, iframeDoc, { root: iframeDoc });
+      expect(resolved.length).toBeGreaterThan(0);
+      expect(resolved[0].getAttribute('id')).toBe('card-number');
+    });
+
+    it('should resolve SEQL selector with complex path in iframe', () => {
+      const dom = new JSDOM(`
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <iframe id="test-frame"></iframe>
+          </body>
+        </html>
+      `);
+
+      const iframe = dom.window.document.getElementById('test-frame') as HTMLIFrameElement;
+      const iframeDoc = iframe.contentDocument!;
+
+      iframeDoc.body.innerHTML = `
+        <div id="widget" data-widget-id="abc123">
+          <header>
+            <h2>Newsletter Signup</h2>
+          </header>
+          <form data-track="signup-form">
+            <input type="email" placeholder="Enter your email" data-track="email-input" />
+            <button type="submit" data-track="submit-button">Subscribe</button>
+          </form>
+          <footer>
+            <a href="/privacy" data-track="privacy-link">Privacy Policy</a>
+          </footer>
+        </div>
+      `;
+
+      const submitButton = iframeDoc.querySelector('[data-track="submit-button"]')!;
+      const eiq = generateSEQL(submitButton, { root: iframeDoc });
+
+      expect(eiq).toBeTruthy();
+
+      const resolved = resolveSEQL(eiq!, iframeDoc, { root: iframeDoc });
+      expect(resolved.length).toBeGreaterThan(0);
+      expect(resolved[0].getAttribute('data-track')).toBe('submit-button');
+    });
+
+    it('should return empty array when resolving in wrong document', () => {
+      const dom = new JSDOM(`
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <iframe id="test-frame"></iframe>
+          </body>
+        </html>
+      `);
+
+      const iframe = dom.window.document.getElementById('test-frame') as HTMLIFrameElement;
+      const iframeDoc = iframe.contentDocument!;
+
+      iframeDoc.body.innerHTML = `
+        <form id="test-form">
+          <input id="test-input" type="text" />
+        </form>
+      `;
+
+      const input = iframeDoc.getElementById('test-input')!;
+      const eiq = generateSEQL(input, { root: iframeDoc });
+
+      expect(eiq).toBeTruthy();
+
+      // Try to resolve in main document (wrong context)
+      const resolved = resolveSEQL(eiq!, dom.window.document, { root: dom.window.document });
+      expect(resolved.length).toBe(0);
+    });
+
+    it('should handle nested iframes', () => {
+      const dom = new JSDOM(`
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <iframe id="outer-frame"></iframe>
+          </body>
+        </html>
+      `);
+
+      const outerIframe = dom.window.document.getElementById('outer-frame') as HTMLIFrameElement;
+      const outerDoc = outerIframe.contentDocument!;
+
+      outerDoc.body.innerHTML = `
+        <div id="outer-content">
+          <iframe id="inner-frame"></iframe>
+        </div>
+      `;
+
+      const innerIframe = outerDoc.getElementById('inner-frame') as HTMLIFrameElement;
+      const innerDoc = innerIframe.contentDocument!;
+
+      innerDoc.body.innerHTML = `
+        <div id="inner-content">
+          <button id="nested-button">Click Me</button>
+        </div>
+      `;
+
+      const button = innerDoc.getElementById('nested-button')!;
+      const eiq = generateSEQL(button, { root: innerDoc });
+
+      expect(eiq).toBeTruthy();
+
+      const resolved = resolveSEQL(eiq!, innerDoc, { root: innerDoc });
+      expect(resolved.length).toBeGreaterThan(0);
+      expect(resolved[0].getAttribute('id')).toBe('nested-button');
+    });
+  });
 });

@@ -66,3 +66,6 @@ export {
   type BatchGeneratorOptions,
   type BatchResult,
 } from './batch-generator';
+
+// Document context utilities
+export { getOwnerDocument, validateDocumentContext, getQueryRoot } from './document-context';

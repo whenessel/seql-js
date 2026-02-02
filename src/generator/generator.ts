@@ -6,6 +6,7 @@ import { SvgFingerprinter } from './svg-fingerprinter';
 import { calculateConfidence } from '../utils/scorer';
 import { EID_VERSION, DEFAULT_GENERATOR_OPTIONS, ANCHOR_SCORE } from '../utils/constants';
 import { getGlobalCache } from '../utils/eid-cache';
+import { validateDocumentContext } from '../utils/document-context';
 
 /**
  * Generates EID (Element Identity) for a DOM element
@@ -30,6 +31,16 @@ export function generateEID(
   }
 
   const opts = { ...DEFAULT_GENERATOR_OPTIONS, ...options };
+
+  // Validate document context if root is provided (iframe safety)
+  if (opts.root) {
+    try {
+      validateDocumentContext(target, opts.root);
+    } catch (error) {
+      console.error('Cross-document generation detected:', error);
+      return null;
+    }
+  }
 
   // Get cache instance (use provided or global default)
   const cache = opts.cache ?? getGlobalCache();
@@ -215,7 +226,8 @@ function getDegradationReason(
  */
 function generateHtmlEID(
   htmlElement: Element,
-  opts: Required<Omit<GeneratorOptions, 'cache'>> & Pick<GeneratorOptions, 'cache'>,
+  opts: Required<Omit<GeneratorOptions, 'cache' | 'root'>> &
+    Pick<GeneratorOptions, 'cache' | 'root'>,
   extractor: SemanticExtractor,
   cache: ReturnType<typeof getGlobalCache>
 ): ElementIdentity {

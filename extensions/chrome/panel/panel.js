@@ -14,6 +14,11 @@
     expandedGroups: new Set(),
     tagFilter: '',
     searchDebounceTimer: null,
+    // Iframe support
+    iframes: [], // Array of {index, id, name, src, label, accessible}
+    selectedIframeIndex: -1, // -1 = main document, 0+ = iframe index
+    currentDocumentContext: 'main', // 'main' | 'iframe-0' | 'iframe-1' etc.
+    iframeDetectionDebounce: null, // Debounce timer for iframe detection
   };
 
   // DOM Elements
@@ -24,6 +29,7 @@
     statusText: document.getElementById('status-text'),
     searchInput: document.getElementById('search-input'),
     searchStatus: document.getElementById('search-status'),
+    iframeSelector: document.getElementById('iframe-selector'),
     tagFilter: document.getElementById('tag-filter'),
     groupingMode: document.getElementById('grouping-mode'),
     selectorTree: document.getElementById('selector-tree'),
@@ -43,6 +49,13 @@
   // Initialize
   function init() {
     bindEvents();
+    detectIframes();
+
+    // Re-scan iframes every 5 seconds to detect dynamically added ones
+    setInterval(() => {
+      detectIframes();
+    }, 5000);
+
     setStatus('Ready');
   }
 
@@ -57,6 +70,7 @@
     elements.btnHighlight.addEventListener('click', handleHighlight);
     elements.elementRefLink.addEventListener('click', handleInspectElement);
     elements.searchInput.addEventListener('input', handleSearchInput);
+    elements.iframeSelector.addEventListener('change', handleIframeContextChange);
     elements.tagFilter.addEventListener('change', handleTagFilterChange);
     elements.groupingMode.addEventListener('change', handleGroupingModeChange);
   }
@@ -64,6 +78,155 @@
   // Set status text
   function setStatus(text) {
     elements.statusText.textContent = text;
+  }
+
+  /**
+   * Builds context prefix code for iframe switching
+   * @param {number} iframeIndex - Iframe index (-1 for main document, 0+ for iframe)
+   * @param {boolean} returnBool - If true, return false on error instead of error object
+   * @returns {string} JavaScript code to set targetDoc variable
+   */
+  function buildContextPrefix(iframeIndex, returnBool = false) {
+    const errorReturn = returnBool
+      ? 'return false;'
+      : "return { error: 'Selected iframe is not accessible or does not exist.' };";
+
+    return iframeIndex === -1
+      ? 'const targetDoc = document;'
+      : `const iframe = document.querySelectorAll('iframe')[${iframeIndex}];
+         if (!iframe || !iframe.contentDocument) {
+           ${errorReturn}
+         }
+         const targetDoc = iframe.contentDocument;`;
+  }
+
+  /**
+   * Schedules iframe detection with debouncing
+   */
+  function scheduleIframeDetection() {
+    if (state.iframeDetectionDebounce) {
+      clearTimeout(state.iframeDetectionDebounce);
+    }
+
+    state.iframeDetectionDebounce = setTimeout(() => {
+      detectIframes();
+    }, 500); // Wait 500ms before scanning
+  }
+
+  // Detect and catalog iframes in the page
+  function detectIframes() {
+    const code = `
+      (function() {
+        const iframes = Array.from(document.querySelectorAll('iframe'));
+        const detected = [];
+
+        iframes.forEach((iframe, index) => {
+          try {
+            // Test if we can access contentDocument (same-origin check)
+            const accessible = !!iframe.contentDocument;
+
+            if (accessible) {
+              const id = iframe.id || '';
+              const name = iframe.name || '';
+              const src = iframe.src || '';
+
+              // Build a readable label
+              let label = 'Iframe ' + index;
+              if (id) {
+                label += ' #' + id;
+              } else if (name) {
+                label += ' [' + name + ']';
+              } else if (src) {
+                const url = new URL(src, document.location.href);
+                const path = url.pathname.split('/').pop() || url.hostname;
+                label += ' (' + path + ')';
+              }
+
+              detected.push({
+                index: index,
+                id: id,
+                name: name,
+                src: src,
+                label: label,
+                accessible: true
+              });
+            }
+          } catch (e) {
+            // Cross-origin iframe - silently skip
+          }
+        });
+
+        return detected;
+      })();
+    `;
+
+    evalInPage(code, (result, error) => {
+      if (error) {
+        console.error('Failed to detect iframes:', error);
+        state.iframes = [];
+      } else {
+        state.iframes = result || [];
+        updateIframeDropdown();
+      }
+    });
+  }
+
+  // Update iframe dropdown with detected iframes
+  function updateIframeDropdown() {
+    // Save current selection before updating
+    const currentSelection = state.selectedIframeIndex;
+
+    // Clear existing options except "Main Document"
+    elements.iframeSelector.innerHTML = '<option value="-1">Main Document</option>';
+
+    // Add options for each detected iframe
+    state.iframes.forEach((iframe) => {
+      const option = document.createElement('option');
+      option.value = iframe.index;
+      option.textContent = iframe.label;
+      elements.iframeSelector.appendChild(option);
+    });
+
+    // Restore previous selection if still valid
+    if (currentSelection !== -1 && state.iframes.some((f) => f.index === currentSelection)) {
+      elements.iframeSelector.value = currentSelection.toString();
+      state.selectedIframeIndex = currentSelection;
+      state.currentDocumentContext = 'iframe-' + currentSelection;
+    } else {
+      // Reset to main document only if previous selection is no longer valid
+      elements.iframeSelector.value = '-1';
+      state.selectedIframeIndex = -1;
+      state.currentDocumentContext = 'main';
+    }
+  }
+
+  // Handle iframe context change
+  function handleIframeContextChange() {
+    const selectedValue = parseInt(elements.iframeSelector.value, 10);
+    const previousContext = state.currentDocumentContext;
+
+    state.selectedIframeIndex = selectedValue;
+
+    if (selectedValue === -1) {
+      state.currentDocumentContext = 'main';
+    } else {
+      state.currentDocumentContext = 'iframe-' + selectedValue;
+    }
+
+    // Only clear selectors if context actually changed (not just re-selecting same iframe)
+    if (previousContext !== state.currentDocumentContext) {
+      state.selectors = [];
+      renderTree();
+      hideDetails();
+
+      // Update status
+      if (selectedValue === -1) {
+        setStatus('Switched to main document');
+      } else {
+        const iframe = state.iframes.find((f) => f.index === selectedValue);
+        setStatus('Switched to: ' + (iframe ? iframe.label : 'iframe'));
+      }
+    }
   }
 
   // Execute code in inspected page
@@ -83,14 +246,24 @@
     setStatus('Generating selectors...');
     elements.btnGenerateAll.disabled = true;
 
+    // Refresh iframe detection before generation
+    detectIframes();
+
+    // Build context-aware code
+    const iframeIndex = state.selectedIframeIndex;
+    const contextPrefix = buildContextPrefix(iframeIndex);
+
     const code = `
       (function() {
         if (!window.SeqlJS) {
           return { error: 'seql-js library not loaded. Please refresh the page.' };
         }
 
-        // Select all DOM elements
-        const elements = document.querySelectorAll('*');
+        // Get target document (main or iframe)
+        ${contextPrefix}
+
+        // Select all DOM elements from target document
+        const elements = targetDoc.querySelectorAll('*');
         const results = [];
         const errors = [];
         let index = 0;
@@ -103,8 +276,8 @@
               return;
             }
 
-            const seql = window.SeqlJS.generateSEQL(el);
-            const eid = window.SeqlJS.generateEID(el);
+            const seql = window.SeqlJS.generateSEQL(el, { root: targetDoc });
+            const eid = window.SeqlJS.generateEID(el, { root: targetDoc });
 
             if (seql && eid) {
               const elementId = 'seql-el-' + index++;
@@ -228,6 +401,13 @@
     setStatus('Pick an element (click to select, Esc to cancel)...');
     elements.btnPickElement.disabled = true;
 
+    // Refresh iframe detection before picking
+    detectIframes();
+
+    // Build context-aware code
+    const iframeIndex = state.selectedIframeIndex;
+    const contextPrefix = buildContextPrefix(iframeIndex);
+
     const code = `
       (function() {
         if (window.__seqlPicker) {
@@ -236,15 +416,18 @@
 
         window.__seqlPicker = true;
 
+        // Get target document (main or iframe)
+        ${contextPrefix}
+
         // Create highlight box only (no blocking overlay)
         const highlight = document.createElement('div');
         highlight.id = 'seql-picker-highlight';
         highlight.style.cssText = 'position:fixed;pointer-events:none;border:3px solid #1a73e8;background:rgba(26,115,232,0.15);z-index:2147483647;display:none;box-shadow:0 0 8px rgba(26,115,232,0.5);';
-        document.body.appendChild(highlight);
+        targetDoc.body.appendChild(highlight);
 
         // Change cursor on body
-        const originalCursor = document.body.style.cursor;
-        document.body.style.cursor = 'crosshair';
+        const originalCursor = targetDoc.body.style.cursor;
+        targetDoc.body.style.cursor = 'crosshair';
 
         let hoveredElement = null;
 
@@ -285,8 +468,8 @@
 
           if (targetElement && window.SeqlJS) {
             try {
-              const seql = window.SeqlJS.generateSEQL(targetElement);
-              const eid = window.SeqlJS.generateEID(targetElement);
+              const seql = window.SeqlJS.generateSEQL(targetElement, { root: targetDoc });
+              const eid = window.SeqlJS.generateEID(targetElement, { root: targetDoc });
               
               if (seql && eid) {
                 const elementId = 'seql-el-picked-' + Date.now();
@@ -322,19 +505,19 @@
 
         function cleanup() {
           highlight.remove();
-          document.body.style.cursor = originalCursor;
-          document.removeEventListener('mousemove', handleMouseMove, true);
-          document.removeEventListener('mousedown', handleMouseDown, true);
-          document.removeEventListener('click', handleClick, true);
-          document.removeEventListener('keydown', handleKeyDown, true);
+          targetDoc.body.style.cursor = originalCursor;
+          targetDoc.removeEventListener('mousemove', handleMouseMove, true);
+          targetDoc.removeEventListener('mousedown', handleMouseDown, true);
+          targetDoc.removeEventListener('click', handleClick, true);
+          targetDoc.removeEventListener('keydown', handleKeyDown, true);
           window.__seqlPicker = false;
         }
 
         // Add event listeners on capture phase
-        document.addEventListener('mousemove', handleMouseMove, true);
-        document.addEventListener('mousedown', handleMouseDown, true);
-        document.addEventListener('click', handleClick, true);
-        document.addEventListener('keydown', handleKeyDown, true);
+        targetDoc.addEventListener('mousemove', handleMouseMove, true);
+        targetDoc.addEventListener('mousedown', handleMouseDown, true);
+        targetDoc.addEventListener('click', handleClick, true);
+        targetDoc.addEventListener('keydown', handleKeyDown, true);
 
         return { status: 'picker_active' };
       })()
@@ -679,9 +862,14 @@
   function handleScrollTo() {
     if (!state.selectedId) return;
 
+    // Build context-aware code
+    const iframeIndex = state.selectedIframeIndex;
+    const contextPrefix = buildContextPrefix(iframeIndex, true);
+
     const code = `
       (function() {
-        const el = document.querySelector('[data-seql-id="${state.selectedId}"]');
+        ${contextPrefix}
+        const el = targetDoc.querySelector('[data-seql-id="${state.selectedId}"]');
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return true;
@@ -701,32 +889,37 @@
   function handleHighlight() {
     if (!state.selectedId) return;
 
+    // Build context-aware code
+    const iframeIndex = state.selectedIframeIndex;
+    const contextPrefix = buildContextPrefix(iframeIndex, true);
+
     const code = `
       (function() {
-        const el = document.querySelector('[data-seql-id="${state.selectedId}"]');
+        ${contextPrefix}
+        const el = targetDoc.querySelector('[data-seql-id="${state.selectedId}"]');
         if (el) {
           const rect = el.getBoundingClientRect();
-          
+
           // Create highlight
-          let highlight = document.getElementById('seql-temp-highlight');
+          let highlight = targetDoc.getElementById('seql-temp-highlight');
           if (!highlight) {
-            highlight = document.createElement('div');
+            highlight = targetDoc.createElement('div');
             highlight.id = 'seql-temp-highlight';
             highlight.style.cssText = 'position:fixed;pointer-events:none;border:4px solid #ff6b00;background:rgba(255,107,0,0.3);z-index:2147483647;transition:all 0.15s ease;box-shadow:0 0 12px rgba(255,107,0,0.6);';
-            document.body.appendChild(highlight);
+            targetDoc.body.appendChild(highlight);
           }
-          
+
           highlight.style.top = rect.top + 'px';
           highlight.style.left = rect.left + 'px';
           highlight.style.width = rect.width + 'px';
           highlight.style.height = rect.height + 'px';
           highlight.style.display = 'block';
-          
+
           // Remove after 4 seconds
           setTimeout(() => {
             highlight.style.display = 'none';
           }, 4000);
-          
+
           return true;
         }
         return false;
@@ -744,9 +937,14 @@
   function handleInspectElement() {
     if (!state.selectedId) return;
 
+    // Build context-aware code
+    const iframeIndex = state.selectedIframeIndex;
+    const contextPrefix = buildContextPrefix(iframeIndex, true);
+
     const code = `
       (function() {
-        const el = document.querySelector('[data-seql-id="${state.selectedId}"]');
+        ${contextPrefix}
+        const el = targetDoc.querySelector('[data-seql-id="${state.selectedId}"]');
         if (el) {
           inspect(el);
           return true;
@@ -782,22 +980,29 @@
 
   // Resolve search query
   function resolveSearchQuery(query) {
+    // Build context-aware code
+    const iframeIndex = state.selectedIframeIndex;
+    const contextPrefix = buildContextPrefix(iframeIndex);
+
     const code = `
       (function() {
         if (!window.SeqlJS || !window.SeqlJS.resolveSEQL) {
           return { error: 'seql-js library not available' };
         }
 
+        // Get target document (main or iframe)
+        ${contextPrefix}
+
         try {
           // Try to parse and resolve the SEQL selector using resolveSEQL (accepts string)
-          const elements = window.SeqlJS.resolveSEQL(${JSON.stringify(query)}, document);
+          const elements = window.SeqlJS.resolveSEQL(${JSON.stringify(query)}, targetDoc);
           
           if (elements && elements.length > 0) {
             // Generate full EID data for found elements
             const searchResults = elements.map((el, i) => {
               try {
-                const seql = window.SeqlJS.generateSEQL(el);
-                const eid = window.SeqlJS.generateEID(el);
+                const seql = window.SeqlJS.generateSEQL(el, { root: targetDoc });
+                const eid = window.SeqlJS.generateEID(el, { root: targetDoc });
 
                 if (!seql || !eid) return null;
 
@@ -829,13 +1034,13 @@
             // Highlight matched elements
             elements.forEach((el, i) => {
               const rect = el.getBoundingClientRect();
-              let highlight = document.getElementById('seql-search-highlight-' + i);
+              let highlight = targetDoc.getElementById('seql-search-highlight-' + i);
               if (!highlight) {
-                highlight = document.createElement('div');
+                highlight = targetDoc.createElement('div');
                 highlight.id = 'seql-search-highlight-' + i;
                 highlight.className = 'seql-search-highlight';
                 highlight.style.cssText = 'position:fixed;pointer-events:none;border:2px solid #0d8050;background:rgba(13,128,80,0.15);z-index:2147483647;';
-                document.body.appendChild(highlight);
+                targetDoc.body.appendChild(highlight);
               }
               highlight.style.top = rect.top + 'px';
               highlight.style.left = rect.left + 'px';
