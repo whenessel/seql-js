@@ -123,13 +123,14 @@ export function resolve(
         fallbackHandler,
         root,
         opts,
-        0.7 // confidence multiplier for lenient matching
+        1.0 // No penalty here - lenient penalty applied to final result
       );
 
       if (constrained.elements.length > 0) {
         return {
           ...constrained,
           warnings: [...constrained.warnings, 'Used relaxed text matching'],
+          confidence: constrained.confidence * 0.8, // Apply lenient matching penalty (20% degradation)
         };
       }
     }

@@ -99,7 +99,7 @@ export class CssGenerator {
 
       return {
         selector,
-        isUnique: options.root ? this.isUnique(selector, options.root) : true,
+        isUnique: this.isUnique(selector, options.root ?? document),
         usedNthOfType: false,
         extraClassesAdded: 0,
       };
