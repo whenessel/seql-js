@@ -155,6 +155,7 @@ Manage the LRU cache to improve performance for frequent generations/resolutions
 The SEQL Inspector extension provides visual tooling for working with SEQL selectors directly in Chrome DevTools.
 
 **Features:**
+
 - Generate SEQL selectors for all elements or pick individual elements
 - Full iframe support with automatic detection and context switching
 - Live search and resolution testing
@@ -162,6 +163,7 @@ The SEQL Inspector extension provides visual tooling for working with SEQL selec
 - Tree view with grouping and filtering
 
 **Installation:**
+
 ```bash
 yarn extension:prepare
 # Then load extensions/chrome/ as unpacked extension in Chrome

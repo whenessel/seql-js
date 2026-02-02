@@ -101,6 +101,7 @@ The extension fully supports working with iframe contexts (same-origin only):
 #### Iframe Labels
 
 Iframes are labeled intelligently for easy identification:
+
 - `Iframe 0 #payment-form` - Uses iframe's id attribute
 - `Iframe 1 [checkout]` - Uses iframe's name attribute
 - `Iframe 2 (secure.example.com)` - Uses iframe's src domain/path
