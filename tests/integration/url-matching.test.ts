@@ -109,7 +109,7 @@ describe('URL Matching Integration Tests', () => {
       expect(result.status === 'success').toBe(true);
     });
 
-    it('should NOT match cross-origin URL with relative URL', () => {
+    it('should NOT match cross-origin URL with relative URL (strict mode)', () => {
       // Generation: cross-origin URL
       const body = document.body;
       body.innerHTML = '<a href="https://external.com/api">API</a>';
@@ -120,12 +120,13 @@ describe('URL Matching Integration Tests', () => {
       // Resolution: relative URL (different semantic - local API vs external API)
       body.innerHTML = '<a href="/api">API</a>';
 
-      const result = resolve(eid, document);
-      // Should fail - cross-origin link is semantically different from local link
+      // With matchUrlsByPathOnly: false (strict mode), cross-origin URLs should not match
+      const result = resolve(eid, document, { matchUrlsByPathOnly: false });
+      // Should fail - cross-origin link is semantically different from local link in strict mode
       expect(result.status === 'success').toBe(false);
     });
 
-    it('should NOT match different cross-origin URLs', () => {
+    it('should match different cross-origin URLs with same path (default path-only mode)', () => {
       // Generation: one external domain
       const body = document.body;
       body.innerHTML = '<a href="https://external1.com/api">API</a>';
@@ -133,11 +134,16 @@ describe('URL Matching Integration Tests', () => {
 
       const eid = generateEID(linkElement);
 
-      // Resolution: different external domain
+      // Resolution: different external domain, same path
       body.innerHTML = '<a href="https://external2.com/api">API</a>';
 
+      // With default matchUrlsByPathOnly: true, should match (same pathname: /api)
       const result = resolve(eid, document);
-      expect(result.status === 'success').toBe(false);
+      expect(result.status === 'success').toBe(true);
+
+      // With strict mode, should NOT match
+      const resultStrict = resolve(eid, document, { matchUrlsByPathOnly: false });
+      expect(resultStrict.status === 'success').toBe(false);
     });
   });
 
@@ -436,7 +442,7 @@ describe('URL Matching Integration Tests', () => {
       expect(result.elements[0]!.getAttribute('href')).toBe('https://example.com/checkout');
     });
 
-    it('should preserve cross-origin URLs and not match with same-path relative URLs', () => {
+    it('should match cross-origin URLs with same-path relative URLs (default path-only mode)', () => {
       const body = document.body;
       body.innerHTML = '<a href="https://external.com/api/data">External API</a>';
       const externalLink = body.querySelector('a')!;
@@ -445,10 +451,13 @@ describe('URL Matching Integration Tests', () => {
       // Change to same path but different origin
       body.innerHTML = '<a href="/api/data">External API</a>';
 
+      // Default mode (matchUrlsByPathOnly: true): should MATCH - same pathname
       const result = resolve(eid, document);
+      expect(result.status).toBe('success');
 
-      // Should NOT match - different semantic identity
-      expect(result.status).not.toBe('success');
+      // Strict mode (matchUrlsByPathOnly: false): should NOT match - different origins
+      const resultStrict = resolve(eid, document, { matchUrlsByPathOnly: false });
+      expect(resultStrict.status).not.toBe('success');
     });
   });
 });

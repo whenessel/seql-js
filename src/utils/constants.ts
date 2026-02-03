@@ -292,9 +292,10 @@ export const DEFAULT_GENERATOR_OPTIONS: Omit<Required<GeneratorOptions>, 'cache'
 /**
  * Default resolver options
  */
-export const DEFAULT_RESOLVER_OPTIONS: Omit<Required<ResolverOptions>, 'root'> &
-  Pick<ResolverOptions, 'root'> = {
+export const DEFAULT_RESOLVER_OPTIONS: Omit<Required<ResolverOptions>, 'root' | 'documentUrl'> &
+  Pick<ResolverOptions, 'root' | 'documentUrl'> = {
   strictMode: false,
   enableFallback: true,
   maxCandidates: 20,
+  matchUrlsByPathOnly: true,
 };

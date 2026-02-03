@@ -214,7 +214,7 @@ describe('SemanticsMatcher', () => {
       expect(result).toHaveLength(1);
     });
 
-    it('should NOT match cross-origin href with relative href', () => {
+    it('should match cross-origin href with relative href (default path-only mode)', () => {
       const link = document.createElement('a');
       link.setAttribute('href', '/api');
 
@@ -222,8 +222,13 @@ describe('SemanticsMatcher', () => {
         attributes: { href: 'https://external.com/api' },
       };
 
+      // Default mode (matchUrlsByPathOnly: true) should match
       const result = matcher.match([link], semantics);
-      expect(result).toHaveLength(0);
+      expect(result).toHaveLength(1);
+
+      // Strict mode (matchUrlsByPathOnly: false) should NOT match
+      const resultStrict = matcher.match([link], semantics, undefined, false);
+      expect(resultStrict).toHaveLength(0);
     });
 
     it('should match cross-origin hrefs exactly', () => {
@@ -319,7 +324,7 @@ describe('SemanticsMatcher', () => {
       expect(result[0]).toBe(element);
     });
 
-    it('should NOT match when documentUrl causes origin mismatch', () => {
+    it('should NOT match when documentUrl causes origin mismatch (strict mode)', () => {
       const element = document.createElement('a');
       element.setAttribute('href', 'https://example.com/booking');
 
@@ -329,9 +334,10 @@ describe('SemanticsMatcher', () => {
 
       // Wrong document URL (different origin)
       const documentUrl = 'http://localhost:3000/';
-      const result = matcher.match([element], semantics, documentUrl);
+      // Use matchUrlsByPathOnly: false for strict origin validation
+      const result = matcher.match([element], semantics, documentUrl, false);
 
-      // Should NOT match - origin mismatch
+      // Should NOT match - origin mismatch in strict mode
       expect(result).toHaveLength(0);
     });
 
@@ -381,7 +387,7 @@ describe('SemanticsMatcher', () => {
       expect(result[0]).toBe(element);
     });
 
-    it('should NOT match when iframe document URL causes mismatch', () => {
+    it('should NOT match when iframe document URL causes mismatch (strict mode)', () => {
       // Simulate parent window URL
       const parentDocumentUrl = 'http://localhost:63342/test.html';
 
@@ -392,10 +398,10 @@ describe('SemanticsMatcher', () => {
         attributes: { href: '/modern-seaside-stay/booking' },
       };
 
-      // Pass parent's document URL (WRONG!)
-      const result = matcher.match([element], semantics, parentDocumentUrl);
+      // Pass parent's document URL (WRONG!) with strict mode
+      const result = matcher.match([element], semantics, parentDocumentUrl, false);
 
-      // Should NOT match - using parent window's origin instead of iframe's
+      // Should NOT match - using parent window's origin instead of iframe's in strict mode
       expect(result).toHaveLength(0);
     });
 

@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { normalizeUrlForComparison } from '../../src/utils/url-normalizer';
+import {
+  normalizeUrlForComparison,
+  extractPathnameForComparison,
+} from '../../src/utils/url-normalizer';
 
 describe('normalizeUrlForComparison', () => {
   // Store original window.location for restoration
@@ -330,6 +333,175 @@ describe('normalizeUrlForComparison', () => {
       const baseUrl = 'https://例え.jp';
 
       expect(normalizeUrlForComparison('https://例え.jp/path', baseUrl)).toBe('/path');
+    });
+  });
+});
+
+describe('extractPathnameForComparison', () => {
+  describe('Extract pathname from absolute URLs', () => {
+    it('should extract pathname from absolute URLs', () => {
+      expect(extractPathnameForComparison('https://example.com/booking')).toBe('/booking');
+      expect(extractPathnameForComparison('http://localhost:3000/api/data')).toBe('/api/data');
+    });
+
+    it('should extract pathname with nested paths', () => {
+      expect(extractPathnameForComparison('https://example.com/a/b/c')).toBe('/a/b/c');
+    });
+
+    it('should extract root path', () => {
+      expect(extractPathnameForComparison('https://example.com/')).toBe('/');
+      expect(extractPathnameForComparison('https://example.com')).toBe('/');
+    });
+
+    it('should handle different protocols', () => {
+      expect(extractPathnameForComparison('http://example.com/path')).toBe('/path');
+      expect(extractPathnameForComparison('https://example.com/path')).toBe('/path');
+    });
+  });
+
+  describe('Return relative URLs as-is', () => {
+    it('should return relative URLs as-is', () => {
+      expect(extractPathnameForComparison('/booking')).toBe('/booking');
+      expect(extractPathnameForComparison('./relative')).toBe('./relative');
+      expect(extractPathnameForComparison('../parent')).toBe('../parent');
+    });
+
+    it('should return fragment-only URLs as-is', () => {
+      expect(extractPathnameForComparison('#section')).toBe('#section');
+    });
+
+    it('should return query-only URLs as-is', () => {
+      expect(extractPathnameForComparison('?query=value')).toBe('?query=value');
+    });
+  });
+
+  describe('Preserve search and hash', () => {
+    it('should preserve search and hash', () => {
+      expect(extractPathnameForComparison('https://example.com/booking?id=1')).toBe(
+        '/booking?id=1'
+      );
+      expect(extractPathnameForComparison('https://example.com/booking#section')).toBe(
+        '/booking#section'
+      );
+      expect(extractPathnameForComparison('https://example.com/booking?id=1#section')).toBe(
+        '/booking?id=1#section'
+      );
+    });
+
+    it('should preserve search on root path', () => {
+      expect(extractPathnameForComparison('https://example.com?search=query')).toBe(
+        '/?search=query'
+      );
+    });
+
+    it('should preserve hash on root path', () => {
+      expect(extractPathnameForComparison('https://example.com#top')).toBe('/#top');
+    });
+
+    it('should preserve complex query strings', () => {
+      expect(extractPathnameForComparison('https://example.com/api?a=1&b=2&c=3')).toBe(
+        '/api?a=1&b=2&c=3'
+      );
+    });
+  });
+
+  describe('Handle special protocols', () => {
+    it('should handle javascript: URLs', () => {
+      expect(extractPathnameForComparison('javascript:void(0)')).toBe('javascript:void(0)');
+      expect(extractPathnameForComparison('javascript:alert("test")')).toBe(
+        'javascript:alert("test")'
+      );
+    });
+
+    it('should handle mailto: URLs', () => {
+      expect(extractPathnameForComparison('mailto:user@example.com')).toBe(
+        'mailto:user@example.com'
+      );
+    });
+
+    it('should handle tel: URLs', () => {
+      expect(extractPathnameForComparison('tel:+1234567890')).toBe('tel:+1234567890');
+    });
+
+    it('should handle data: URLs', () => {
+      expect(extractPathnameForComparison('data:text/plain,Hello')).toBe('data:text/plain,Hello');
+    });
+
+    it('should handle blob: URLs', () => {
+      expect(extractPathnameForComparison('blob:https://example.com/uuid')).toBe(
+        'blob:https://example.com/uuid'
+      );
+    });
+  });
+
+  describe('Handle empty and invalid URLs', () => {
+    it('should handle empty and invalid URLs', () => {
+      expect(extractPathnameForComparison('')).toBe('');
+      expect(extractPathnameForComparison('not-a-valid-url')).toBe('not-a-valid-url');
+    });
+
+    it('should handle null and undefined', () => {
+      expect(extractPathnameForComparison(null as unknown as string)).toBe('');
+      expect(extractPathnameForComparison(undefined as unknown as string)).toBe('');
+    });
+  });
+
+  describe('Real-world rrweb scenarios', () => {
+    it('should extract same pathname from different origins', () => {
+      const path1 = extractPathnameForComparison(
+        'https://appsurify.github.io/modern-seaside-stay/booking'
+      );
+      const path2 = extractPathnameForComparison(
+        'http://localhost:63342/modern-seaside-stay/booking'
+      );
+      const path3 = extractPathnameForComparison('/modern-seaside-stay/booking');
+
+      expect(path1).toBe('/modern-seaside-stay/booking');
+      expect(path2).toBe('/modern-seaside-stay/booking');
+      expect(path3).toBe('/modern-seaside-stay/booking');
+
+      // All should match
+      expect(path1).toBe(path2);
+      expect(path2).toBe(path3);
+    });
+
+    it('should handle CDN URLs', () => {
+      expect(extractPathnameForComparison('https://cdn.example.com/assets/logo.png')).toBe(
+        '/assets/logo.png'
+      );
+    });
+
+    it('should handle localhost with port', () => {
+      expect(extractPathnameForComparison('http://localhost:3000/dashboard')).toBe('/dashboard');
+      expect(extractPathnameForComparison('http://localhost:8080/api/data')).toBe('/api/data');
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should handle encoded characters', () => {
+      expect(extractPathnameForComparison('https://example.com/path%20with%20spaces')).toBe(
+        '/path%20with%20spaces'
+      );
+    });
+
+    it('should handle international paths', () => {
+      // URL encoding is applied by URL API - this is expected behavior
+      expect(extractPathnameForComparison('https://example.com/путь')).toBe(
+        '/%D0%BF%D1%83%D1%82%D1%8C'
+      );
+    });
+
+    it('should handle trailing slashes', () => {
+      expect(extractPathnameForComparison('https://example.com/path/')).toBe('/path/');
+      expect(extractPathnameForComparison('https://example.com/path')).toBe('/path');
+    });
+
+    it('should handle protocol-relative URLs', () => {
+      // Protocol-relative URLs should be handled by returning as-is
+      // since they start with // but not http:// or https://
+      expect(extractPathnameForComparison('//cdn.example.com/script.js')).toBe(
+        '//cdn.example.com/script.js'
+      );
     });
   });
 });

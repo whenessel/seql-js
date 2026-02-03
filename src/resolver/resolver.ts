@@ -54,9 +54,11 @@ export function resolve(
   }
 
   // Extract document base URL for URL normalization in iframe contexts
+  // Priority: explicit documentUrl parameter > root.defaultView.location.href > undefined
   // This ensures URL normalization uses the correct window.location
   // (iframe's contentWindow.location, not parent window's location)
-  const documentUrl = root.defaultView?.location?.href;
+  const documentUrl = opts.documentUrl ?? root.defaultView?.location?.href;
+  const matchUrlsByPathOnly = opts.matchUrlsByPathOnly ?? true;
 
   const cssGenerator = new CssGenerator();
   const semanticsMatcher = new SemanticsMatcher();
@@ -96,7 +98,12 @@ export function resolve(
   }
 
   // Phase 2: Semantics Filtering
-  const filtered = semanticsMatcher.match(candidates, eid.target.semantics, documentUrl);
+  const filtered = semanticsMatcher.match(
+    candidates,
+    eid.target.semantics,
+    documentUrl,
+    matchUrlsByPathOnly
+  );
 
   // Check if we should try lenient matching before falling back to anchor
   const shouldTryLenient =
@@ -105,7 +112,12 @@ export function resolve(
   if (shouldTryLenient) {
     // CSS found candidates but exact semantic matching rejected them
     // Try lenient text matching before falling back to anchor
-    const lenientFiltered = semanticsMatcher.matchLenient(candidates, eid.target.semantics, documentUrl);
+    const lenientFiltered = semanticsMatcher.matchLenient(
+      candidates,
+      eid.target.semantics,
+      documentUrl,
+      matchUrlsByPathOnly
+    );
 
     if (lenientFiltered.length > 0) {
       // Found matches with relaxed text matching

@@ -144,3 +144,47 @@ function getDocumentBaseUrl(documentUrl?: string): string | undefined {
   // SSR/test environment: no base URL available
   return undefined;
 }
+
+/**
+ * Extracts pathname from URL for path-only matching.
+ * Handles both relative and absolute URLs.
+ *
+ * @param url - URL string (relative or absolute)
+ * @returns pathname (+ search + hash if present)
+ *
+ * @example
+ * extractPathnameForComparison('/booking') → '/booking'
+ * extractPathnameForComparison('https://example.com/booking') → '/booking'
+ * extractPathnameForComparison('https://example.com/booking?id=1#section') → '/booking?id=1#section'
+ */
+export function extractPathnameForComparison(url: string): string {
+  // Handle empty or invalid URLs
+  if (!url || typeof url !== 'string') {
+    return '';
+  }
+
+  // Handle special protocols (javascript:, mailto:, tel:, data:, blob:)
+  if (
+    url.startsWith('javascript:') ||
+    url.startsWith('mailto:') ||
+    url.startsWith('tel:') ||
+    url.startsWith('data:') ||
+    url.startsWith('blob:')
+  ) {
+    return url; // Return as-is for special protocols
+  }
+
+  // If already relative, return as-is
+  if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) {
+    return url;
+  }
+
+  // If absolute URL, extract pathname + search + hash
+  try {
+    const urlObj = new URL(url);
+    return urlObj.pathname + urlObj.search + urlObj.hash;
+  } catch (e) {
+    // If URL parsing fails, assume it's a relative path
+    return url;
+  }
+}
