@@ -7623,3 +7623,123 @@ try {
 - Verify SEQL selector format
 - Check for proper escaping
 - Regenerate selector from element
+
+## URL Normalization (v1.5.1+)
+
+### Feature Overview
+
+As of v1.5.1, seql-js includes automatic URL normalization for `href` and `src` attributes during resolution. This solves rrweb iframe replay scenarios where relative URLs become absolute URLs.
+
+### The Problem
+
+During rrweb replay, the library converts relative URLs to absolute URLs as part of the serialization process:
+
+- **Recording**: `<a href="/booking">Book</a>` → EID contains `href: "/booking"`
+- **Replay in iframe**: `<a href="https://example.com/booking">Book</a>` (rrweb converted)
+- **Without normalization**: Element not found ❌
+
+### The Solution
+
+URL normalization happens automatically during resolution in `semantics-matcher.ts`:
+
+- **Same-origin absolute URLs** → converted to relative (`https://example.com/path` → `/path`)
+- **Relative URLs** → kept as-is (`/path` → `/path`)
+- **Cross-origin URLs** → preserved as absolute (`https://external.com/api` → unchanged)
+- **Special protocols** → preserved (`javascript:`, `mailto:`, `tel:`)
+
+### Implementation Details
+
+**File**: `src/utils/url-normalizer.ts`
+
+**Function**: `normalizeUrlForComparison(url: string, documentUrl?: string): string`
+
+**Logic**:
+
+1. Empty/invalid URLs → returned as-is (graceful degradation)
+2. Relative URLs → returned as-is (already normalized)
+3. Protocol-relative URLs (`//cdn.example.com`) → preserved
+4. Special protocols (`javascript:`, `mailto:`, etc.) → preserved
+5. Absolute same-origin URLs → converted to relative (pathname + search + hash)
+6. Cross-origin URLs → preserved as absolute
+
+**Base URL Detection**:
+
+- Priority: explicit `documentUrl` parameter > `window.location.href` > undefined
+- In SSR environments without `window`, absolute URLs preserved as-is
+
+### Usage Examples
+
+**Basic matching**:
+
+```typescript
+import { generateEID, resolve } from '@whenessel/seql-js';
+
+// Recording: EID generated with relative URL
+const element = document.querySelector('a[href="/booking"]');
+const eid = generateEID(element); // href: "/booking"
+
+// Replay: DOM has absolute URL (rrweb converted)
+document.body.innerHTML = '<a href="https://example.com/booking">Book</a>';
+
+const result = resolve(eid, { root: document.body });
+// ✅ Success! URL normalization handles the mismatch
+```
+
+**Cross-origin preservation**:
+
+```typescript
+// Cross-origin links remain distinct from local links
+const externalLink = document.querySelector('a[href="https://external.com/api"]');
+const eid = generateEID(externalLink); // href: "https://external.com/api"
+
+// Won't match local link (semantically different)
+document.body.innerHTML = '<a href="/api">API</a>';
+const result = resolve(eid, { root: document.body });
+// ❌ No match (correct behavior - external vs local API)
+```
+
+**Debug URL normalization**:
+
+```typescript
+import { normalizeUrlForComparison } from '@whenessel/seql-js';
+
+const recorded = '/booking';
+const replayed = 'https://example.com/booking';
+const baseUrl = 'https://example.com';
+
+console.log(normalizeUrlForComparison(recorded, baseUrl)); // "/booking"
+console.log(normalizeUrlForComparison(replayed, baseUrl)); // "/booking"
+// Both normalize to same value ✅
+```
+
+### Integration with rrweb
+
+**No changes required** - URL normalization is automatic:
+
+```typescript
+import { resolveSEQL } from '@whenessel/seql-js';
+import { Replayer } from 'rrweb';
+
+const replayer = new Replayer(events);
+
+// Recorded selector has relative URL
+const selector = 'v1: main :: a[href="/booking"]';
+
+// Resolve in iframe where rrweb made URLs absolute
+const elements = resolveSEQL(selector, replayer.iframe.contentDocument);
+// ✅ Works! URL normalization handles conversion automatically
+```
+
+### Backward Compatibility
+
+- **Fully backward compatible** - no breaking changes
+- Existing EIDs work unchanged
+- Old EID (relative URL) + new code → improved matching
+- New EID + old code → works as before (if no URL mismatch occurs)
+
+### Limitations
+
+- URL normalization requires a base URL (from `window.location` or explicit parameter)
+- In SSR environments without `window`, absolute URLs preserved as-is
+- Protocol mismatches (`http://` vs `https://`) treated as different origins
+- Port mismatches treated as different origins

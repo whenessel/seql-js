@@ -112,6 +112,7 @@ Helper functions and shared logic:
 - **`class-filter.ts`**: Filters utility/framework classes (Tailwind, Bootstrap, etc.)
 - **`class-classifier.ts`**: Classifies CSS classes as semantic vs. utility
 - **`attribute-cleaner.ts`**: Cleans and normalizes HTML attributes
+- **`url-normalizer.ts`** (v1.5.1): Normalizes URLs for consistent comparison - converts same-origin absolute URLs to relative for rrweb iframe compatibility
 - **`id-validator.ts`**: Validates ID stability (rejects auto-generated IDs)
 - **`validator.ts`**: EID identity validation
 

@@ -53,6 +53,11 @@ export function resolve(
     }
   }
 
+  // Extract document base URL for URL normalization in iframe contexts
+  // This ensures URL normalization uses the correct window.location
+  // (iframe's contentWindow.location, not parent window's location)
+  const documentUrl = root.defaultView?.location?.href;
+
   const cssGenerator = new CssGenerator();
   const semanticsMatcher = new SemanticsMatcher();
   const constraintsEvaluator = new ConstraintsEvaluator();
@@ -91,7 +96,7 @@ export function resolve(
   }
 
   // Phase 2: Semantics Filtering
-  const filtered = semanticsMatcher.match(candidates, eid.target.semantics);
+  const filtered = semanticsMatcher.match(candidates, eid.target.semantics, documentUrl);
 
   // Check if we should try lenient matching before falling back to anchor
   const shouldTryLenient =
@@ -100,7 +105,7 @@ export function resolve(
   if (shouldTryLenient) {
     // CSS found candidates but exact semantic matching rejected them
     // Try lenient text matching before falling back to anchor
-    const lenientFiltered = semanticsMatcher.matchLenient(candidates, eid.target.semantics);
+    const lenientFiltered = semanticsMatcher.matchLenient(candidates, eid.target.semantics, documentUrl);
 
     if (lenientFiltered.length > 0) {
       // Found matches with relaxed text matching

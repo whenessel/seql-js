@@ -74,14 +74,14 @@ describe('CssGenerator Selector Generation', () => {
       console.log('Generated Selector Full Object:', JSON.stringify(selector, null, 2));
       const { selector: generatedSelector } = selector;
 
-      // Expect either of these selector formats
+      // Note: href/src excluded from CSS selectors (handled in Phase 2)
+      // Expect one of these formats (without href)
       const expectedSelectors = [
         'footer > div > div > div > ul > li:nth-of-type(2) > a',
+        'footer.text-card-foreground > div > div > div > ul > li:nth-of-type(2) > a',
         'footer ul li:nth-of-type(2) a',
         'footer div div div ul li:nth-of-type(2) a',
-        'footer.text-card-foreground a[href="/apartments"]',
-        'footer div div div ul a[href="/apartments"]',
-        'footer a[href="/apartments"]', // Descendant combinator with unique href
+        'footer.text-card-foreground ul li:nth-of-type(2) a',
       ];
 
       expect(expectedSelectors).toContain(generatedSelector);
@@ -124,15 +124,13 @@ describe('CssGenerator Selector Generation', () => {
       );
       const { selector: generatedSelector } = selector;
 
+      // Note: href/src excluded from CSS selectors (handled in Phase 2)
       // Expect selectors that use nth-of-type for disambiguation
-      // After fix: target element should prefer href over nth-of-type
       const expectedSelectors = [
-        'footer > div > div > div > ul > li:nth-of-type(2) > a[href="/apartments"]',
-        'footer.text-card-foreground > div > div > div > ul > li:nth-of-type(2) > a[href="/apartments"]',
-        'footer ul li:nth-of-type(2) a[href="/apartments"]',
-        'footer div div div ul li:nth-of-type(2) a[href="/apartments"]',
-        'footer.text-card-foreground a[href="/apartments"]',
-        'footer div div div ul a[href="/apartments"]',
+        'footer > div > div > div > ul > li:nth-of-type(2) > a',
+        'footer.text-card-foreground > div > div > div > ul > li:nth-of-type(2) > a',
+        'footer ul li:nth-of-type(2) a',
+        'footer div div div ul li:nth-of-type(2) a',
       ];
 
       expect(expectedSelectors).toContain(generatedSelector);
@@ -570,17 +568,8 @@ describe('CssGenerator Selector Generation', () => {
       expect(result.isUnique).toBe(true);
 
       // Strategy 0 should produce a simple path without nth-of-type
-      // Since there's only one ul and the href is unique, it should use simple path
-      const expectedSimplePath = 'footer.text-card-foreground ul li a[href="/about"]';
-
-      // The selector should either be the simple path or contain the href attribute
-      expect(result.selector).toContain('href="/about"');
-
-      // If Strategy 0 worked, it should not have nth-of-type (unless needed)
-      // But since href is unique, it should prefer simple path
-      if (result.selector === expectedSimplePath) {
-        expect(result.usedNthOfType).toBe(false);
-      }
+      // Note: href/src attributes are excluded from CSS selectors (handled in Phase 2)
+      // The selector should work without href (semantic matching handles URL comparison)
 
       // Verify the selector finds exactly one element
       const matchedElements = div.querySelectorAll(result.selector);
@@ -634,15 +623,8 @@ describe('CssGenerator Selector Generation', () => {
 
       console.log('Generated Selector (href priority test):', JSON.stringify(result, null, 2));
 
-      // Should use href, not nth-of-type for the target element
-      expect(result.selector).toContain('href="/booking"');
-
-      // The target element should not use nth-of-type since href is sufficient
-      // Note: nth-of-type might still be used for intermediate div elements in the path
-      const selectorParts = result.selector.split(' ');
-      const lastPart = selectorParts[selectorParts.length - 1];
-      expect(lastPart).not.toMatch(/^a:nth-of-type\(\d+\)$/); // Target should not be just "a:nth-of-type(N)"
-      expect(lastPart).toContain('href="/booking"'); // Target should include href
+      // Note: href/src attributes are excluded from CSS selectors (handled in Phase 2)
+      // The selector may use nth-of-type or other strategies for disambiguation
 
       // Should still be unique
       expect(result.isUnique).toBe(true);
@@ -696,12 +678,11 @@ describe('CssGenerator Selector Generation', () => {
 
       console.log('Strategy 0 test - Generated:', result);
 
-      // Should be WITHOUT classes (even if utility classes exist)
-      // After ENHANCED FIX: uses descendant combinator (space) for flexibility
-      expect(result.selector).toBe('section ul li a[href="/booking"]');
-      expect(result.selector).not.toContain('.inline-flex');
-      expect(result.selector).not.toContain('.items-center');
-      expect(result.selector).not.toContain('.btn-primary');
+      // Note: href/src excluded from CSS selectors (handled in Phase 2)
+      // Without href, the selector needs other strategies (classes, nth-of-type)
+      expect(result.selector).toContain('section');
+      expect(result.selector).toContain('a');
+      expect(result.selector).not.toContain('href'); // href not in selector
       expect(result.isUnique).toBe(true);
     } finally {
       document.body.removeChild(div);
@@ -751,7 +732,7 @@ describe('CssGenerator Selector Generation', () => {
 
       // Should use role attribute for parent, NOT nth-of-type
       expect(result.selector).toContain('div[role="navigation"]');
-      expect(result.selector).toContain('a[href="/booking"]');
+      // Note: href/src excluded from CSS selectors (handled in Phase 2)
       expect(result.selector).not.toContain(':nth-of-type(');
       expect(result.isUnique).toBe(true);
     } finally {
@@ -803,9 +784,7 @@ describe('CssGenerator Selector Generation', () => {
 
       // Should use stable class for parent OR nth-of-type
       // Note: disambiguateParent checks if class reduces ambiguity
-      // In this case, both div have different hrefs, so class may not help
-      // Update test to be more lenient
-      expect(result.selector).toContain('a[href="/booking"]');
+      // Note: href/src excluded from CSS selectors (handled in Phase 2)
       expect(result.isUnique).toBe(true);
 
       // Verify it finds the correct element
@@ -903,7 +882,7 @@ describe('CssGenerator Selector Generation', () => {
       console.log('Strategy 3 test - Generated:', result);
 
       // Should add ONE stable class (btn-primary)
-      expect(result.selector).toContain('a[href="/booking"]');
+      // Note: href/src excluded from CSS selectors (handled in Phase 2)
       expect(result.selector).toContain('.btn-primary'); // Stable
       expect(result.selector).not.toContain('.inline-flex'); // Utility
       expect(result.selector).not.toContain('.items-center'); // Utility
@@ -948,7 +927,7 @@ describe('CssGenerator Selector Generation', () => {
       console.log('Strategy 4 test - Generated:', result);
 
       // Should use nth on target
-      expect(result.selector).toContain('a[href="/booking"]');
+      // Note: href/src excluded from CSS selectors (handled in Phase 2)
       expect(result.selector).toMatch(/a[^>]*:nth-of-type\(\d+\)/);
       expect(result.selector).not.toContain('.flex'); // Utility class not used
       expect(result.isUnique).toBe(true);
@@ -1382,8 +1361,7 @@ describe('CssGenerator Selector Generation', () => {
         expect(result.selector).not.toContain('[&:has');
         expect(result.selector).not.toContain(']:bg-accent');
 
-        // Should include stable class if needed
-        expect(result.selector).toContain('href="/link1"');
+        // Note: href/src excluded from CSS selectors (handled in Phase 2)
 
         expect(result.isUnique).toBe(true);
       } finally {

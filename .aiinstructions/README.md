@@ -37,8 +37,6 @@ When in doubt: **enforcement and naming** follow `.aiinstructions/` (rules + nam
 
 ## Rules (enforcement)
 
-- **rules/api-sdk-readonly.md** — `src/api/sdk/` is read-only; absolute priority.
-- **rules/chakra-ui-v3.md** — Chakra UI v3 imports, props, compound components, style system.
 - **rules/feature-docs.md** — Feature work must use `docs/dev/features/<feature-name>/` with plan + implementation summary; keep docs small for token economy.
 - **rules/issue-docs.md** — Issue work must use `docs/dev/issues/<issue-slug>/` with issue description + resolution summary; keep docs small for token economy.
 - **rules/app-content-language.md** — All user-facing and in-app content must be in English.
