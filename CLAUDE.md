@@ -64,6 +64,7 @@ When implementing a new feature or significant change:
    - Integration points with existing code
 
 **Example**: For feature "url-normalization", create:
+
 - `docs/dev/features/url-normalization/url-normalization.plan.md`
 - `docs/dev/features/url-normalization/url-normalization.implementation.md`
 
@@ -81,6 +82,7 @@ When fixing bugs or resolving issues:
    - Verification criteria
 
 **Example**: For issue "fix-cache-invalidation", create:
+
 - `docs/dev/issues/fix-cache-invalidation/fix-cache-invalidation.issue.md`
 - `docs/dev/issues/fix-cache-invalidation/fix-cache-invalidation.resolution.md`
 

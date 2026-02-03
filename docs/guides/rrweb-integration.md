@@ -9,6 +9,7 @@ Using SEQL with session replay.
 ### Why This Matters
 
 rrweb converts relative URLs to absolute URLs during iframe replay. For example:
+
 - Recording: `<a href="/booking">Book</a>`
 - Replay: `<a href="https://example.com/booking">Book</a>`
 
@@ -31,6 +32,7 @@ const result = resolve(eid, document); // Uses parent window.location!
 ### Technical Details
 
 The resolver now extracts the document base URL (`root.defaultView?.location?.href`) and passes it to the semantic matcher for Phase 2 URL normalization. This ensures:
+
 - Same-origin detection uses the correct window context
 - Relative URLs normalize against the right base URL
 - Cross-origin URLs are properly preserved

@@ -72,6 +72,17 @@ describe('ClassClassifier', () => {
       expect(isUtilityClass('active:scale-95')).toBe(true);
     });
 
+    it('should detect arbitrary pseudo-class variants (catch-all)', () => {
+      expect(isUtilityClass('file:bg-transparent')).toBe(true);
+      expect(isUtilityClass('file:border-0')).toBe(true);
+      expect(isUtilityClass('placeholder:text-muted-foreground')).toBe(true);
+      expect(isUtilityClass('invalid:border-red')).toBe(true);
+      expect(isUtilityClass('accept:text-primary')).toBe(true);
+      expect(isUtilityClass('disabled:opacity-50')).toBe(true);
+      expect(isUtilityClass('read-only:bg-gray-100')).toBe(true);
+      expect(isUtilityClass('autofill:bg-yellow-100')).toBe(true);
+    });
+
     it('should detect animation classes', () => {
       expect(isUtilityClass('animate-spin')).toBe(true);
       expect(isUtilityClass('transition-all')).toBe(true);
@@ -253,6 +264,34 @@ describe('ClassClassifier', () => {
       const classes = ['nav-item', 'button-primary', 'form-input'];
       const result = filterStableClasses(classes);
       expect(result).toEqual(classes);
+    });
+
+    it('should filter out arbitrary pseudo-class variants', () => {
+      const classes = [
+        'file:bg-transparent',
+        'file:border-0',
+        'placeholder:text-muted',
+        'form-input',
+        'flex',
+        'h-10',
+        'w-full',
+      ];
+      const result = filterStableClasses(classes);
+      expect(result).toEqual(['form-input']);
+    });
+
+    it('should filter out mixed utility variants and keep semantic classes', () => {
+      const classes = [
+        'hover:bg-blue-500',
+        'focus:ring-2',
+        'file:bg-transparent',
+        'invalid:border-red',
+        'button-primary',
+        'nav-item',
+        'mt-4',
+      ];
+      const result = filterStableClasses(classes);
+      expect(result).toEqual(['button-primary', 'nav-item']);
     });
   });
 

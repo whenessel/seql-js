@@ -69,6 +69,12 @@ const UTILITY_CLASS_PATTERNS = [
   // === FIX 4: Group and peer variants ===
   /^(group|peer)(-hover|-focus|-active)?:/,
 
+  // === Arbitrary pseudo-class/modifier variants (catch-all) ===
+  // Matches any lowercase/hyphenated prefix followed by colon
+  // e.g., file:bg-transparent, placeholder:text-gray, invalid:border-red, accept:text-primary
+  // Must come AFTER semantic pattern checks to avoid false positives
+  /^[a-z][a-z-]*:/,
+
   // === FIX 4: Tailwind utilities with fraction values ===
   /\/([\d.]+|full|auto|screen)$/, // /50, /100, /full, /auto, /screen
 

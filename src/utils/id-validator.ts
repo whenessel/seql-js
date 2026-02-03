@@ -26,10 +26,20 @@ export function isDynamicId(id: string): boolean {
     return true;
   }
 
-  // Pattern: hash-like (long random strings with mixed case/numbers)
-  // e.g., "css-1a2b3c4d", "sc-bdVaJa"
-  if (/^[a-z]{1,3}[A-Za-z0-9]{8,}$/.test(id) && (/\d/.test(id) || /[A-Z]/.test(id))) {
-    return true;
+  // Pattern: hash-like (long random strings)
+  // Case 1: Has mixed case AND digits (e.g., "scBdVaJa1", "css123AbC")
+  // Case 2: Very long lowercase+digit sequences (20+ chars, e.g., "abc123def456ghi789jkl012mno345pqr678")
+  // Does NOT match semantic camelCase without digits: "firstName", "lastName", "emailAddress"
+  if (/^[a-z]{1,3}[A-Za-z0-9]{8,}$/.test(id)) {
+    // Require BOTH digits AND uppercase for shorter IDs (9-19 chars)
+    // OR just require 20+ chars for very long hash-like sequences
+    const hasDigits = /\d/.test(id);
+    const hasUppercase = /[A-Z]/.test(id);
+    const isVeryLong = id.length >= 20;
+
+    if ((hasDigits && hasUppercase) || isVeryLong) {
+      return true;
+    }
   }
 
   // Pattern: Radix UI style (e.g., "radix-:r0:")

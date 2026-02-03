@@ -159,21 +159,53 @@ describe('isStableId', () => {
 });
 
 describe('isDynamicId - hash-like edge cases', () => {
-  it('should detect hash with only lowercase and numbers', () => {
-    expect(isDynamicId('css1a2b3c4d')).toBe(true);
+  it('should detect hash with both digits AND uppercase', () => {
+    expect(isDynamicId('scBdVaJa1')).toBe(true); // Has both uppercase (B, V, J) and digit (1)
+    expect(isDynamicId('css123AbC')).toBe(true); // Has both digits (123) and uppercase (A, C)
+    expect(isDynamicId('sc1A2b3C4d')).toBe(true); // Mixed digits and uppercase
   });
 
-  it('should detect hash with mixed case', () => {
-    expect(isDynamicId('scBdVaJaXy')).toBe(true); // 10 chars: 'sc' + 'BdVaJaXy' (8 chars)
+  it('should NOT detect hash with only digits (no uppercase)', () => {
+    // Pattern requires BOTH digits AND uppercase
+    expect(isDynamicId('css1a2b3c4d')).toBe(false); // Has digits but no uppercase
+    expect(isDynamicId('sc12345678')).toBe(false); // Has digits but no uppercase
+  });
+
+  it('should NOT detect hash with only uppercase (no digits)', () => {
+    // Pattern requires BOTH digits AND uppercase
+    expect(isDynamicId('scBdVaJaXy')).toBe(false); // Has uppercase but no digits
+    expect(isDynamicId('cssABCDEFGH')).toBe(false); // Has uppercase but no digits
   });
 
   it('should NOT detect short hash without digits or uppercase', () => {
-    // Pattern requires 8+ chars after 1-3 letter prefix AND (digits OR uppercase)
+    // Pattern requires 8+ chars after 1-3 letter prefix AND (digits AND uppercase)
     expect(isDynamicId('cssabcdefgh')).toBe(false);
   });
 
   it('should NOT detect hash shorter than 9 chars total', () => {
     // Pattern requires 1-3 prefix + 8+ additional = at least 9 chars total
     expect(isDynamicId('scBdVaJa')).toBe(false); // Only 8 chars: 'sc' + 'BdVaJa'
+  });
+});
+
+describe('isDynamicId - camelCase IDs (semantic IDs)', () => {
+  it('should NOT detect camelCase IDs as dynamic', () => {
+    expect(isDynamicId('firstName')).toBe(false); // 9 chars: 'f' + 'irstName' (has uppercase but no digits)
+    expect(isDynamicId('lastName')).toBe(false); // 8 chars: 'l' + 'astName' (too short to match pattern)
+    expect(isDynamicId('emailAddress')).toBe(false); // Has uppercase but no digits
+    expect(isDynamicId('userProfile')).toBe(false); // Has uppercase but no digits
+    expect(isDynamicId('phoneNumber')).toBe(false); // Has uppercase but no digits
+  });
+
+  it('should NOT detect all-lowercase IDs', () => {
+    expect(isDynamicId('username')).toBe(false);
+    expect(isDynamicId('password')).toBe(false);
+    expect(isDynamicId('email')).toBe(false);
+  });
+
+  it('should detect hash-like IDs with camelCase prefix but with digits', () => {
+    // These look like generated IDs: camelCase prefix + random digits/uppercase
+    expect(isDynamicId('firstName123A')).toBe(true); // Has both digits AND uppercase
+    expect(isDynamicId('userIdAb1Cd2Ef')).toBe(true); // Has both digits AND uppercase
   });
 });
