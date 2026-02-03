@@ -37,6 +37,9 @@ export {
 // Attribute cleaning
 export { cleanAttributeValue, type CleanAttributeOptions } from './attribute-cleaner';
 
+// URL normalization
+export { normalizeUrlForComparison } from './url-normalizer';
+
 // ID validation
 export { isDynamicId, isStableId } from './id-validator';
 

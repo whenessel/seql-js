@@ -33,7 +33,7 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-function': 'warn',
       '@typescript-eslint/no-inferrable-types': 'warn',
 
-      // Правила именования согласно .ai/ правилам
+      // Правила именования согласно .aiinstructions/ правилам
       '@typescript-eslint/naming-convention': [
         'warn',
         // Классы: PascalCase

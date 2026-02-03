@@ -1233,12 +1233,14 @@ export class CssGenerator {
       const sortedAttrs = this.getSortedAttributes(semantics.attributes);
 
       for (const { name, value } of sortedAttrs) {
-        // Clean href/src from dynamic parts
-        const cleanedValue =
-          name === 'href' || name === 'src' ? cleanAttributeValue(name, value) : value;
+        // Skip href/src in CSS selectors - they'll be matched with URL normalization in Phase 2
+        // (relative vs absolute URLs require normalization, which CSS selectors can't handle)
+        if (name === 'href' || name === 'src') {
+          continue;
+        }
 
-        if (cleanedValue) {
-          selector += `[${name}="${this.escapeAttr(cleanedValue)}"]`;
+        if (value) {
+          selector += `[${name}="${this.escapeAttr(value)}"]`;
         }
       }
     }

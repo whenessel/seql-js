@@ -21,6 +21,92 @@ The system has two main operations:
 1. **Generation** (`generateEID`): DOM Element → EID Identity (JSON)
 2. **Resolution** (`resolve`): EID Identity (JSON) → DOM Element(s)
 
+## AI Instructions & Coding Standards
+
+This project follows strict conventions for code style, naming, documentation, and task management. All rules are centralized in `.aiinstructions/` directory.
+
+### Quick Reference
+
+**IMPORTANT**: Before making any changes, consult the checklist in `.aiinstructions/README.md` (line 53-61). The checklist covers:
+
+- API restrictions (SDK is read-only)
+- Naming conventions
+- Feature and issue documentation requirements
+- Documentation-only updates
+- Language requirements
+
+### Core Rules
+
+#### 1. **Naming Conventions** (`.aiinstructions/naming/`)
+
+All identifiers must follow strict naming rules:
+
+- **Files**: kebab-case (`user-service.ts`, `url-normalizer.ts`)
+- **Directories**: kebab-case, plural (`utils/`, `types/`, `generator/`)
+- **Variables/Functions**: camelCase (`generateEID`, `isStableAttribute`)
+- **Classes/Types**: PascalCase, no I/T prefixes (`ElementIdentity`, `AnchorNode`)
+- **Constants**: UPPER_SNAKE_CASE (`MAX_CACHE_SIZE`, `SEMANTIC_TAGS`)
+- **Language**: English only, ASCII only, no abbreviations
+
+Priority order: `public-api.md` → `types.md`/`classes.md` → `functions.md`/`variables.md` → `files.md`/`directories.md` → `constants.md`/`enums.md` → `internals.md`
+
+#### 2. **Feature Work** (`.aiinstructions/rules/feature-docs.md`)
+
+When implementing a new feature or significant change:
+
+1. **Create directory**: `docs/dev/features/<feature-slug>/` (slug in kebab-case)
+2. **Create plan** (MANDATORY before or at start): `<slug>.plan.md`
+   - Use format from `feature-docs.md` (sections: Task Overview, Objectives, Context, Approach, Implementation Steps, Success Criteria, Risks, Output, Notes)
+   - Keep concise for token economy
+3. **Create implementation summary**: `<slug>.implementation.md`
+   - What was implemented (brief)
+   - Main files created/modified
+   - Integration points with existing code
+
+**Example**: For feature "url-normalization", create:
+- `docs/dev/features/url-normalization/url-normalization.plan.md`
+- `docs/dev/features/url-normalization/url-normalization.implementation.md`
+
+#### 3. **Issue Work** (`.aiinstructions/rules/issue-docs.md`)
+
+When fixing bugs or resolving issues:
+
+1. **Create directory**: `docs/dev/issues/<issue-slug>/` (slug in kebab-case)
+2. **Create issue description** (MANDATORY when issue identified): `<slug>.issue.md`
+   - Use format from `issue-docs.md` (sections: Summary, Reproduction, Context, Impact, Analysis, Notes)
+   - Keep concise for token economy
+3. **Create resolution summary**: `<slug>.resolution.md`
+   - What was fixed (brief)
+   - Files created/modified/removed
+   - Verification criteria
+
+**Example**: For issue "fix-cache-invalidation", create:
+- `docs/dev/issues/fix-cache-invalidation/fix-cache-invalidation.issue.md`
+- `docs/dev/issues/fix-cache-invalidation/fix-cache-invalidation.resolution.md`
+
+#### 4. **Code Documentation** (`.aiinstructions/docs/docstrings.md`)
+
+When updating only comments/docstrings (without changing code):
+
+- Use TSDoc/JSDoc format
+- First sentence: brief purpose (don't repeat the name)
+- Required tags: `@param`, `@returns` (skip for void), `@throws` (only explicit), `@remarks` (side effects, timings), `@example`, `@see`
+- Add "Usage (local references)" with up to 5 actual usage sites (`path:line-range`)
+- **CRITICAL**: Edit only comments, never change code/signatures/types/logic
+- Follow project formatting (2 spaces, LF, 100-120 cols)
+
+#### 5. **Application Language** (`.aiinstructions/rules/app-content-language.md`)
+
+- All user-facing content MUST be in English (error messages, labels, logs)
+- Code identifiers MUST be in English (enforced by naming rules)
+- Planning docs and commit messages may use any language
+
+### Priority When Rules Conflict
+
+1. Agent profile (`.aiinstructions/agents/default.md`)
+2. Rules (feature-docs, issue-docs, app-content-language)
+3. Global style (naming, docstrings)
+
 ## Development Commands
 
 ### Building
@@ -112,6 +198,7 @@ Helper functions and shared logic:
 - **`class-filter.ts`**: Filters utility/framework classes (Tailwind, Bootstrap, etc.)
 - **`class-classifier.ts`**: Classifies CSS classes as semantic vs. utility
 - **`attribute-cleaner.ts`**: Cleans and normalizes HTML attributes
+- **`url-normalizer.ts`** (v1.5.1): Normalizes URLs for consistent comparison - converts same-origin absolute URLs to relative for rrweb iframe compatibility
 - **`id-validator.ts`**: Validates ID stability (rejects auto-generated IDs)
 - **`validator.ts`**: EID identity validation
 

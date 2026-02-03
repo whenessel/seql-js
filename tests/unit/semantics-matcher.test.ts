@@ -168,6 +168,282 @@ describe('SemanticsMatcher', () => {
     });
   });
 
+  describe('URL Normalization in Attribute Matching', () => {
+    // Mock window.location for URL normalization tests
+    beforeEach(() => {
+      Object.defineProperty(window, 'location', {
+        value: {
+          href: 'https://example.com',
+          origin: 'https://example.com',
+        },
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    it('should match relative href with absolute same-origin href', () => {
+      const link1 = document.createElement('a');
+      link1.setAttribute('href', '/path');
+      link1.textContent = 'Link';
+
+      const link2 = document.createElement('a');
+      link2.setAttribute('href', 'https://example.com/path');
+      link2.textContent = 'Link';
+
+      const semantics: ElementSemantics = {
+        attributes: { href: '/path' },
+      };
+
+      // Both links should match
+      const result1 = matcher.match([link1], semantics);
+      expect(result1).toHaveLength(1);
+
+      const result2 = matcher.match([link2], semantics);
+      expect(result2).toHaveLength(1);
+    });
+
+    it('should match absolute same-origin href with relative href', () => {
+      const link = document.createElement('a');
+      link.setAttribute('href', '/apartments');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: 'https://example.com/apartments' },
+      };
+
+      const result = matcher.match([link], semantics);
+      expect(result).toHaveLength(1);
+    });
+
+    it('should match cross-origin href with relative href (default path-only mode)', () => {
+      const link = document.createElement('a');
+      link.setAttribute('href', '/api');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: 'https://external.com/api' },
+      };
+
+      // Default mode (matchUrlsByPathOnly: true) should match
+      const result = matcher.match([link], semantics);
+      expect(result).toHaveLength(1);
+
+      // Strict mode (matchUrlsByPathOnly: false) should NOT match
+      const resultStrict = matcher.match([link], semantics, undefined, false);
+      expect(resultStrict).toHaveLength(0);
+    });
+
+    it('should match cross-origin hrefs exactly', () => {
+      const link = document.createElement('a');
+      link.setAttribute('href', 'https://external.com/api');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: 'https://external.com/api' },
+      };
+
+      const result = matcher.match([link], semantics);
+      expect(result).toHaveLength(1);
+    });
+
+    it('should match relative src with absolute same-origin src', () => {
+      const img1 = document.createElement('img');
+      img1.setAttribute('src', '/images/logo.png');
+
+      const img2 = document.createElement('img');
+      img2.setAttribute('src', 'https://example.com/images/logo.png');
+
+      const semantics: ElementSemantics = {
+        attributes: { src: '/images/logo.png' },
+      };
+
+      const result1 = matcher.match([img1], semantics);
+      expect(result1).toHaveLength(1);
+
+      const result2 = matcher.match([img2], semantics);
+      expect(result2).toHaveLength(1);
+    });
+
+    it('should match special protocol URLs exactly', () => {
+      const link1 = document.createElement('a');
+      link1.setAttribute('href', 'javascript:void(0)');
+
+      const link2 = document.createElement('a');
+      link2.setAttribute('href', 'mailto:user@example.com');
+
+      const link3 = document.createElement('a');
+      link3.setAttribute('href', 'tel:+1234567890');
+
+      const semantics1: ElementSemantics = {
+        attributes: { href: 'javascript:void(0)' },
+      };
+      const semantics2: ElementSemantics = {
+        attributes: { href: 'mailto:user@example.com' },
+      };
+      const semantics3: ElementSemantics = {
+        attributes: { href: 'tel:+1234567890' },
+      };
+
+      expect(matcher.match([link1], semantics1)).toHaveLength(1);
+      expect(matcher.match([link2], semantics2)).toHaveLength(1);
+      expect(matcher.match([link3], semantics3)).toHaveLength(1);
+    });
+
+    it('should still match non-URL attributes exactly (regression test)', () => {
+      const button = document.createElement('button');
+      button.setAttribute('data-action', 'submit');
+      button.setAttribute('type', 'button');
+
+      const semantics1: ElementSemantics = {
+        attributes: { 'data-action': 'submit', type: 'button' },
+      };
+
+      const semantics2: ElementSemantics = {
+        attributes: { 'data-action': 'cancel' }, // Different value
+      };
+
+      // Should match exact attributes
+      expect(matcher.match([button], semantics1)).toHaveLength(1);
+
+      // Should NOT match different non-URL attributes
+      expect(matcher.match([button], semantics2)).toHaveLength(0);
+    });
+  });
+
+  describe('URL Normalization with documentUrl Parameter (Iframe Context)', () => {
+    it('should match href with documentUrl context provided', () => {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://example.com/booking');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: '/booking' },
+      };
+
+      // Pass document URL for same-origin comparison
+      const documentUrl = 'https://example.com/';
+      const result = matcher.match([element], semantics, documentUrl);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toBe(element);
+    });
+
+    it('should NOT match when documentUrl causes origin mismatch (strict mode)', () => {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://example.com/booking');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: '/booking' },
+      };
+
+      // Wrong document URL (different origin)
+      const documentUrl = 'http://localhost:3000/';
+      // Use matchUrlsByPathOnly: false for strict origin validation
+      const result = matcher.match([element], semantics, documentUrl, false);
+
+      // Should NOT match - origin mismatch in strict mode
+      expect(result).toHaveLength(0);
+    });
+
+    it('should match cross-origin URLs exactly regardless of documentUrl', () => {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://external.com/api');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: 'https://external.com/api' },
+      };
+
+      const documentUrl = 'https://example.com/';
+      const result = matcher.match([element], semantics, documentUrl);
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should work without documentUrl parameter (backwards compatibility)', () => {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://example.com/booking');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: '/booking' },
+      };
+
+      // Without documentUrl, uses window.location (which is set to https://example.com in beforeEach)
+      const result = matcher.match([element], semantics);
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should match with iframe document URL (primary bug fix scenario)', () => {
+      // Simulate iframe context with different origin
+      const iframeDocumentUrl = 'https://appsurify.github.io/modern-seaside-stay/';
+
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://appsurify.github.io/modern-seaside-stay/booking');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: '/modern-seaside-stay/booking' },
+      };
+
+      // Pass iframe's document URL
+      const result = matcher.match([element], semantics, iframeDocumentUrl);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toBe(element);
+    });
+
+    it('should NOT match when iframe document URL causes mismatch (strict mode)', () => {
+      // Simulate parent window URL
+      const parentDocumentUrl = 'http://localhost:63342/test.html';
+
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://appsurify.github.io/modern-seaside-stay/booking');
+
+      const semantics: ElementSemantics = {
+        attributes: { href: '/modern-seaside-stay/booking' },
+      };
+
+      // Pass parent's document URL (WRONG!) with strict mode
+      const result = matcher.match([element], semantics, parentDocumentUrl, false);
+
+      // Should NOT match - using parent window's origin instead of iframe's in strict mode
+      expect(result).toHaveLength(0);
+    });
+
+    it('should handle src attribute with documentUrl context', () => {
+      const element = document.createElement('img');
+      element.setAttribute('src', 'https://example.com/images/logo.png');
+
+      const semantics: ElementSemantics = {
+        attributes: { src: '/images/logo.png' },
+      };
+
+      const documentUrl = 'https://example.com/';
+      const result = matcher.match([element], semantics, documentUrl);
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should disambiguate multiple links with same text using documentUrl', () => {
+      const link1 = document.createElement('a');
+      link1.setAttribute('href', 'https://example.com/booking');
+      link1.textContent = 'Book';
+
+      const link2 = document.createElement('a');
+      link2.setAttribute('href', 'https://example.com/checkout');
+      link2.textContent = 'Book';
+
+      const link3 = document.createElement('a');
+      link3.setAttribute('href', 'https://example.com/reserve');
+      link3.textContent = 'Book';
+
+      const semantics: ElementSemantics = {
+        attributes: { href: '/checkout' },
+      };
+
+      const documentUrl = 'https://example.com/';
+      const result = matcher.match([link1, link2, link3], semantics, documentUrl);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toBe(link2);
+    });
+  });
+
   describe('SVG Fingerprint Matching', () => {
     let svg: SVGSVGElement;
 

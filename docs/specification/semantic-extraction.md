@@ -54,3 +54,23 @@ For SVG elements (if enabled):
 - Path data hash
 - ViewBox geometry
 - Animation status
+
+### 8. URL Normalization (v1.5.1)
+
+For `href` and `src` attributes, values are normalized during **resolution** (not generation):
+
+**Generation:**
+
+- URLs stored as-is (relative or absolute)
+- Cleaned by `attribute-cleaner.ts` (query params/dynamic hashes removed)
+
+**Resolution:**
+
+- Same-origin absolute URLs → converted to relative (`https://example.com/path` → `/path`)
+- Relative URLs → kept as-is (`/path` → `/path`)
+- Cross-origin URLs → preserved as absolute (`https://external.com/api` → unchanged)
+- Special protocols → preserved (`javascript:`, `mailto:`, `tel:`)
+
+**Rationale:**
+
+Solves rrweb iframe replay scenarios where relative URLs become absolute URLs. By normalizing during comparison, EIDs generated with `/path` can match elements with `https://example.com/path` (same-origin).

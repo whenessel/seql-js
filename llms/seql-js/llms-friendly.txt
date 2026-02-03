@@ -109,6 +109,7 @@ Cache:
 
 Utilities and constants (selected):
 - normalizeText, filterClasses, calculateConfidence
+- normalizeUrlForComparison (v1.5.1+): URL normalization for rrweb iframe compatibility
 - EID_VERSION, DEFAULT_GENERATOR_OPTIONS, DEFAULT_RESOLVER_OPTIONS
 
 Advanced components:

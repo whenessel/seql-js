@@ -1,5 +1,7 @@
 import type { ElementSemantics, TextContent, SvgFingerprint } from '../types';
 import { normalizeText } from '../utils/text-normalizer';
+import { cleanAttributeValue } from '../utils/attribute-cleaner';
+import { normalizeUrlForComparison, extractPathnameForComparison } from '../utils/url-normalizer';
 
 /**
  * Filters elements by semantic criteria
@@ -10,23 +12,42 @@ export class SemanticsMatcher {
    * Filters elements that match the semantics
    * @param elements - Candidate elements
    * @param semantics - Target semantics to match
+   * @param documentUrl - Optional document base URL for URL normalization (iframe context)
+   * @param matchUrlsByPathOnly - Optional flag to match URLs by pathname only (ignoring origin)
    * @returns Filtered elements that match
    */
-  match(elements: Element[], semantics: ElementSemantics): Element[] {
-    return elements.filter((el) => this.matchElement(el, semantics));
+  match(
+    elements: Element[],
+    semantics: ElementSemantics,
+    documentUrl?: string,
+    matchUrlsByPathOnly?: boolean
+  ): Element[] {
+    return elements.filter((el) =>
+      this.matchElement(el, semantics, documentUrl, matchUrlsByPathOnly)
+    );
   }
 
   /**
    * Checks if a single element matches the semantics
+   * @param documentUrl - Optional document base URL for URL normalization (iframe context)
+   * @param matchUrlsByPathOnly - Optional flag to match URLs by pathname only (ignoring origin)
    */
-  private matchElement(element: Element, semantics: ElementSemantics): boolean {
+  private matchElement(
+    element: Element,
+    semantics: ElementSemantics,
+    documentUrl?: string,
+    matchUrlsByPathOnly?: boolean
+  ): boolean {
     // Match text (if specified)
     if (semantics.text && !this.matchText(element, semantics.text)) {
       return false;
     }
 
     // Match attributes (if specified)
-    if (semantics.attributes && !this.matchAttributes(element, semantics.attributes)) {
+    if (
+      semantics.attributes &&
+      !this.matchAttributes(element, semantics.attributes, documentUrl, matchUrlsByPathOnly)
+    ) {
       return false;
     }
 
@@ -86,15 +107,25 @@ export class SemanticsMatcher {
 
   /**
    * Checks if a single element matches the semantics with lenient text matching
+   * @param documentUrl - Optional document base URL for URL normalization (iframe context)
+   * @param matchUrlsByPathOnly - Optional flag to match URLs by pathname only (ignoring origin)
    */
-  private matchElementLenient(element: Element, semantics: ElementSemantics): boolean {
+  private matchElementLenient(
+    element: Element,
+    semantics: ElementSemantics,
+    documentUrl?: string,
+    matchUrlsByPathOnly?: boolean
+  ): boolean {
     // Match text with lenient mode
     if (semantics.text && !this.matchTextLenient(element, semantics.text)) {
       return false;
     }
 
     // Keep strict matching for other semantics
-    if (semantics.attributes && !this.matchAttributes(element, semantics.attributes)) {
+    if (
+      semantics.attributes &&
+      !this.matchAttributes(element, semantics.attributes, documentUrl, matchUrlsByPathOnly)
+    ) {
       return false;
     }
 
@@ -107,19 +138,75 @@ export class SemanticsMatcher {
 
   /**
    * Filters elements with lenient matching (exported for use in resolver)
+   * @param documentUrl - Optional document base URL for URL normalization (iframe context)
+   * @param matchUrlsByPathOnly - Optional flag to match URLs by pathname only (ignoring origin)
    */
-  matchLenient(elements: Element[], semantics: ElementSemantics): Element[] {
-    return elements.filter((el) => this.matchElementLenient(el, semantics));
+  matchLenient(
+    elements: Element[],
+    semantics: ElementSemantics,
+    documentUrl?: string,
+    matchUrlsByPathOnly?: boolean
+  ): Element[] {
+    return elements.filter((el) =>
+      this.matchElementLenient(el, semantics, documentUrl, matchUrlsByPathOnly)
+    );
   }
 
   /**
-   * Matches attributes
+   * Matches attributes with URL normalization for href/src
+   * @param documentUrl - Optional document base URL for URL normalization (iframe context)
+   * @param matchUrlsByPathOnly - Optional flag to match URLs by pathname only (ignoring origin, default: true)
    */
-  matchAttributes(element: Element, attrs: Record<string, string>): boolean {
+  matchAttributes(
+    element: Element,
+    attrs: Record<string, string>,
+    documentUrl?: string,
+    matchUrlsByPathOnly = true
+  ): boolean {
     for (const [key, value] of Object.entries(attrs)) {
       const elementValue = element.getAttribute(key);
-      if (elementValue !== value) {
-        return false;
+
+      // Special handling for URL attributes (href, src)
+      // Normalizes both expected (from EID) and actual (from DOM) URLs
+      // to handle relative/absolute URL mismatches (e.g., rrweb iframe replay)
+      if (key === 'href' || key === 'src') {
+        // Choose matching strategy based on option
+        if (matchUrlsByPathOnly) {
+          // PATH-ONLY MATCHING MODE
+          // Extract pathname from both URLs and compare
+          const cleanedExpected = cleanAttributeValue(key, value, {
+            preserveQueryForAbsolute: false,
+          });
+          const cleanedActual = cleanAttributeValue(key, elementValue || '', {
+            preserveQueryForAbsolute: false,
+          });
+
+          const pathnameExpected = extractPathnameForComparison(cleanedExpected);
+          const pathnameActual = extractPathnameForComparison(cleanedActual);
+
+          if (pathnameExpected !== pathnameActual) {
+            return false;
+          }
+        } else {
+          // DEFAULT MODE: Full URL normalization
+          const normalizedExpected = normalizeUrlForComparison(
+            cleanAttributeValue(key, value, { preserveQueryForAbsolute: false }),
+            documentUrl
+          );
+          const normalizedActual = normalizeUrlForComparison(
+            cleanAttributeValue(key, elementValue || '', { preserveQueryForAbsolute: false }),
+            documentUrl
+          );
+
+          if (normalizedExpected !== normalizedActual) {
+            return false;
+          }
+        }
+      } else {
+        // Non-URL attributes: exact string match (existing behavior)
+        if (elementValue !== value) {
+          return false;
+        }
       }
     }
     return true;
