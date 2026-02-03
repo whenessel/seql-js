@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-02-03
+
+### Fixed
+
+- **ID Validation Accuracy**: Refined hash-like ID detection to correctly identify semantic camelCase IDs
+  - CamelCase IDs without digits (e.g., `firstName`, `lastName`, `emailAddress`) are now correctly classified as stable
+  - Hash-like IDs now require BOTH digits AND uppercase for shorter IDs (9-19 chars) to be marked as dynamic
+  - Very long hash sequences (20+ chars) are still correctly detected as dynamic
+  - Fixes incorrect filtering of semantic form field IDs in `id-validator.ts:29-40`
+- **Utility Class Filtering**: Extended Tailwind CSS class detection with catch-all pattern for arbitrary pseudo-class variants
+  - Added pattern `/^[a-z][a-z-]*:/` to catch all pseudo-class variants (`file:`, `placeholder:`, `invalid:`, `accept:`, etc.)
+  - Positioned after semantic pattern checks to prevent false positives
+  - Ensures all `:` separator classes are correctly classified as utility classes in `class-classifier.ts:72-76`
+
+### Tests
+
+- Added 15+ comprehensive tests for both fixes:
+  - `tests/unit/id-validator.test.ts` - Edge cases for camelCase IDs (firstName vs lastName length differences)
+  - `tests/unit/class-classifier.test.ts` - Arbitrary pseudo-class variant detection
+  - `tests/integration/firstname-selector-fix.test.ts` - End-to-end integration tests (221 lines)
+- All tests passing (previous: 1,119 tests)
+
+### Documentation
+
+- Added issue documentation: `docs/dev/issues/fix-firstname-selector/`
+  - `fix-firstname-selector.issue.md` - Root cause analysis of both bugs
+  - `fix-firstname-selector.resolution.md` - Implementation details and verification
+
+### Impact
+
+This patch improves EID generation accuracy for common patterns:
+
+- Form inputs with semantic camelCase IDs now correctly include the ID in their semantics
+- Tailwind utility classes with arbitrary variants are properly filtered from selectors
+- No breaking changes - backward compatible with existing EID generation
+
 ## [1.6.0] - 2026-02-03
 
 ### Added
@@ -289,7 +325,8 @@ See git history for changes before this version.
 
 ---
 
-[Unreleased]: https://github.com/whenessel/seql-js/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/whenessel/seql-js/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/whenessel/seql-js/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/whenessel/seql-js/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/whenessel/seql-js/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/whenessel/seql-js/compare/v1.3.0...v1.4.0

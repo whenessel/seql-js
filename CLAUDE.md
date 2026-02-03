@@ -198,10 +198,10 @@ Helper functions and shared logic:
 - **`text-normalizer.ts`**: Text normalization (whitespace, Unicode, case)
 - **`attribute-filters.ts`** (v1.0.3): Filters attributes by stability - separates identity-defining attributes from state-based attributes
 - **`class-filter.ts`**: Filters utility/framework classes (Tailwind, Bootstrap, etc.)
-- **`class-classifier.ts`**: Classifies CSS classes as semantic vs. utility
+- **`class-classifier.ts`** (v1.6.1): Classifies CSS classes as semantic vs. utility - includes catch-all pattern for arbitrary pseudo-class variants (`file:`, `placeholder:`, `invalid:`, etc.)
 - **`attribute-cleaner.ts`**: Cleans and normalizes HTML attributes
 - **`url-normalizer.ts`** (v1.5.1): Normalizes URLs for consistent comparison - converts same-origin absolute URLs to relative for rrweb iframe compatibility
-- **`id-validator.ts`**: Validates ID stability (rejects auto-generated IDs)
+- **`id-validator.ts`** (v1.6.1): Validates ID stability - refined hash detection to correctly identify semantic camelCase IDs (firstName, lastName) while detecting true dynamic IDs
 - **`validator.ts`**: EID identity validation
 
 ### Critical Design Principles

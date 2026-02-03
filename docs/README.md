@@ -1,6 +1,6 @@
 # SEQL Documentation
 
-Complete documentation for seql-js v1.3.0.
+Complete documentation for seql-js v1.6.1.
 
 ## For Users
 
@@ -53,6 +53,10 @@ Previous documentation versions are preserved in [archive/](./archive/):
 
 ## Version History
 
+- **v1.6.1** (2026-02-03): ID validation accuracy, utility class filtering improvements
+- **v1.6.0** (2026-02-03): URL normalization, path-only URL matching, iframe/rrweb compatibility
+- **v1.5.0** (2026-02-02): Iframe support, cross-document operations, Chrome DevTools extension enhancements
+- **v1.4.0** (2026-01-28): Analytics attribute filtering, comprehensive third-party tracking support
 - **v1.3.0** (2026-01-27): Always-generate guarantee, improved stable ID scoring
 - **v1.1.0** (2026-01-22): nth-child positioning, documentation restructuring
 - **v1.0.3** (2026-01-21): Attribute stability filtering
