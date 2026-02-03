@@ -7,6 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-02-03
+
+### Added
+
+- **URL Normalization for iframe/rrweb Compatibility**: Automatic URL normalization for consistent attribute matching across different URL formats
+  - New `url-normalizer.ts` utility module with `normalizeUrlForComparison()` and `extractPathnameForComparison()` functions
+  - Same-origin absolute URLs automatically converted to relative format (e.g., `https://example.com/path` → `/path`)
+  - Cross-origin URLs preserved as absolute for semantic accuracy
+  - Solves rrweb iframe replay scenarios where relative URLs during recording become absolute URLs during replay
+- **Path-Only URL Matching**: Enhanced cross-origin support for rrweb replay scenarios
+  - New `matchUrlsByPathOnly` option in `ResolverOptions` (default: `true`)
+  - Enables URL matching by pathname only, ignoring origin differences (e.g., `/booking` matches `https://any-origin.com/booking`)
+  - Particularly useful for localhost development with production links or cross-origin replay scenarios
+- **Document Base URL Option**: Explicit document URL specification for iframe contexts
+  - New `documentUrl` parameter in `ResolverOptions`
+  - Critical for correct same-origin detection in iframe environments
+  - Falls back to `root.defaultView?.location?.href` or `window.location.href` if not provided
+
+### Changed
+
+- **Enhanced Semantics Matcher**: Updated attribute matching to use URL normalization
+  - `SemanticsMatcher.match()` now accepts `documentUrl` and `matchUrlsByPathOnly` parameters
+  - Automatic URL normalization applied to `href` and `src` attributes during comparison
+  - Improved attribute matching accuracy across different URL formats
+- **Resolver Integration**: Document URL extraction and propagation throughout resolution pipeline
+  - `resolver.ts` extracts base URL from `root.defaultView?.location?.href`
+  - Passes `documentUrl` and `matchUrlsByPathOnly` to semantic matcher in Phase 2
+  - Ensures consistent URL comparison across all resolution phases
+
+### Tests
+
+- Added 117+ new comprehensive tests (100% pass rate):
+  - `tests/unit/url-normalizer.test.ts` - 507 lines of URL normalization validation
+  - `tests/integration/url-matching.test.ts` - 463 lines of URL matching integration tests
+  - `tests/integration/url-matching-pathonly.test.ts` - 270 lines of path-only matching tests
+  - Updated `tests/unit/semantics-matcher.test.ts` with URL normalization scenarios
+- All 1,119 tests passing (previous: 1,002 tests)
+
+### Documentation
+
+- **rrweb Integration Guide**: Comprehensive guide for session replay integration in `docs/guides/rrweb-integration.md`
+  - iframe context and URL normalization best practices
+  - Recording and replay phase examples
+  - Analytics correlation patterns
+  - Troubleshooting guide for URL-related issues
+- **Semantic Extraction Documentation**: Added `docs/specification/semantic-extraction.md`
+- **Project Organization**: Major documentation restructuring
+  - Renamed `.ai/` directory to `.aiinstructions/` for clarity
+  - Added `CLAUDE.md` in project root with comprehensive project overview and AI coding standards
+  - Removed large LLM documentation files (109k+ lines) for better repository size management
+
+### Migration
+
+No breaking changes. URL normalization and path-only matching are enabled by default but fully backward compatible.
+
+**New features usage:**
+
+```typescript
+import { resolve } from '@whenessel/seql-js';
+
+// Iframe context with explicit document URL
+const iframe = document.querySelector('iframe');
+const result = resolve(eid, {
+  root: iframe.contentDocument,
+  documentUrl: iframe.contentWindow.location.href
+});
+
+// Disable path-only matching for strict origin validation
+const strictResult = resolve(eid, {
+  matchUrlsByPathOnly: false
+});
+```
+
+For rrweb replay scenarios, URL normalization works automatically when passing iframe's `contentDocument` as `root` parameter. See `docs/guides/rrweb-integration.md` for detailed examples.
+
 ## [1.5.0] - 2026-02-02
 
 ### Added
@@ -214,7 +289,8 @@ See git history for changes before this version.
 
 ---
 
-[Unreleased]: https://github.com/whenessel/seql-js/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/whenessel/seql-js/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/whenessel/seql-js/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/whenessel/seql-js/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/whenessel/seql-js/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/whenessel/seql-js/compare/v1.1.0...v1.3.0
